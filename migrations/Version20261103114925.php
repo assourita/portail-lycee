@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250407112759 extends AbstractMigration
+final class Version20261103114925 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -21,13 +21,25 @@ final class Version20250407112759 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            ALTER TABLE note ADD enseignant_id INT NOT NULL, ADD commentaire LONGTEXT DEFAULT NULL, CHANGE valeur valeur NUMERIC(4, 2) NOT NULL, CHANGE type type VARCHAR(50) NOT NULL, CHANGE date date_note DATE NOT NULL
+            ALTER TABLE
+              paiement
+            ADD
+              facture_id INT DEFAULT NULL,
+            ADD
+              mode_paiement VARCHAR(30) DEFAULT NULL,
+            ADD
+              reference VARCHAR(100) DEFAULT NULL
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE note ADD CONSTRAINT FK_CFBDFA14E455FCC0 FOREIGN KEY (enseignant_id) REFERENCES enseignant (id)
+            ALTER TABLE
+              paiement
+            ADD
+              CONSTRAINT FK_B1DC7A1E7F2DEE08 FOREIGN KEY (facture_id) REFERENCES facture (id) ON DELETE
+            SET
+              NULL
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE INDEX IDX_CFBDFA14E455FCC0 ON note (enseignant_id)
+            CREATE INDEX IDX_B1DC7A1E7F2DEE08 ON paiement (facture_id)
         SQL);
     }
 
@@ -35,13 +47,13 @@ final class Version20250407112759 extends AbstractMigration
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            ALTER TABLE note DROP FOREIGN KEY FK_CFBDFA14E455FCC0
+            ALTER TABLE paiement DROP FOREIGN KEY FK_B1DC7A1E7F2DEE08
         SQL);
         $this->addSql(<<<'SQL'
-            DROP INDEX IDX_CFBDFA14E455FCC0 ON note
+            DROP INDEX IDX_B1DC7A1E7F2DEE08 ON paiement
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE note DROP enseignant_id, DROP commentaire, CHANGE valeur valeur DOUBLE PRECISION NOT NULL, CHANGE type type VARCHAR(255) NOT NULL, CHANGE date_note date DATE NOT NULL
+            ALTER TABLE paiement DROP facture_id, DROP mode_paiement, DROP reference
         SQL);
     }
 }

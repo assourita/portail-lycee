@@ -42,10 +42,15 @@ security:
             # switch_user: true
 
     access_control:
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/enseignant, roles: ROLE_ENSEIGNANT }
+        - { path: ^/etudiant, roles: ROLE_ETUDIANT }
+        - { path: ^/comptable, roles: ROLE_COMPTABLE }
+        - { path: ^/parent, roles: ROLE_PARENT }
+        - { path: ^/(dashboard|profil|parametres|fichiers), roles: IS_AUTHENTICATED_REMEMBERED }
 
 when@test:
     security:
