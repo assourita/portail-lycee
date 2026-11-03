@@ -128,11 +128,11 @@
                                         {% for jour_nom, heures in grille %}
                                             {% for heure, emploi in heures %}
                                                 {% if emploi and emploi.filiere %}
-                                                    {% set filieres = filieres|merge([emploi.filiere.nom]) %}
+                                                    {% set filieres = filieres|merge({('f' ~ emploi.filiere.id): emploi.filiere.nom}) %}
                                                 {% endif %}
                                             {% endfor %}
                                         {% endfor %}
-                                        {{ filieres|unique|length }}
+                                        {{ filieres|length }}
                                     </li>
                                 </ul>
                             </div>

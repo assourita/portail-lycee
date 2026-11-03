@@ -59,9 +59,7 @@
                         <div class="card-body">
                             <select class="form-select" id="annee-filter">
                                 <option value="">Toutes les années</option>
-                                <option value="2023-2024">2023-2024</option>
-                                <option value="2024-2025">2024-2025</option>
-                                <option value="2025-2026">2025-2026</option>
+                                {% for annee in annees_scolaires() %}<option value="{{ annee }}">{{ annee }}</option>{% endfor %}
                             </select>
                         </div>
                     </div>
@@ -188,7 +186,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                 <form id="delete-form" method="post" style="display: inline;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete-bulletin') }}">
                     <button type="submit" class="btn btn-danger">Supprimer</button>
                 </form>
             </div>

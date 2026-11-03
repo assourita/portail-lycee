@@ -235,7 +235,7 @@ class AdminEmploiDuTempsController extends AbstractController
     #[Route('/{id}', name: 'admin_emploi_du_temps_delete', methods: ['POST'])]
     public function delete(Request $request, EmploiDuTemps $emploiDuTemps): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$emploiDuTemps->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete-emploi', $request->request->get('_token'))) {
             $this->entityManager->remove($emploiDuTemps);
             $this->entityManager->flush();
             $this->addFlash('success', 'Emploi du temps supprimé avec succès.');
@@ -251,7 +251,7 @@ class AdminEmploiDuTempsController extends AbstractController
         
         // Grouper par jour de la semaine
         $emploisParJour = [];
-        $jours = $this->jourRepository->findAll();
+        $jours = $this->jourRepository->findBy([], ['ordre' => 'ASC']);
         
         foreach ($jours as $jour) {
             $emploisParJour[$jour->getNom()] = [];
@@ -276,7 +276,7 @@ class AdminEmploiDuTempsController extends AbstractController
         
         // Grouper par jour de la semaine
         $emploisParJour = [];
-        $jours = $this->jourRepository->findAll();
+        $jours = $this->jourRepository->findBy([], ['ordre' => 'ASC']);
         
         foreach ($jours as $jour) {
             $emploisParJour[$jour->getNom()] = [];
@@ -500,102 +500,4 @@ class AdminEmploiDuTempsController extends AbstractController
 
         return new Response(json_encode($data), 200, ['Content-Type' => 'application/json']);
     }
-
-        #[Route('/test-data', name: 'admin_emploi_du_temps_test_data', methods: ['GET'])]
-        public function testData(): Response
-        {
-            // Vérifier les emplois du temps existants
-            $emplois = $this->emploiDuTempsRepository->findAll();
-            $data = [];
-            
-            foreach ($emplois as $emploi) {
-                $data[] = [
-                    'id' => $emploi->getId(),
-                    'jour' => $emploi->getJour() ? $emploi->getJour()->getNom() : 'N/A',
-                    'heure_debut' => $emploi->getHeureDebut() ? $emploi->getHeureDebut()->format('H:i') : 'N/A',
-                    'heure_fin' => $emploi->getHeureFin() ? $emploi->getHeureFin()->format('H:i') : 'N/A',
-                    'matiere' => $emploi->getMatiere() ? $emploi->getMatiere()->getNom() : 'N/A',
-                    'enseignant' => $emploi->getEnseignant() ? $emploi->getEnseignant()->getNom() : 'N/A',
-                    'filiere' => $emploi->getFiliere() ? $emploi->getFiliere()->getNom() : 'N/A',
-                ];
-            }
-            
-            return new Response(json_encode([
-                'count' => count($emplois),
-                'data' => $data
-            ], JSON_PRETTY_PRINT), 200, ['Content-Type' => 'application/json']);
-        }
-
-        #[Route('/test-create', name: 'admin_emploi_du_temps_test_create', methods: ['GET'])]
-        public function testCreate(): Response
-        {
-            // Créer un emploi du temps de test
-            $filiere = $this->filiereRepository->findOneBy([]);
-            $jour = $this->jourRepository->findOneBy([]);
-            $matiere = $this->matiereRepository->findOneBy([]);
-            $enseignant = $this->enseignantRepository->findOneBy([]);
-            
-            if (!$filiere || !$jour || !$matiere || !$enseignant) {
-                return new Response('Données manquantes pour le test', 400);
-            }
-            
-            $emploi = new EmploiDuTemps();
-            $emploi->setFiliere($filiere);
-            $emploi->setJour($jour);
-            $emploi->setMatiere($matiere);
-            $emploi->setEnseignant($enseignant);
-            $emploi->setHeureDebut(new \DateTime('08:00'));
-            $emploi->setHeureFin(new \DateTime('10:00'));
-            
-            $this->entityManager->persist($emploi);
-            $this->entityManager->flush();
-            
-        return new Response('Emploi du temps de test créé avec succès', 200);
-    }
-
-        #[Route('/test/jours', name: 'admin_emploi_du_temps_test_jours', methods: ['GET'])]
-        public function testJours(): Response
-        {
-            $jours = $this->jourRepository->findAll();
-            $data = [];
-            
-            foreach ($jours as $jour) {
-                $data[] = [
-                    'id' => $jour->getId(),
-                    'nom' => $jour->getNom(),
-                    'ordre' => $jour->getOrdre()
-                ];
-            }
-            
-            return new Response(json_encode([
-                'count' => count($jours),
-                'data' => $data
-            ], JSON_PRETTY_PRINT), 200, ['Content-Type' => 'application/json']);
-        }
-
-        #[Route('/test/format-data', name: 'admin_emploi_du_temps_test_format_data', methods: ['GET'])]
-        public function testFormatData(): Response
-        {
-            $jours = $this->jourRepository->createQueryBuilder('j')
-                ->orderBy('j.ordre', 'ASC')
-                ->getQuery()
-                ->getResult();
-            
-            $matieres = $this->matiereRepository->createQueryBuilder('m')
-                ->leftJoin('m.filiere', 'f')
-                ->leftJoin('m.enseignant', 'e')
-                ->addSelect('f', 'e')
-                ->getQuery()
-                ->getResult();
-            
-            $enseignants = $this->enseignantRepository->findAll();
-            
-            $formattedData = $this->formatDataForJavaScript($jours, $matieres, $enseignants);
-            
-            return new Response(json_encode([
-                'jours_data' => $formattedData['jours_data'],
-                'matieres_data' => $formattedData['matieres_data'],
-                'enseignants_data' => $formattedData['enseignants_data'],
-            ], JSON_PRETTY_PRINT), 200, ['Content-Type' => 'application/json']);
-        }
 }

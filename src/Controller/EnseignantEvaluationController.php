@@ -198,7 +198,7 @@ class EnseignantEvaluationController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette évaluation.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$evaluation->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete-evaluation', $request->request->get('_token'))) {
             // Vérifier s'il y a des notes liées
             $notes = $this->entityManager->getRepository(\App\Entity\Note::class)
                 ->findBy(['evaluation' => $evaluation]);

@@ -74,18 +74,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             return new RedirectResponse($targetPath);
         }
 
-        // Redirection en fonction du rôle
-        if (in_array('ROLE_ADMIN', $user->getRoles())) {
-            return new RedirectResponse($this->urlGenerator->generate('admin_dashboard'));
-        } elseif (in_array('ROLE_ETUDIANT', $user->getRoles())) {
-            return new RedirectResponse($this->urlGenerator->generate('etudiant_dashboard'));
-        } elseif (in_array('ROLE_ENSEIGNANT', $user->getRoles())) {
-            return new RedirectResponse($this->urlGenerator->generate('enseignant_dashboard'));
-        } elseif (in_array('ROLE_COMPTABLE', $user->getRoles())) {
-            return new RedirectResponse($this->urlGenerator->generate('comptable_dashboard'));
-        }
-
-        return new RedirectResponse($this->urlGenerator->generate('app_home'));
+        return new RedirectResponse($this->urlGenerator->generate('app_dashboard'));
     }
 
     protected function getLoginUrl(Request $request): string

@@ -141,7 +141,7 @@ class AdminPeriodeAcademiqueController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_periode_academique_delete', methods: ['POST'])]
     public function delete(Request $request, PeriodeAcademique $periode): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$periode->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete-periode', $request->request->get('_token'))) {
             // Vérifier s'il y a des données liées
             if ($periode->getNotes()->count() > 0 || $periode->getCours()->count() > 0 || $periode->getEvaluations()->count() > 0) {
                 $this->addFlash('error', 'Impossible de supprimer cette période car elle contient des données (notes, cours, évaluations).');

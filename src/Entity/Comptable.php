@@ -31,7 +31,7 @@ class Comptable
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $poste = null;
 
-    #[ORM\OneToOne(targetEntity: User::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'comptable', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: true)]
     private ?User $user = null;
 

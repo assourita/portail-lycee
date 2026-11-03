@@ -340,9 +340,15 @@
                 <h1 class="hero-title">Bienvenue sur Mon Portail Lycée</h1>
                 <p class="hero-subtitle">Découvrez l'excellence éducative avec nos formations modernes et nos enseignants qualifiés</p>
                 <div class="hero-buttons">
-                    <a href="{{ path('app_login') }}" class="btn-hero btn-hero-primary">
-                        <i class="fas fa-sign-in-alt me-2"></i>Se connecter
-                    </a>
+                    {% if app.user %}
+                        <a href="{{ path('app_dashboard') }}" class="btn-hero btn-hero-primary">
+                            <i class="fas fa-tachometer-alt me-2"></i>Mon tableau de bord
+                        </a>
+                    {% else %}
+                        <a href="{{ path('app_login') }}" class="btn-hero btn-hero-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                        </a>
+                    {% endif %}
                     <a href="#subjects" class="btn-hero btn-hero-secondary">
                         <i class="fas fa-graduation-cap me-2"></i>Découvrir nos formations
                     </a>
@@ -576,7 +582,7 @@
     </section>
 
     <!-- Section Actualités -->
-    <section class="news-section">
+    <section id="actualites" class="news-section">
         <div class="container">
             <div class="row text-center mb-5">
                 <div class="col-12">
@@ -633,7 +639,7 @@
 
     
     <!-- Footer -->
-    <footer class="bg-dark text-light py-5">
+    <footer id="contact" class="bg-dark text-light py-5">
         <div class="container">
             <div class="row g-4">
                 <div class="col-md-4">
@@ -654,7 +660,7 @@
                         <li><a href="{{ path('app_login') }}" class="text-muted text-decoration-none">Connexion</a></li>
                         <li><a href="#subjects" class="text-muted text-decoration-none">Formations</a></li>
                         <li><a href="#" class="text-muted text-decoration-none">Actualités</a></li>
-                        <li><a href="#" class="text-muted text-decoration-none">Contact</a></li>
+                        <li><a href="#contact" class="text-muted text-decoration-none">Contact</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">

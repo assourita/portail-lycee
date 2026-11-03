@@ -87,8 +87,14 @@ class EnseignantNoteController extends AbstractController
                 $etudiant = $this->etudiantRepository->find($etudiantId);
                 $evaluation = $evaluationId ? $this->evaluationRepository->find($evaluationId) : null;
 
-                // Vérifier que la matière appartient à l'enseignant
-                if ($matiere && $matiere->getEnseignant() === $enseignant && $etudiant) {
+                $noteMax = $evaluation?->getNoteMax() ?? 20;
+                $valeur = str_replace(',', '.', (string) $valeur);
+
+                if (!is_numeric($valeur) || $valeur < 0 || $valeur > $noteMax) {
+                    $this->addFlash('error', sprintf('La note doit être comprise entre 0 et %d.', $noteMax));
+                } elseif ($matiere && $matiere->getEnseignant() === $enseignant && $etudiant
+                    && $etudiant->getFiliere() === $matiere->getFiliere()
+                    && (!$evaluation || $evaluation->getMatiere() === $matiere)) {
                     $note = new Note();
                     $note->setValeur($valeur);
                     $note->setType($type);
@@ -107,10 +113,12 @@ class EnseignantNoteController extends AbstractController
 
                     $this->addFlash('success', 'Note enregistrée avec succès !');
                     return $this->redirectToRoute('enseignant_notes_index');
+                } else {
+                    $this->addFlash('error', 'Cet étudiant ou cette évaluation ne correspond pas à la matière choisie.');
                 }
+            } else {
+                $this->addFlash('error', 'Veuillez remplir tous les champs obligatoires.');
             }
-
-            $this->addFlash('error', 'Veuillez remplir tous les champs obligatoires.');
         }
 
         $matieres = $enseignant->getMatieres();
@@ -146,15 +154,20 @@ class EnseignantNoteController extends AbstractController
 
         if ($matiereId) {
             $matiere = $this->matiereRepository->find($matiereId);
-            
-            if ($matiere && $matiere->getEnseignant() === $enseignant) {
-                // Récupérer les étudiants de la filière
+
+            if (!$matiere || $matiere->getEnseignant() !== $enseignant) {
+                $matiere = null;
+                $this->addFlash('error', 'Cette matière ne vous est pas attribuée.');
+            } else {
                 if ($matiere->getFiliere()) {
                     $etudiants = $this->etudiantRepository->findBy(['filiere' => $matiere->getFiliere()]);
                 }
 
                 if ($evaluationId) {
                     $evaluation = $this->evaluationRepository->find($evaluationId);
+                    if ($evaluation && $evaluation->getMatiere() !== $matiere) {
+                        $evaluation = null;
+                    }
                 }
             }
         }
@@ -172,8 +185,15 @@ class EnseignantNoteController extends AbstractController
 
                 if ($valeur !== null && $valeur !== '') {
                     $etudiant = $this->etudiantRepository->find($etudiantId);
+                    $valeur = str_replace(',', '.', (string) $valeur);
+                    $noteMax = $evaluation?->getNoteMax() ?? 20;
 
-                    if ($etudiant) {
+                    if (!is_numeric($valeur) || $valeur < 0 || $valeur > $noteMax) {
+                        $this->addFlash('warning', sprintf('Note ignorée pour %s : elle doit être comprise entre 0 et %d.', $etudiant ? $etudiant->getPrenom().' '.$etudiant->getNom() : '#'.$etudiantId, $noteMax));
+                        continue;
+                    }
+
+                    if ($etudiant && $etudiant->getFiliere() === $matiere->getFiliere()) {
                         $note = new Note();
                         $note->setValeur($valeur);
                         $note->setType($type);
@@ -224,10 +244,11 @@ class EnseignantNoteController extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
-            $valeur = $request->request->get('valeur');
+            $valeur = str_replace(',', '.', (string) $request->request->get('valeur'));
             $commentaire = $request->request->get('commentaire');
+            $noteMax = $note->getEvaluation()?->getNoteMax() ?? 20;
 
-            if ($valeur !== null) {
+            if (is_numeric($valeur) && $valeur >= 0 && $valeur <= $noteMax) {
                 $note->setValeur($valeur);
                 $note->setCommentaire($commentaire);
 
@@ -237,7 +258,7 @@ class EnseignantNoteController extends AbstractController
                 return $this->redirectToRoute('enseignant_notes_index');
             }
 
-            $this->addFlash('error', 'Veuillez saisir une valeur.');
+            $this->addFlash('error', sprintf('Veuillez saisir une note comprise entre 0 et %d.', $noteMax));
         }
 
         return $this->render('enseignant/note/edit.html.twig', [
@@ -255,7 +276,7 @@ class EnseignantNoteController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette note.');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$note->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete-note', $request->request->get('_token'))) {
             $this->entityManager->remove($note);
             $this->entityManager->flush();
 

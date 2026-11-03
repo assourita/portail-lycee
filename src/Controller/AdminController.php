@@ -21,6 +21,38 @@ use App\Form\EnseignantType;
 #[IsGranted('ROLE_ADMIN')]
 class AdminController extends AbstractController
 {
+    public function __construct(
+        private UserPasswordHasherInterface $passwordHasher,
+    ) {}
+
+    /**
+     * Crée le compte de connexion d'une personne avec un mot de passe temporaire aléatoire,
+     * affiché une seule fois à l'administrateur.
+     */
+    private function creerCompte(EntityManagerInterface $entityManager, string $role, ?string $email, string $nom, string $prenom): User
+    {
+        $base = $email ?: strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $prenom.'.'.$nom) ?: $prenom.'.'.$nom);
+        $base = preg_replace('/[^a-z0-9.@_-]/i', '', $base) ?: 'utilisateur';
+        $username = $base;
+        $repository = $entityManager->getRepository(User::class);
+        for ($i = 2; $repository->findOneBy(['username' => $username]); $i++) {
+            $username = $base.$i;
+        }
+
+        $motDePasse = 'Lycee-'.bin2hex(random_bytes(4));
+        $user = (new User())
+            ->setUsername($username)
+            ->setEmail($email)
+            ->setRoles([$role])
+            ->setIsActivate(true);
+        $user->setPassword($this->passwordHasher->hashPassword($user, $motDePasse));
+        $entityManager->persist($user);
+
+        $this->addFlash('info', sprintf('Compte créé - identifiant : %s / mot de passe temporaire : %s (à communiquer à l\'intéressé).', $username, $motDePasse));
+
+        return $user;
+    }
+
     #[Route('/dashboard', name: 'admin_dashboard')]
     public function dashboard(EntityManagerInterface $entityManager, PeriodeAcademiqueService $periodeService): Response
     {
@@ -189,15 +221,7 @@ class AdminController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            // Création automatique de l'utilisateur lié
-            $user = new User();
-            $user->setUsername($etudiant->getEmail() ?? strtolower($etudiant->getNom() . '.' . $etudiant->getPrenom()))
-                ->setEmail($etudiant->getEmail())
-                ->setRoles(['ROLE_ETUDIANT'])
-                ->setIsActivate(true)
-                ->setPassword(password_hash('etudiant1234', PASSWORD_BCRYPT));
-            $etudiant->setUser($user);
-            $entityManager->persist($user);
+            $etudiant->setUser($this->creerCompte($entityManager, 'ROLE_ETUDIANT', $etudiant->getEmail(), $etudiant->getNom(), $etudiant->getPrenom()));
             $entityManager->persist($etudiant);
             $entityManager->flush();
 
@@ -219,15 +243,7 @@ class AdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Création automatique de l'utilisateur lié
-            $user = new User();
-            $user->setUsername($enseignant->getEmail() ?? strtolower($enseignant->getNom() . '.' . $enseignant->getPrenom()))
-                ->setEmail($enseignant->getEmail())
-                ->setRoles(['ROLE_ENSEIGNANT'])
-                ->setIsActivate(true)
-                ->setPassword(password_hash('enseignant1234', PASSWORD_BCRYPT));
-            $enseignant->setUser($user);
-            $entityManager->persist($user);
+            $enseignant->setUser($this->creerCompte($entityManager, 'ROLE_ENSEIGNANT', $enseignant->getEmail(), $enseignant->getNom(), $enseignant->getPrenom()));
             $entityManager->persist($enseignant);
             $entityManager->flush();
 
@@ -368,17 +384,8 @@ class AdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Création automatique de l'utilisateur lié
-            $user = new User();
-            $username = $comptable->getEmail() ?? strtolower($comptable->getNom() . '.' . $comptable->getPrenom());
-            $user->setUsername($username)
-                ->setEmail($comptable->getEmail())
-                ->setRoles(['ROLE_COMPTABLE'])
-                ->setIsActivate(true)
-                ->setPassword(password_hash('comptable1234', PASSWORD_BCRYPT));
-            $comptable->setPassword(null); // On ne stocke pas le mot de passe ici
-            $comptable->setEmail($comptable->getEmail());
-            $entityManager->persist($user);
+            $comptable->setUser($this->creerCompte($entityManager, 'ROLE_COMPTABLE', $comptable->getEmail(), $comptable->getNom(), $comptable->getPrenom()));
+            $comptable->setPassword(null);
             $entityManager->persist($comptable);
             $entityManager->flush();
 

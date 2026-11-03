@@ -241,112 +241,130 @@
 {% endblock %}
 
 {% block body %}
-<div class="parcours-container">
-    <div class="parcours-header">
-        <h1 class="parcours-title">
-            <i class="fas fa-route me-3"></i>
-            Mon Parcours Scolaire
-        </h1>
-        <p class="parcours-subtitle">
-            Filière : {{ parcours.filiere.nom }} - Période : {{ periodeActive.periode }} {{ periodeActive.anneeScolaire }}
-        </p>
-    </div>
+<div class="container-fluid">
+    <div class="row">
+        {% include 'etudiant/_sidebar.html.twig' %}
 
-    <div class="parcours-content">
-        <div class="parcours-card">
-            <div class="parcours-card-header">
-                <div class="parcours-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <div class="parcours-info">
-                    <h3>Informations Générales</h3>
-                    <p><strong>Filière :</strong> {{ parcours.filiere.nom }}</p>
-                    <p><strong>Niveau :</strong> {{ parcours.niveau }}</p>
-                    <p><strong>Spécialité :</strong> {{ parcours.specialite }}</p>
-                    <p><strong>Date d'inscription :</strong> {{ parcours.dateInscription|date('d/m/Y') }}</p>
-                </div>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 parcours-container">
+            <div class="parcours-header">
+                <h1 class="parcours-title">
+                    <i class="fas fa-route me-3"></i>
+                    Mon Parcours Scolaire
+                </h1>
+                <p class="parcours-subtitle">
+                    {{ etudiant.prenom }} {{ etudiant.nom }}
+                    {% if etudiant.filiere %} - {{ etudiant.filiere.nom }}{% endif %}
+                    {% if periodeActive %} - {{ periodeActive.periode }} {{ periodeActive.anneeScolaire }}{% endif %}
+                </p>
             </div>
 
-            <div class="objectifs-section">
-                <h4 class="section-title">
-                    <i class="fas fa-bullseye me-2"></i>
-                    Objectifs Pédagogiques
-                </h4>
-                <ul class="list-items">
-                    {% for objectif in parcours.objectifs %}
-                        <li><i class="fas fa-check-circle"></i>{{ objectif }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
+            <div class="parcours-content">
+                <div class="parcours-card">
+                    <div class="parcours-card-header">
+                        <div class="parcours-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="parcours-info">
+                            <h3>Année en cours</h3>
+                            <p>
+                                <strong>Date d'inscription :</strong>
+                                {{ etudiant.dateInscription ? etudiant.dateInscription|date('d/m/Y') : '-' }}
+                            </p>
+                        </div>
+                    </div>
 
-            <div class="competences-section">
-                <h4 class="section-title">
-                    <i class="fas fa-star me-2"></i>
-                    Compétences à Développer
-                </h4>
-                <ul class="list-items">
-                    {% for competence in parcours.competences %}
-                        <li><i class="fas fa-award"></i>{{ competence }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
+                    <div class="row text-center g-3">
+                        <div class="col-md-3">
+                            <div class="h3 text-primary mb-0">{{ statsAnneeEnCours.moyenne_generale }}/20</div>
+                            <small class="text-muted">Moyenne générale ({{ statsAnneeEnCours.total_notes }} notes)</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="h3 text-success mb-0">{{ statsAnneeEnCours.taux_assiduite }}%</div>
+                            <small class="text-muted">Taux d'assiduité</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="h3 text-warning mb-0">{{ statsAnneeEnCours.total_absences }}</div>
+                            <small class="text-muted">
+                                Absences ({{ statsAnneeEnCours.absences_justifiees }} justifiées)
+                            </small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="h3 text-info mb-0">{{ statsAnneeEnCours.total_bulletins }}</div>
+                            <small class="text-muted">Bulletins</small>
+                        </div>
+                    </div>
 
-            <div class="progress-section">
-                <h4 class="section-title">
-                    <i class="fas fa-chart-line me-2"></i>
-                    Progression
-                </h4>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 75%;"></div>
-                </div>
-                <div class="progress-label">
-                    <span>Progression générale</span>
-                    <span>75%</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 60%;"></div>
-                </div>
-                <div class="progress-label">
-                    <span>Objectifs atteints</span>
-                    <span>60%</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 85%;"></div>
-                </div>
-                <div class="progress-label">
-                    <span>Compétences validées</span>
-                    <span>85%</span>
-                </div>
-            </div>
-
-            <div class="timeline">
-                <h4 class="section-title">
-                    <i class="fas fa-history me-2"></i>
-                    Étapes Clés
-                </h4>
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <div class="timeline-date">Septembre 2023</div>
-                        <div class="timeline-title">Inscription en {{ parcours.filiere.nom }}</div>
-                        <div class="timeline-description">Début du parcours scolaire avec orientation et mise à niveau.</div>
+                    <div class="progress-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-book me-2"></i>
+                            Moyennes par matière
+                        </h4>
+                        {% for nomMatiere, data in statsAnneeEnCours.notes_par_matiere %}
+                            <div class="progress-label">
+                                <span>{{ nomMatiere }}</span>
+                                <span>{{ data.moyenne }}/20</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ (data.moyenne / 20 * 100)|round }}%;"></div>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">Aucune note enregistrée pour la période active.</p>
+                        {% endfor %}
                     </div>
                 </div>
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <div class="timeline-date">Janvier 2024</div>
-                        <div class="timeline-title">Adaptation réussie</div>
-                        <div class="timeline-description">Période d'adaptation et consolidation des acquis fondamentaux.</div>
+
+                <div class="parcours-card">
+                    <div class="parcours-card-header">
+                        <div class="parcours-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div class="parcours-info">
+                            <h3>Historique scolaire</h3>
+                            <p>Récapitulatif de vos années précédentes.</p>
+                        </div>
                     </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <div class="timeline-date">Juin 2024</div>
-                        <div class="timeline-title">Spécialisation en cours</div>
-                        <div class="timeline-description">Choix des options de spécialisation et début des enseignements spécifiques.</div>
-                    </div>
+
+                    {% if parcours|length > 0 %}
+                        <div class="timeline">
+                            {% for annee in parcours %}
+                                <div class="timeline-item">
+                                    <div class="timeline-content">
+                                        <div class="timeline-date">{{ annee.anneeScolaire }}</div>
+                                        <div class="timeline-title">
+                                            {{ annee.niveau }}
+                                            {% if annee.filiere %} - {{ annee.filiere.nom }}{% endif %}
+                                            {% if annee.decision == 'admis' %}
+                                                <span class="badge bg-success ms-2">Admis</span>
+                                            {% elseif annee.decision == 'redouble' %}
+                                                <span class="badge bg-danger ms-2">Redouble</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary ms-2">En cours</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="timeline-description">
+                                            <div class="row">
+                                                <div class="col-md-3"><strong>T1 :</strong> {{ annee.moyenneTrimestre1 ?: '-' }}</div>
+                                                <div class="col-md-3"><strong>T2 :</strong> {{ annee.moyenneTrimestre2 ?: '-' }}</div>
+                                                <div class="col-md-3"><strong>T3 :</strong> {{ annee.moyenneTrimestre3 ?: '-' }}</div>
+                                                <div class="col-md-3"><strong>Annuelle :</strong> {{ annee.moyenneAnnuelle ?: '-' }}</div>
+                                            </div>
+                                            {% if annee.rangClasse %}
+                                                <div class="mt-2"><strong>Rang :</strong> {{ annee.rangClasse }}{% if annee.totalEtudiants %} / {{ annee.totalEtudiants }}{% endif %}</div>
+                                            {% endif %}
+                                            {% if annee.appreciationGenerale %}
+                                                <div class="mt-2"><em>{{ annee.appreciationGenerale }}</em></div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Aucun historique n'a encore été enregistré par l'administration.</p>
+                    {% endif %}
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 </div>
 {% endblock %}

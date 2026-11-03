@@ -1,0 +1,44 @@
+{# Attend : emplois_par_jour (nom du jour => liste d'EmploiDuTemps), afficher_filiere (bool) #}
+<div class="row">
+    {% for jour, emplois in emplois_par_jour %}
+        <div class="col-md-6 col-xl-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white d-flex justify-content-between">
+                    <strong>{{ jour }}</strong>
+                    <span class="badge bg-light text-primary">{{ emplois|length }}</span>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for emploi in emplois|sort((a, b) => a.heureDebut <=> b.heureDebut) %}
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="fw-bold">{{ emploi.matiere ? emploi.matiere.nom : 'Matière non définie' }}</div>
+                                    <small class="text-muted">
+                                        {% if afficher_filiere|default(false) %}
+                                            <i class="fas fa-layer-group me-1"></i>{{ emploi.filiere ? emploi.filiere.nom : '-' }}
+                                        {% else %}
+                                            <i class="fas fa-chalkboard-teacher me-1"></i>
+                                            {{ emploi.enseignant ? emploi.enseignant.prenom ~ ' ' ~ emploi.enseignant.nom : '-' }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-info text-dark">
+                                        {{ emploi.heureDebut|date('H:i') }} - {{ emploi.heureFin ? emploi.heureFin|date('H:i') : '?' }}
+                                    </span>
+                                    <div class="mt-1">
+                                        <a href="{{ path('admin_emploi_du_temps_edit', {'id': emploi.id}) }}" class="btn btn-sm btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item text-muted">Aucun créneau</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+</div>

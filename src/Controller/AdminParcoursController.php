@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Etudiant;
+use App\Entity\Note;
 use App\Entity\ParcoursScolaire;
+use App\Entity\PeriodeAcademique;
 use App\Repository\ParcoursRepository;
 use App\Repository\EtudiantRepository;
 use App\Repository\NoteRepository;
@@ -82,9 +85,10 @@ class AdminParcoursController extends AbstractController
         $parcours = new ParcoursScolaire();
         $parcours->setEtudiant($etudiant);
         $parcours->setAnneeScolaire($anneeScolaire);
-        $parcours->setNiveau($etudiant->getFiliere()->getClasse()->getNom() ?? 'Non défini');
+        $classe = $etudiant->getFiliere()?->getClasse();
+        $parcours->setNiveau($classe?->getNom() ?? $etudiant->getFiliere()?->getNom() ?? 'Non défini');
         $parcours->setFiliere($etudiant->getFiliere());
-        $parcours->setClasse($etudiant->getFiliere()->getClasse());
+        $parcours->setClasse($classe);
         $parcours->setMoyenneAnnuelle($stats['moyenne_generale']);
         $parcours->setMoyenneTrimestre1($stats['moyenne_t1']);
         $parcours->setMoyenneTrimestre2($stats['moyenne_t2']);
@@ -102,40 +106,67 @@ class AdminParcoursController extends AbstractController
         return $this->redirectToRoute('admin_parcours_etudiant', ['id' => $etudiantId]);
     }
 
-    private function calculerStatistiquesAnnee($etudiant, $periodeActive): array
+    private function calculerStatistiquesAnnee(Etudiant $etudiant, ?PeriodeAcademique $periodeActive): array
     {
-        // Récupérer toutes les notes de l'étudiant
-        $notes = $this->noteRepository->findBy([
-            'etudiant' => $etudiant,
-            'periodeAcademique' => $periodeActive
-        ]);
+        $notes = $this->findNotes($etudiant, $periodeActive);
 
-        $moyenneGenerale = 0;
-        if (count($notes) > 0) {
-            $somme = array_sum(array_map(fn($note) => $note->getValeur(), $notes));
-            $moyenneGenerale = round($somme / count($notes), 2);
+        $parTrimestre = [1 => [], 2 => [], 3 => []];
+        foreach ($notes as $note) {
+            $numero = $this->numeroTrimestre($note->getEvaluation()?->getTrimestre()?->getNom());
+            if ($numero) {
+                $parTrimestre[$numero][] = (float) $note->getValeur();
+            }
         }
+        $moyenne = fn (array $valeurs) => $valeurs ? round(array_sum($valeurs) / count($valeurs), 2) : null;
 
-        // Calculer les absences
-        $totalAbsences = $this->absenceRepository->countByEtudiant($etudiant, $periodeActive);
-        $absencesJustifiees = $this->absenceRepository->countByEtudiant($etudiant, $periodeActive, true);
-        $tauxAssiduite = $this->absenceRepository->calculateTauxAssiduite($etudiant, $periodeActive);
+        $moyenneGenerale = $moyenne(array_map(fn (Note $n) => (float) $n->getValeur(), $notes)) ?? 0;
 
-        // Calculer le rang (simplifié)
         $filiere = $etudiant->getFiliere();
-        $totalEtudiants = $filiere ? count($this->etudiantRepository->findBy(['filiere' => $filiere])) : 0;
+        $camarades = $filiere ? $this->etudiantRepository->findBy(['filiere' => $filiere]) : [$etudiant];
+        $meilleures = 0;
+        foreach ($camarades as $camarade) {
+            if ($camarade !== $etudiant) {
+                $moyenneCamarade = $moyenne(array_map(fn (Note $n) => (float) $n->getValeur(), $this->findNotes($camarade, $periodeActive))) ?? 0;
+                if ($moyenneCamarade > $moyenneGenerale) {
+                    $meilleures++;
+                }
+            }
+        }
 
         return [
             'moyenne_generale' => $moyenneGenerale,
-            'moyenne_t1' => null, // À calculer par trimestre
-            'moyenne_t2' => null,
-            'moyenne_t3' => null,
-            'rang' => 1, // À calculer
-            'total_etudiants' => $totalEtudiants,
-            'total_absences' => $totalAbsences,
-            'absences_justifiees' => $absencesJustifiees,
-            'taux_assiduite' => $tauxAssiduite,
+            'total_notes' => count($notes),
+            'moyenne_t1' => $moyenne($parTrimestre[1]),
+            'moyenne_t2' => $moyenne($parTrimestre[2]),
+            'moyenne_t3' => $moyenne($parTrimestre[3]),
+            'rang' => $meilleures + 1,
+            'total_etudiants' => count($camarades),
+            'total_absences' => $this->absenceRepository->countByEtudiant($etudiant, $periodeActive),
+            'absences_justifiees' => $this->absenceRepository->countByEtudiant($etudiant, $periodeActive, true),
+            'taux_assiduite' => $this->absenceRepository->calculateTauxAssiduite($etudiant, $periodeActive),
         ];
+    }
+
+    /**
+     * @return Note[]
+     */
+    private function findNotes(Etudiant $etudiant, ?PeriodeAcademique $periode): array
+    {
+        $criteres = ['etudiant' => $etudiant];
+        if ($periode) {
+            $criteres['periodeAcademique'] = $periode;
+        }
+
+        return $this->noteRepository->findBy($criteres);
+    }
+
+    private function numeroTrimestre(?string $nom): ?int
+    {
+        if (!$nom || !preg_match('/^\s*(\d)\D*trimestre/i', $nom, $correspondance)) {
+            return null;
+        }
+
+        return in_array((int) $correspondance[1], [1, 2, 3], true) ? (int) $correspondance[1] : null;
     }
 }
 

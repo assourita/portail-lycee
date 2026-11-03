@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include '_partials/sidebar_role.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-bell me-2 text-primary"></i>Notifications</h1>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    {% include 'parametres/_nav.html.twig' %}
+                </div>
+                <div class="col-md-9">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h6 class="m-0 font-weight-bold text-primary">Canaux de notification</h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{{ path('app_parametres_modifier') }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('parametres') }}">
+                                <input type="hidden" name="section" value="notifications">
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="notifications_email"
+                                           name="notifications_email" {{ user.notificationsEmail ? 'checked' }}>
+                                    <label class="form-check-label" for="notifications_email">
+                                        <strong>Notifications par email</strong><br>
+                                        <small class="text-muted">
+                                            Nouvelles notes, devoirs publiés, absences enregistrées et bulletins disponibles.
+                                            {% if not user.email %}<span class="text-danger">Aucune adresse email n'est renseignée sur votre compte.</span>{% endif %}
+                                        </small>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-4">
+                                    <input class="form-check-input" type="checkbox" id="notifications_sms"
+                                           name="notifications_sms" {{ user.notificationsSms ? 'checked' }}>
+                                    <label class="form-check-label" for="notifications_sms">
+                                        <strong>Notifications par SMS</strong><br>
+                                        <small class="text-muted">Alertes urgentes uniquement (absences, retards de paiement).</small>
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>Enregistrer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

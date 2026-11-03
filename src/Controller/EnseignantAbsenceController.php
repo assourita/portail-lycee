@@ -158,7 +158,7 @@ class EnseignantAbsenceController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        if ($this->isCsrfTokenValid('delete'.$absence->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete-absence', $request->request->get('_token'))) {
             $this->entityManager->remove($absence);
             $this->entityManager->flush();
 

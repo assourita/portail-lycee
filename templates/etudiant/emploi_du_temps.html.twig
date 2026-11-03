@@ -43,7 +43,6 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% set heures = ['08:00', '09:30', '11:00', '14:00', '15:30', '17:00'] %}
                                     {% for heure in heures %}
                                         <tr>
                                             <td class="fw-bold bg-light text-center">
@@ -101,17 +100,8 @@
                             <div class="col-md-6">
                                 <h6 class="text-success">Statistiques :</h6>
                                 <ul class="list-unstyled">
-                                    <li><i class="fas fa-book me-2"></i><strong>Total cours :</strong> {{ emplois_par_jour|length }}</li>
-                                    <li><i class="fas fa-clock me-2"></i><strong>Heures par semaine :</strong> 
-                                        {% set total_heures = 0 %}
-                                        {% for jour, emplois in emplois_par_jour %}
-                                            {% for emploi in emplois %}
-                                                {% set duree = emploi.heureFin|date('U') - emploi.heureDebut|date('U') %}
-                                                {% set total_heures = total_heures + (duree / 3600) %}
-                                            {% endfor %}
-                                        {% endfor %}
-                                        {{ total_heures|round(1) }}h
-                                    </li>
+                                    <li><i class="fas fa-book me-2"></i><strong>Total créneaux :</strong> {{ total_cours }}</li>
+                                    <li><i class="fas fa-clock me-2"></i><strong>Heures par semaine :</strong> {{ total_heures|round(1) }}h</li>
                                 </ul>
                             </div>
                         </div>

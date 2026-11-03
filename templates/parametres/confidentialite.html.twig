@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Confidentialité{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include '_partials/sidebar_role.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-lock me-2 text-primary"></i>Confidentialité</h1>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    {% include 'parametres/_nav.html.twig' %}
+                </div>
+                <div class="col-md-9">
+                    <div class="card shadow mb-4">
+                        <div class="card-header">
+                            <h6 class="m-0 font-weight-bold text-primary">Données conservées sur votre compte</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>Identifiant : <strong>{{ user.username }}</strong></li>
+                                <li>Email : <strong>{{ user.email ?: 'non renseigné' }}</strong></li>
+                                <li>Dernière connexion : <strong>{{ user.lastLogin ? user.lastLogin|date('d/m/Y H:i') : 'jamais' }}</strong></li>
+                                <li>Préférences d'affichage et de notification</li>
+                                {% if user.etudiant %}
+                                    <li>Dossier scolaire : notes, absences, devoirs rendus, bulletins et parcours</li>
+                                {% elseif user.enseignant %}
+                                    <li>Cours, devoirs, évaluations et notes que vous avez publiés</li>
+                                {% elseif user.parentEleve %}
+                                    <li>Lien avec le dossier scolaire de vos enfants</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card shadow mb-4">
+                        <div class="card-header">
+                            <h6 class="m-0 font-weight-bold text-primary">Qui peut voir vos informations ?</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>L'administration du lycée a accès à l'ensemble des dossiers.</li>
+                                <li>Les enseignants voient les notes, absences et devoirs des élèves de leurs matières.</li>
+                                <li>Les parents voient uniquement les notes, bulletins et absences de leurs enfants.</li>
+                                <li>Le service comptable voit uniquement les factures et paiements.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card shadow border-danger">
+                        <div class="card-header text-danger">
+                            <h6 class="m-0 font-weight-bold">Suppression du compte</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if is_granted('ROLE_ADMIN') or user.etudiant or user.enseignant %}
+                                <p class="mb-0 text-muted">
+                                    Votre compte est lié à un dossier scolaire : sa suppression doit être demandée à l'administration.
+                                </p>
+                            {% else %}
+                                <p class="text-muted">Cette action est définitive.</p>
+                                <form method="post" action="{{ path('app_profil_supprimer_compte') }}"
+                                      onsubmit="return confirm('Supprimer définitivement votre compte ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_account') }}">
+                                    <button class="btn btn-outline-danger">
+                                        <i class="fas fa-trash me-1"></i>Supprimer mon compte
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

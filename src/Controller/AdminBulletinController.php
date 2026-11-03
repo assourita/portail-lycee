@@ -311,7 +311,7 @@ class AdminBulletinController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_bulletin_delete', methods: ['POST'])]
     public function delete(Request $request, Bulletin $bulletin): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$bulletin->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete-bulletin', $request->request->get('_token'))) {
             $this->entityManager->remove($bulletin);
             $this->entityManager->flush();
 

@@ -1,0 +1,14 @@
+{% set sections = {
+    'app_parametres': ['fa-cog', 'Général'],
+    'app_parametres_securite': ['fa-shield-alt', 'Sécurité'],
+    'app_parametres_notifications': ['fa-bell', 'Notifications'],
+    'app_parametres_confidentialite': ['fa-lock', 'Confidentialité'],
+    'app_parametres_aide': ['fa-question-circle', 'Aide'],
+} %}
+<div class="list-group">
+    {% for route, infos in sections %}
+        <a href="{{ path(route) }}" class="list-group-item list-group-item-action {{ app.request.attributes.get('_route') == route ? 'active' }}">
+            <i class="fas {{ infos[0] }} me-2"></i>{{ infos[1] }}
+        </a>
+    {% endfor %}
+</div>

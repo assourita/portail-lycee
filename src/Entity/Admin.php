@@ -25,7 +25,7 @@ class Admin
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $password = null;
 
-    #[ORM\OneToOne(targetEntity: User::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'admin', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: true)]
     private ?User $user = null;
 

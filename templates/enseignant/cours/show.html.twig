@@ -16,9 +16,14 @@
                     <a href="{{ path('enseignant_cours_edit', {'id': cours.id}) }}" class="btn btn-secondary me-2">
                         <i class="fas fa-edit"></i> Modifier
                     </a>
-                    <a href="{{ path('enseignant_chapitre_new', {'id': cours.id}) }}" class="btn btn-primary">
+                    <a href="{{ path('enseignant_chapitre_new', {'id': cours.id}) }}" class="btn btn-primary me-2">
                         <i class="fas fa-plus"></i> Ajouter un chapitre
                     </a>
+                    <form method="post" action="{{ path('enseignant_cours_delete', {'id': cours.id}) }}" class="d-inline"
+                          onsubmit="return confirm('Supprimer ce cours, ses chapitres et leurs pièces jointes ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete-cours' ~ cours.id) }}">
+                        <button class="btn btn-outline-danger"><i class="fas fa-trash"></i></button>
+                    </form>
                 </div>
             </div>
 
@@ -55,6 +60,9 @@
                                                 <div>
                                                     <a href="{{ path('enseignant_chapitre_show', {'id': chapitre.id}) }}" class="btn btn-sm btn-success me-1">
                                                         <i class="fas fa-eye"></i> Lire
+                                                    </a>
+                                                    <a href="{{ path('enseignant_chapitre_edit', {'id': chapitre.id}) }}" class="btn btn-sm btn-outline-primary me-1">
+                                                        <i class="fas fa-edit"></i>
                                                     </a>
                                                     <span class="btn btn-sm btn-secondary me-1" title="Fonctionnalité à venir">
                                                         <i class="fas fa-edit"></i>

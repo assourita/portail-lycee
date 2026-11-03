@@ -52,21 +52,27 @@ class ParametresController extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
-            // Mettre à jour les paramètres
-            $theme = $request->request->get('theme');
-            $langue = $request->request->get('langue');
-            $notificationsEmail = $request->request->get('notifications_email') === 'on';
-            $notificationsSms = $request->request->get('notifications_sms') === 'on';
+            if (!$this->isCsrfTokenValid('parametres', $request->request->get('_token'))) {
+                $this->addFlash('error', 'Token de sécurité invalide.');
 
-            $user->setTheme($theme);
-            $user->setLangue($langue);
-            $user->setNotificationsEmail($notificationsEmail);
-            $user->setNotificationsSms($notificationsSms);
+                return $this->redirectToRoute('app_parametres');
+            }
+
+            if ($request->request->has('theme')) {
+                $user->setTheme($request->request->get('theme'));
+            }
+            if ($request->request->has('langue')) {
+                $user->setLangue($request->request->get('langue'));
+            }
+            $user->setNotificationsEmail($request->request->get('notifications_email') === 'on');
+            $user->setNotificationsSms($request->request->get('notifications_sms') === 'on');
 
             $this->entityManager->flush();
             $this->addFlash('success', 'Vos paramètres ont été mis à jour avec succès.');
 
-            return $this->redirectToRoute('app_parametres');
+            return $this->redirectToRoute(
+                $request->request->get('section') === 'notifications' ? 'app_parametres_notifications' : 'app_parametres'
+            );
         }
 
         return $this->redirectToRoute('app_parametres');

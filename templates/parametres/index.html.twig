@@ -5,15 +5,7 @@
 {% block body %}
 <div class="container-fluid">
     <div class="row">
-        {% if user.etudiant %}
-            {% include 'etudiant/_sidebar.html.twig' %}
-        {% elseif user.enseignant %}
-            {% include 'enseignant/_sidebar.html.twig' %}
-        {% elseif user.comptable %}
-            {% include 'comptable/_sidebar.html.twig' %}
-        {% elseif user.admin %}
-            {% include 'admin/_sidebar.html.twig' %}
-        {% endif %}
+        {% include '_partials/sidebar_role.html.twig' %}
 
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -54,6 +46,7 @@
                         </div>
                         <div class="card-body">
                             <form method="post" action="{{ path('app_parametres_modifier') }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('parametres') }}">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="theme" class="form-label">

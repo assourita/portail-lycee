@@ -36,7 +36,7 @@
                             <td>{{ etudiant.email }}</td>
                             <td>{{ etudiant.dateInscription|date('d/m/Y') }}</td>
                             <td>
-                                <a href="{{ path('enseignant_notes_etudiant', {'etudiantId': etudiant.id}) }}" class="btn btn-sm btn-info">
+                                <a href="{{ path('enseignant_note_saisir') }}" class="btn btn-sm btn-info">
                                     <i class="fas fa-graduation-cap"></i> Gérer les notes
                                 </a>
                             </td>

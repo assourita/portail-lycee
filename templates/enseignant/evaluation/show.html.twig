@@ -193,9 +193,13 @@
                             <a href="{{ path('enseignant_evaluation_edit', {'id': evaluation.id}) }}" class="btn btn-warning">
                                 <i class="fas fa-edit me-1"></i>Modifier
                             </a>
-                            <button class="btn btn-danger" onclick="deleteEvaluation({{ evaluation.id }})">
-                                <i class="fas fa-trash me-1"></i>Supprimer
-                            </button>
+                            <form method="post" action="{{ path('enseignant_evaluation_delete', {'id': evaluation.id}) }}" class="d-grid"
+                                  onsubmit="return confirm('Supprimer cette évaluation ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete-evaluation') }}">
+                                <button class="btn btn-danger">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

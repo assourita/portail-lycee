@@ -5,15 +5,7 @@
 {% block body %}
 <div class="container-fluid">
     <div class="row">
-        {% if user.etudiant %}
-            {% include 'etudiant/_sidebar.html.twig' %}
-        {% elseif user.enseignant %}
-            {% include 'enseignant/_sidebar.html.twig' %}
-        {% elseif user.comptable %}
-            {% include 'comptable/_sidebar.html.twig' %}
-        {% elseif user.admin %}
-            {% include 'admin/_sidebar.html.twig' %}
-        {% endif %}
+        {% include '_partials/sidebar_role.html.twig' %}
 
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -50,6 +42,10 @@
                                     <i class="fas fa-calculator fa-4x text-primary"></i>
                                 {% elseif user.admin %}
                                     <i class="fas fa-user-shield fa-4x text-primary"></i>
+                                {% elseif user.parentEleve %}
+                                    <i class="fas fa-user-friends fa-4x text-primary"></i>
+                                {% else %}
+                                    <i class="fas fa-user fa-4x text-primary"></i>
                                 {% endif %}
                             </div>
                             <h5 class="card-title">
@@ -64,6 +60,8 @@
                                     Comptable
                                 {% elseif user.admin %}
                                     Administrateur
+                                {% elseif user.parentEleve %}
+                                    Parent d'élève
                                 {% endif %}
                             </p>
                         </div>
@@ -169,9 +167,22 @@
                                     <strong>Poste:</strong><br>
                                     {{ profilInfo.poste ?: 'Non spécifié' }}
                                 </div>
+                            {% elseif role == 'parent' %}
+                                <div class="col-md-6 mb-3">
+                                    <strong>Nom complet:</strong><br>
+                                    {{ profilInfo.nom }} {{ profilInfo.prenom }}
+                                </div>
                                 <div class="col-md-6 mb-3">
                                     <strong>Téléphone:</strong><br>
                                     {{ profilInfo.telephone ?: 'Non renseigné' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Adresse:</strong><br>
+                                    {{ profilInfo.adresse ?: 'Non renseignée' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Enfants:</strong><br>
+                                    {% for enfant in profilInfo.enfants %}{{ enfant.prenom }} {{ enfant.nom }}{{ not loop.last ? ', ' }}{% else %}Aucun{% endfor %}
                                 </div>
                             {% endif %}
                         </div>

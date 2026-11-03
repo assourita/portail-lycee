@@ -253,7 +253,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                 <form id="delete-form" method="post" style="display: inline;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete-absence') }}">
                     <button type="submit" class="btn btn-danger">Supprimer</button>
                 </form>
             </div>

@@ -137,7 +137,7 @@ class AdminAbsenceController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_absence_delete', methods: ['POST'])]
     public function delete(Request $request, Absence $absence): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$absence->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete-absence', $request->request->get('_token'))) {
             $this->entityManager->remove($absence);
             $this->entityManager->flush();
 
@@ -166,11 +166,27 @@ class AdminAbsenceController extends AbstractController
             'taux_assiduite' => $this->absenceRepository->calculateTauxAssiduite($etudiant, $periodeActive),
         ];
 
+        $parMois = [];
+        foreach ($absences as $absence) {
+            if (!$absence->getDate()) {
+                continue;
+            }
+            $mois = $absence->getDate()->format('Y-m');
+            $parMois[$mois] ??= ['justifiees' => 0, 'non_justifiees' => 0];
+            $parMois[$mois][$absence->isJustifiee() ? 'justifiees' : 'non_justifiees']++;
+        }
+        ksort($parMois);
+
         return $this->render('admin/absence/statistiques_etudiant.html.twig', [
             'etudiant' => $etudiant,
             'absences' => $absences,
             'stats' => $stats,
             'periodeActive' => $periodeActive,
+            'graphique' => [
+                'mois' => array_keys($parMois),
+                'justifiees' => array_column($parMois, 'justifiees'),
+                'non_justifiees' => array_column($parMois, 'non_justifiees'),
+            ],
         ]);
     }
 }

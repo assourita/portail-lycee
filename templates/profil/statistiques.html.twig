@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes statistiques{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include '_partials/sidebar_role.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-chart-bar me-2 text-primary"></i>
+                    Mes statistiques
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('app_profil') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            {% if stats is empty %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Aucune statistique personnelle n'est disponible pour ce type de compte.
+                </div>
+            {% else %}
+                <div class="row">
+                    {% for libelle, valeur in stats %}
+                        <div class="col-sm-6 col-xl-3 mb-4">
+                            <div class="card shadow h-100 border-start border-4 border-primary">
+                                <div class="card-body">
+                                    <div class="text-xs fw-bold text-primary text-uppercase mb-1">{{ libelle }}</div>
+                                    <div class="h4 mb-0 fw-bold text-gray-800">{{ valeur }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <p class="text-muted small">
+                Dernière connexion : {{ user.lastLogin ? user.lastLogin|date('d/m/Y à H:i') : 'Jamais' }}
+            </p>
+        </main>
+    </div>
+</div>
+{% endblock %}

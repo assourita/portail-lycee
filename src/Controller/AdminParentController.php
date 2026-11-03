@@ -61,6 +61,8 @@ class AdminParentController extends AbstractController
                 $parent->setEmail($email);
                 $parent->setTelephone($telephone);
                 $parent->setLienParente($lienParente);
+                $parent->setProfession($request->request->get('profession') ?: null);
+                $parent->setAdresse($request->request->get('adresse') ?: null);
 
                 // Lier les enfants
                 foreach ($enfantsIds as $enfantId) {
@@ -80,7 +82,7 @@ class AdminParentController extends AbstractController
                     $user->setRoles(['ROLE_PARENT']);
                     
                     // Générer un mot de passe temporaire
-                    $tempPassword = 'Parent' . rand(1000, 9999);
+                    $tempPassword = 'Parent-' . bin2hex(random_bytes(4));
                     $hashedPassword = $this->passwordHasher->hashPassword($user, $tempPassword);
                     $user->setPassword($hashedPassword);
                     $user->setIsActivate(true);
@@ -132,6 +134,8 @@ class AdminParentController extends AbstractController
                 $parent->setEmail($email);
                 $parent->setTelephone($telephone);
                 $parent->setLienParente($lienParente);
+                $parent->setProfession($request->request->get('profession') ?: null);
+                $parent->setAdresse($request->request->get('adresse') ?: null);
                 $parent->setDateModification(new \DateTime());
 
                 // Mettre à jour les enfants
@@ -163,7 +167,7 @@ class AdminParentController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_parent_delete', methods: ['POST'])]
     public function delete(Request $request, ParentEleve $parent): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$parent->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete-parent', $request->request->get('_token'))) {
             // Supprimer aussi le compte utilisateur associé
             if ($parent->getUser()) {
                 $this->entityManager->remove($parent->getUser());
@@ -191,7 +195,7 @@ class AdminParentController extends AbstractController
                 $user->setRoles(['ROLE_PARENT']);
                 
                 // Générer un mot de passe temporaire
-                $tempPassword = 'Parent' . rand(1000, 9999);
+                $tempPassword = 'Parent-' . bin2hex(random_bytes(4));
                 $hashedPassword = $this->passwordHasher->hashPassword($user, $tempPassword);
                 $user->setPassword($hashedPassword);
                 $user->setIsActivate(true);

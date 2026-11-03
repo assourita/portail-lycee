@@ -62,7 +62,6 @@
                 </div>
             </div>
 
-            <!-- Graphique (placeholder) -->
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -70,10 +69,11 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Graphique d'évolution des absences par mois (à implémenter avec Chart.js)
-                    </div>
+                    {% if graphique.mois is empty %}
+                        <p class="text-muted text-center mb-0">Aucune absence sur la période.</p>
+                    {% else %}
+                        <canvas id="graphiqueAbsences" height="90"></canvas>
+                    {% endif %}
                 </div>
             </div>
 
@@ -152,4 +152,29 @@
         </main>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+{% if graphique.mois is not empty %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const libelles = {{ graphique.mois|json_encode|raw }}.map(m => {
+        const [annee, mois] = m.split('-');
+        return new Date(annee, mois - 1, 1).toLocaleDateString('fr-FR', {month: 'short', year: 'numeric'});
+    });
+    new Chart(document.getElementById('graphiqueAbsences'), {
+        type: 'bar',
+        data: {
+            labels: libelles,
+            datasets: [
+                {label: 'Justifiées', data: {{ graphique.justifiees|json_encode|raw }}, backgroundColor: '#2ecc71'},
+                {label: 'Non justifiées', data: {{ graphique.non_justifiees|json_encode|raw }}, backgroundColor: '#e74c3c'}
+            ]
+        },
+        options: {scales: {x: {stacked: true}, y: {stacked: true, beginAtZero: true, ticks: {precision: 0}}}}
+    });
+});
+</script>
+{% endif %}
 {% endblock %}

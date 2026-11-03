@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Entity\EmploiDuTemps;
 use App\Entity\Filiere;
 use App\Entity\Matiere;
+use App\Entity\Soumission;
 use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/enseignant')]
@@ -50,11 +51,19 @@ class EnseignantController extends AbstractController
             }
         }
 
-        // Cours cette semaine (exemple - à adapter selon vos besoins)
-        $coursCetteSemaine = 12; // À calculer selon l'emploi du temps
+        $coursCetteSemaine = $this->entityManager->getRepository(EmploiDuTemps::class)
+            ->count(['enseignant' => $enseignant]);
 
-        // Devoirs à corriger (exemple - à adapter selon vos besoins)
-        $devoirsACorriger = 18; // À calculer selon les notes en attente
+        $devoirsACorriger = (int) $this->entityManager->getRepository(Soumission::class)
+            ->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->join('s.devoir', 'd')
+            ->andWhere('d.enseignant = :enseignant')
+            ->andWhere('s.statut = :statut')
+            ->setParameter('enseignant', $enseignant)
+            ->setParameter('statut', 'soumis')
+            ->getQuery()
+            ->getSingleScalarResult();
 
         return $this->render('enseignant/dashboard.html.twig', [
             'cours' => $cours,
@@ -62,27 +71,6 @@ class EnseignantController extends AbstractController
             'coursCetteSemaine' => $coursCetteSemaine,
             'devoirsACorriger' => $devoirsACorriger,
             'periodeActive' => $periodeActive,
-        ]);
-    }
-
-    /**
-     * Affiche l'emploi du temps de l'enseignant
-     */
-    #[Route('/emploi-du-temps', name: 'app_enseignant_emploi_du_temps')]
-    public function emploiDuTemps(Request $request): Response
-    {
-        $user = $this->getUser();
-        $enseignant = $user->getEnseignant();
-        
-        if (!$enseignant) {
-            throw $this->createNotFoundException('Enseignant non trouvé');
-        }
-        
-        $emploiDuTemps = $this->entityManager->getRepository(EmploiDuTemps::class)
-            ->findBy(['enseignant' => $enseignant], ['jour' => 'ASC', 'heureDebut' => 'ASC']);
-
-        return $this->render('enseignant/emploi_du_temps.html.twig', [
-            'emploiDuTemps' => $emploiDuTemps,
         ]);
     }
 

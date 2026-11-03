@@ -106,7 +106,7 @@ class AdminClasseController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_classe_delete', methods: ['POST'])]
     public function delete(Request $request, Classe $classe): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$classe->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete-classe', $request->request->get('_token'))) {
             $this->entityManager->remove($classe);
             $this->entityManager->flush();
 

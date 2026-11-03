@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Aide{% endblock %}
+
+{% block body %}
+{% set questions = [
+    ['J\'ai oublié mon mot de passe', 'Sur la page de connexion, cliquez sur « Mot de passe oublié » et saisissez l\'adresse email de votre compte. Un lien de réinitialisation valable une heure vous sera envoyé.'],
+    ['Comment modifier mes informations personnelles ?', 'Depuis « Mon profil », utilisez « Infos personnelles » pour votre téléphone ou votre adresse, et « Modifier profil » pour votre identifiant, votre email ou votre mot de passe.'],
+    ['Je ne vois pas mes cours ou mon emploi du temps', 'Les cours et l\'emploi du temps dépendent de votre filière et de la période académique active. Si votre filière est incorrecte, contactez l\'administration.'],
+    ['Comment justifier une absence ?', 'Dans « Mes absences », ouvrez l\'absence concernée puis « Justifier ». Vous pouvez joindre un justificatif (PDF ou image). L\'administration valide ensuite la justification.'],
+    ['Comment rendre un devoir ?', 'Dans « Mes devoirs », ouvrez le devoir puis « Soumettre ». Vous pouvez enregistrer un brouillon, joindre des fichiers, puis soumettre définitivement avant la date limite.'],
+    ['Je suis parent : comment suivre mon enfant ?', 'Votre compte parent est créé par l\'administration. Depuis votre tableau de bord, vous accédez aux notes, bulletins et absences de chacun de vos enfants.'],
+] %}
+<div class="container-fluid">
+    <div class="row">
+        {% include '_partials/sidebar_role.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-question-circle me-2 text-primary"></i>Aide</h1>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    {% include 'parametres/_nav.html.twig' %}
+                </div>
+                <div class="col-md-9">
+                    <div class="accordion mb-4" id="faq">
+                        {% for question in questions %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="q{{ loop.index }}">
+                                    <button class="accordion-button {{ not loop.first ? 'collapsed' }}" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#r{{ loop.index }}">
+                                        {{ question[0] }}
+                                    </button>
+                                </h2>
+                                <div id="r{{ loop.index }}" class="accordion-collapse collapse {{ loop.first ? 'show' }}" data-bs-parent="#faq">
+                                    <div class="accordion-body">{{ question[1] }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h6 class="text-primary"><i class="fas fa-headset me-2"></i>Besoin d'aide supplémentaire ?</h6>
+                            <p class="mb-0">
+                                Contactez le secrétariat du lycée à
+                                <a href="mailto:contact@monportaillycee.fr">contact@monportaillycee.fr</a>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

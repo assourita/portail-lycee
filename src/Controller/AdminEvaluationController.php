@@ -172,7 +172,7 @@ class AdminEvaluationController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_evaluation_delete', methods: ['POST'])]
     public function delete(Request $request, Evaluation $evaluation): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$evaluation->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete-evaluation', $request->request->get('_token'))) {
             // Vérifier s'il y a des notes liées
             $notes = $this->entityManager->getRepository(\App\Entity\Note::class)
                 ->findBy(['evaluation' => $evaluation]);

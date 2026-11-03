@@ -285,7 +285,7 @@
 function confirmDelete(id) {
     const deleteForm = document.getElementById('deleteForm');
     deleteForm.action = '{{ path('admin_emploi_du_temps_delete', {'id': '__ID__'}) }}'.replace('__ID__', id);
-    deleteForm.querySelector('input[name="_token"]').value = '{{ csrf_token('delete') }}';
+    deleteForm.querySelector('input[name="_token"]').value = '{{ csrf_token('delete-emploi') }}';
     
     const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
     modal.show();

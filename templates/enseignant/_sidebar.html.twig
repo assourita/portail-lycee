@@ -18,7 +18,7 @@
             <small>
                 <i class="fas fa-calendar-check me-1"></i>
                 <strong>Période Active :</strong><br>
-                <span class="text-dark">1er Trimestre 2024-2025</span>
+                {% set periode = periode_active() %}<span class="text-dark">{{ periode ? periode.periode ~ ' ' ~ periode.anneeScolaire : 'Aucune période active' }}</span>
             </small>
         </div>
         

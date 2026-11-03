@@ -2,303 +2,246 @@
 
 namespace App\Controller;
 
-use App\Entity\Etudiant;
+use App\Entity\Chapitre;
 use App\Entity\Cours;
+use App\Entity\EmploiDuTemps;
+use App\Entity\Etudiant;
+use App\Entity\Evaluation;
 use App\Entity\Note;
+use App\Entity\PieceJointe;
 use App\Repository\CoursRepository;
 use App\Repository\NoteRepository;
 use App\Service\PeriodeAcademiqueService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[Route('/etudiant')]
 #[IsGranted('ROLE_ETUDIANT')]
 class EtudiantController extends AbstractController
 {
     public function __construct(
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private PeriodeAcademiqueService $periodeService
     ) {}
 
-    public function dashboard(CoursRepository $coursRepository, NoteRepository $noteRepository, PeriodeAcademiqueService $periodeService): Response
+    #[Route('/dashboard', name: 'etudiant_dashboard', methods: ['GET'])]
+    public function dashboard(CoursRepository $coursRepository, NoteRepository $noteRepository): Response
     {
-        $user = $this->getUser();
-        $etudiant = $user->getEtudiant();
-        $periodeActive = $periodeService->getPeriodeActive();
+        $etudiant = $this->getEtudiant();
+        $periodeActive = $this->periodeService->getPeriodeActive();
 
-        if (!$etudiant) {
-            $this->addFlash('error', 'Vous devez être un étudiant pour accéder à cette page.');
-            return $this->redirectToRoute('app_login');
-        }
-
-        // Récupérer les cours de la filière de l'étudiant pour la période active
         $cours = $coursRepository->findByFiliereAndPeriode($etudiant->getFiliere(), $periodeActive);
-        
-        // Récupérer les notes de l'étudiant pour la période active
-        $notesCriteria = ['etudiant' => $etudiant];
-        if ($periodeActive) {
-            $notesCriteria['periodeAcademique'] = $periodeActive;
-        }
-        $notes = $noteRepository->findBy($notesCriteria, ['dateNote' => 'DESC']);
-        
-        // Calculer les statistiques
-        $totalCours = count($cours);
+        $notes = $this->findNotes($etudiant);
+
         $totalNotes = count($notes);
-        $moyenneGenerale = 0;
-        
-        if ($totalNotes > 0) {
-            $total = 0;
-            foreach ($notes as $note) {
-                $total += $note->getValeur();
-            }
-            $moyenneGenerale = round($total / $totalNotes, 2);
-        }
+        $moyenneGenerale = $totalNotes > 0
+            ? round(array_sum(array_map(fn (Note $note) => $note->getValeur(), $notes)) / $totalNotes, 2)
+            : 0;
 
         return $this->render('etudiant/dashboard.html.twig', [
             'etudiant' => $etudiant,
             'periodeActive' => $periodeActive,
-            'totalCours' => $totalCours,
+            'totalCours' => count($cours),
             'totalNotes' => $totalNotes,
             'moyenneGenerale' => $moyenneGenerale,
             'derniersCours' => array_slice($cours, 0, 5),
-            'dernieresNotes' => array_slice($notes, 0, 5)
+            'dernieresNotes' => array_slice($notes, 0, 5),
         ]);
     }
 
-    #[Route('/etudiant/cours', name: 'etudiant_cours_index')]
-    public function coursIndex(PeriodeAcademiqueService $periodeService): Response
+    #[Route('/cours', name: 'etudiant_cours_index', methods: ['GET'])]
+    public function coursIndex(CoursRepository $coursRepository): Response
     {
-        $user = $this->getUser();
-        $etudiant = $user->getEtudiant();
-        $periodeActive = $periodeService->getPeriodeActive();
-
-        if (!$etudiant) {
-            $this->addFlash('error', 'Vous devez être un étudiant pour accéder à cette page.');
-            return $this->redirectToRoute('app_login');
-        }
-
-        $coursRepository = $this->entityManager->getRepository(Cours::class);
-        $cours = $coursRepository->findByFiliereAndPeriode($etudiant->getFiliere(), $periodeActive);
+        $etudiant = $this->getEtudiant();
+        $periodeActive = $this->periodeService->getPeriodeActive();
 
         return $this->render('etudiant/cours/index.html.twig', [
-            'cours' => $cours,
+            'cours' => $coursRepository->findByFiliereAndPeriode($etudiant->getFiliere(), $periodeActive),
             'etudiant' => $etudiant,
-            'periodeActive' => $periodeActive
+            'periodeActive' => $periodeActive,
         ]);
     }
 
-    #[Route('/etudiant/notes', name: 'etudiant_notes_index')]
-    public function notesIndex(PeriodeAcademiqueService $periodeService): Response
+    #[Route('/cours/{id}', name: 'etudiant_cours_show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function coursShow(Cours $cours): Response
     {
-        $user = $this->getUser();
-        $etudiant = $user->getEtudiant();
-        $periodeActive = $periodeService->getPeriodeActive();
+        $this->denyUnlessCoursAccessible($cours);
 
-        if (!$etudiant) {
-            $this->addFlash('error', 'Vous devez être un étudiant pour accéder à cette page.');
-            return $this->redirectToRoute('app_login');
+        return $this->render('etudiant/cours/show.html.twig', [
+            'cours' => $cours,
+        ]);
+    }
+
+    #[Route('/chapitre/{id}', name: 'etudiant_chapitre_show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function chapitreShow(Chapitre $chapitre): Response
+    {
+        $this->denyUnlessCoursAccessible($chapitre->getCours());
+
+        return $this->render('etudiant/chapitre/show.html.twig', [
+            'chapitre' => $chapitre,
+            'cours' => $chapitre->getCours(),
+        ]);
+    }
+
+    #[Route('/piece-jointe/{id}/download', name: 'etudiant_piece_jointe_download', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function downloadPieceJointe(PieceJointe $pieceJointe): BinaryFileResponse
+    {
+        $this->denyUnlessCoursAccessible($pieceJointe->getChapitre()?->getCours());
+
+        $filePath = $this->getParameter('pieces_jointes_directory').'/'.$pieceJointe->getFichier();
+        if (!$pieceJointe->getFichier() || !is_file($filePath)) {
+            throw $this->createNotFoundException('Le fichier n\'existe pas.');
         }
 
-        $noteRepository = $this->entityManager->getRepository(Note::class);
-        $notesCriteria = ['etudiant' => $etudiant];
-        if ($periodeActive) {
-            $notesCriteria['periodeAcademique'] = $periodeActive;
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+        $nom = $pieceJointe->getNom() ?: 'document';
+        if ($extension && !str_ends_with(strtolower($nom), '.'.strtolower($extension))) {
+            $nom .= '.'.$extension;
         }
-        $notes = $noteRepository->findBy($notesCriteria, ['dateNote' => 'DESC']);
+
+        return $this->file($filePath, $nom, ResponseHeaderBag::DISPOSITION_ATTACHMENT);
+    }
+
+    #[Route('/notes', name: 'etudiant_notes_index', methods: ['GET'])]
+    public function notesIndex(): Response
+    {
+        $etudiant = $this->getEtudiant();
+        $notes = $this->findNotes($etudiant);
+
+        $statistiquesParMatiere = [];
+        foreach ($notes as $note) {
+            $nomMatiere = $note->getMatiere()?->getNom() ?? 'Sans matière';
+            $statistiquesParMatiere[$nomMatiere]['valeurs'][] = $note->getValeur();
+        }
+        foreach ($statistiquesParMatiere as $nomMatiere => $data) {
+            $statistiquesParMatiere[$nomMatiere] = [
+                'total' => count($data['valeurs']),
+                'moyenne' => round(array_sum($data['valeurs']) / count($data['valeurs']), 2),
+            ];
+        }
+        ksort($statistiquesParMatiere);
 
         return $this->render('etudiant/notes/index.html.twig', [
             'notes' => $notes,
             'etudiant' => $etudiant,
-            'periodeActive' => $periodeActive
+            'statistiquesParMatiere' => $statistiquesParMatiere,
+            'periodeActive' => $this->periodeService->getPeriodeActive(),
         ]);
     }
 
-    #[Route('/etudiant/evaluations', name: 'etudiant_evaluations_index')]
-    public function evaluationsIndex(PeriodeAcademiqueService $periodeService): Response
+    #[Route('/evaluations', name: 'etudiant_evaluations_index', methods: ['GET'])]
+    public function evaluationsIndex(): Response
     {
-        $user = $this->getUser();
-        $etudiant = $user->getEtudiant();
-        $periodeActive = $periodeService->getPeriodeActive();
+        $etudiant = $this->getEtudiant();
+        $periodeActive = $this->periodeService->getPeriodeActive();
 
-        if (!$etudiant) {
-            $this->addFlash('error', 'Vous devez être un étudiant pour accéder à cette page.');
-            return $this->redirectToRoute('app_login');
-        }
-
-        $evaluations = $this->entityManager->getRepository(\App\Entity\Evaluation::class)
+        $qb = $this->entityManager->getRepository(Evaluation::class)
             ->createQueryBuilder('e')
             ->join('e.matiere', 'm')
             ->where('m.filiere = :filiere')
             ->setParameter('filiere', $etudiant->getFiliere())
             ->orderBy('e.dateEvaluation', 'DESC');
-                
+
         if ($periodeActive) {
-            $evaluations->andWhere('e.periodeAcademique = :periode')
-                       ->setParameter('periode', $periodeActive);
+            $qb->andWhere('e.periodeAcademique = :periode')
+                ->setParameter('periode', $periodeActive);
         }
-            
-        $evaluations = $evaluations->getQuery()->getResult();
 
         return $this->render('etudiant/evaluations/index.html.twig', [
-            'evaluations' => $evaluations,
+            'evaluations' => $qb->getQuery()->getResult(),
             'etudiant' => $etudiant,
-            'periodeActive' => $periodeActive
+            'periodeActive' => $periodeActive,
         ]);
     }
 
-    #[Route('/etudiant/matieres', name: 'etudiant_matieres_index')]
-    public function matieresIndex(PeriodeAcademiqueService $periodeService): Response
+    #[Route('/matieres', name: 'etudiant_matieres_index', methods: ['GET'])]
+    public function matieresIndex(): Response
     {
-        $user = $this->getUser();
-        $etudiant = $user->getEtudiant();
-        $periodeActive = $periodeService->getPeriodeActive();
-
-        if (!$etudiant) {
-            $this->addFlash('error', 'Vous devez être un étudiant pour accéder à cette page.');
-            return $this->redirectToRoute('app_login');
-        }
-
-        // Récupérer les matières de la filière de l'étudiant
-        $matieres = $etudiant->getFiliere()->getMatieres();
+        $etudiant = $this->getEtudiant();
 
         return $this->render('etudiant/matieres/index.html.twig', [
-            'matieres' => $matieres,
+            'matieres' => $etudiant->getFiliere()?->getMatieres() ?? [],
             'etudiant' => $etudiant,
-            'periodeActive' => $periodeActive
+            'periodeActive' => $this->periodeService->getPeriodeActive(),
         ]);
     }
 
-    #[Route('/etudiant/devoirs', name: 'etudiant_devoirs_index')]
-    public function devoirsIndex(PeriodeAcademiqueService $periodeService): Response
+    #[Route('/emploi-du-temps', name: 'etudiant_emploi_du_temps', methods: ['GET'])]
+    public function emploiDuTemps(): Response
     {
-        $user = $this->getUser();
-        $etudiant = $user->getEtudiant();
-        $periodeActive = $periodeService->getPeriodeActive();
+        $etudiant = $this->getEtudiant();
 
-        if (!$etudiant) {
-            $this->addFlash('error', 'Vous devez être un étudiant pour accéder à cette page.');
-            return $this->redirectToRoute('app_login');
+        $emplois = $etudiant->getFiliere()
+            ? $this->entityManager->getRepository(EmploiDuTemps::class)->createQueryBuilder('e')
+                ->leftJoin('e.jour', 'j')
+                ->addSelect('j')
+                ->where('e.filiere = :filiere')
+                ->setParameter('filiere', $etudiant->getFiliere())
+                ->orderBy('j.ordre', 'ASC')
+                ->addOrderBy('e.heureDebut', 'ASC')
+                ->getQuery()
+                ->getResult()
+            : [];
+
+        $emploisParJour = [];
+        $heures = [];
+        $totalHeures = 0;
+        foreach ($emplois as $emploi) {
+            if (!$emploi->getJour() || !$emploi->getHeureDebut()) {
+                continue;
+            }
+            $emploisParJour[$emploi->getJour()->getNom()][] = $emploi;
+            $heures[] = $emploi->getHeureDebut()->format('H:i');
+            if ($emploi->getHeureFin()) {
+                $totalHeures += ($emploi->getHeureFin()->getTimestamp() - $emploi->getHeureDebut()->getTimestamp()) / 3600;
+            }
         }
-
-        // Pour l'instant, simulons des devoirs
-        $devoirs = [
-            ['id' => 1, 'matiere' => 'Mathématiques', 'titre' => 'Exercices sur les fonctions', 'dateLimite' => new \DateTime('+3 days'), 'rendu' => false],
-            ['id' => 2, 'matiere' => 'Français', 'titre' => 'Rédaction dissertation', 'dateLimite' => new \DateTime('+5 days'), 'rendu' => false],
-            ['id' => 3, 'matiere' => 'Physique-Chimie', 'titre' => 'TP laboratoire', 'dateLimite' => new \DateTime('+7 days'), 'rendu' => true],
-        ];
-
-        return $this->render('etudiant/devoirs/index.html.twig', [
-            'devoirs' => $devoirs,
-            'etudiant' => $etudiant,
-            'periodeActive' => $periodeActive
-        ]);
-    }
-
-    #[Route('/etudiant/absences', name: 'etudiant_absences_index')]
-    public function absencesIndex(PeriodeAcademiqueService $periodeService): Response
-    {
-        $user = $this->getUser();
-        $etudiant = $user->getEtudiant();
-        $periodeActive = $periodeService->getPeriodeActive();
-
-        if (!$etudiant) {
-            $this->addFlash('error', 'Vous devez être un étudiant pour accéder à cette page.');
-            return $this->redirectToRoute('app_login');
-        }
-
-        // Pour l'instant, simulons des absences
-        $absences = [
-            ['id' => 1, 'date' => new \DateTime('-2 days'), 'matiere' => 'Mathématiques', 'motif' => 'Maladie', 'justifiee' => true],
-            ['id' => 2, 'date' => new \DateTime('-1 week'), 'matiere' => 'Histoire', 'motif' => 'Rendez-vous médical', 'justifiee' => true],
-            ['id' => 3, 'date' => new \DateTime('-2 weeks'), 'matiere' => 'Anglais', 'motif' => 'Retard', 'justifiee' => false],
-        ];
-
-        return $this->render('etudiant/absences/index.html.twig', [
-            'absences' => $absences,
-            'etudiant' => $etudiant,
-            'periodeActive' => $periodeActive
-        ]);
-    }
-
-    #[Route('/etudiant/bulletins', name: 'etudiant_bulletins_index')]
-    public function bulletinsIndex(PeriodeAcademiqueService $periodeService): Response
-    {
-        $user = $this->getUser();
-        $etudiant = $user->getEtudiant();
-        $periodeActive = $periodeService->getPeriodeActive();
-
-        if (!$etudiant) {
-            $this->addFlash('error', 'Vous devez être un étudiant pour accéder à cette page.');
-            return $this->redirectToRoute('app_login');
-        }
-
-        // Pour l'instant, simulons des bulletins
-        $bulletins = [
-            ['id' => 1, 'trimestre' => '1', 'periode' => '2023-2024', 'moyenne' => 14.5, 'date' => new \DateTime('-2 months')],
-            ['id' => 2, 'trimestre' => '2', 'periode' => '2023-2024', 'moyenne' => 15.2, 'date' => new \DateTime('-1 month')],
-        ];
-
-        return $this->render('etudiant/bulletins/index.html.twig', [
-            'bulletins' => $bulletins,
-            'etudiant' => $etudiant,
-            'periodeActive' => $periodeActive
-        ]);
-    }
-
-    #[Route('/etudiant/parcours', name: 'etudiant_parcours_index')]
-    public function parcoursIndex(PeriodeAcademiqueService $periodeService): Response
-    {
-        $user = $this->getUser();
-        $etudiant = $user->getEtudiant();
-        $periodeActive = $periodeService->getPeriodeActive();
-
-        if (!$etudiant) {
-            $this->addFlash('error', 'Vous devez être un étudiant pour accéder à cette page.');
-            return $this->redirectToRoute('app_login');
-        }
-
-        // Informations sur le parcours scolaire
-        $parcours = [
-            'filiere' => $etudiant->getFiliere(),
-            'dateInscription' => $etudiant->getDateInscription(),
-            'niveau' => $etudiant->getFiliere()->getNiveau(),
-            'specialite' => $etudiant->getFiliere()->getSpecialite() ?? 'Non spécifiée',
-            'objectifs' => [
-                'Acquisition des compétences fondamentales',
-                'Développement de l\'autonomie',
-                'Préparation aux études supérieures'
-            ],
-            'competences' => [
-                'Maîtrise des savoirs disciplinaires',
-                'Compétences méthodologiques',
-                'Compétences numériques',
-                'Compétences sociales et civiques'
-            ]
-        ];
-
-        return $this->render('etudiant/parcours/index.html.twig', [
-            'parcours' => $parcours,
-            'etudiant' => $etudiant,
-            'periodeActive' => $periodeActive
-        ]);
-    }
-
-    #[Route('/etudiant/emploi-du-temps', name: 'etudiant_emploi_du_temps')]
-    public function emploiDuTemps(PeriodeAcademiqueService $periodeService): Response
-    {
-        $user = $this->getUser();
-        $etudiant = $user->getEtudiant();
-        $periodeActive = $periodeService->getPeriodeActive();
-
-        if (!$etudiant) {
-            $this->addFlash('error', 'Vous devez être un étudiant pour accéder à cette page.');
-            return $this->redirectToRoute('app_login');
-        }
+        $heures = array_values(array_unique($heures));
+        sort($heures);
 
         return $this->render('etudiant/emploi_du_temps.html.twig', [
             'etudiant' => $etudiant,
-            'periodeActive' => $periodeActive
+            'emplois_par_jour' => $emploisParJour,
+            'heures' => $heures,
+            'total_cours' => array_sum(array_map('count', $emploisParJour)),
+            'total_heures' => $totalHeures,
+            'periodeActive' => $this->periodeService->getPeriodeActive(),
         ]);
+    }
+
+    private function getEtudiant(): Etudiant
+    {
+        $etudiant = $this->getUser()?->getEtudiant();
+        if (!$etudiant) {
+            throw $this->createAccessDeniedException('Aucun profil étudiant n\'est associé à ce compte.');
+        }
+
+        return $etudiant;
+    }
+
+    /**
+     * @return Note[]
+     */
+    private function findNotes(Etudiant $etudiant): array
+    {
+        $criteres = ['etudiant' => $etudiant];
+        if ($periodeActive = $this->periodeService->getPeriodeActive()) {
+            $criteres['periodeAcademique'] = $periodeActive;
+        }
+
+        return $this->entityManager->getRepository(Note::class)->findBy($criteres, ['dateNote' => 'DESC']);
+    }
+
+    private function denyUnlessCoursAccessible(?Cours $cours): void
+    {
+        $filiere = $this->getEtudiant()->getFiliere();
+        if (!$cours || !$filiere || $cours->getMatiere()?->getFiliere() !== $filiere) {
+            throw $this->createAccessDeniedException('Ce cours n\'est pas accessible depuis votre filière.');
+        }
     }
 }

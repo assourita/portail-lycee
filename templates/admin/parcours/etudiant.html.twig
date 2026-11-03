@@ -158,15 +158,15 @@
                                         <div class="row text-center">
                                             <div class="col-md-4">
                                                 <p class="mb-0"><strong>1er Trimestre</strong></p>
-                                                <h5 class="text-primary">{{ annee.moyenneTrimestre1|number_format(2) ?? '-' }}</h5>
+                                                <h5 class="text-primary">{{ annee.moyenneTrimestre1 is not null ? annee.moyenneTrimestre1|number_format(2) : '-' }}</h5>
                                             </div>
                                             <div class="col-md-4">
                                                 <p class="mb-0"><strong>2ème Trimestre</strong></p>
-                                                <h5 class="text-primary">{{ annee.moyenneTrimestre2|number_format(2) ?? '-' }}</h5>
+                                                <h5 class="text-primary">{{ annee.moyenneTrimestre2 is not null ? annee.moyenneTrimestre2|number_format(2) : '-' }}</h5>
                                             </div>
                                             <div class="col-md-4">
                                                 <p class="mb-0"><strong>3ème Trimestre</strong></p>
-                                                <h5 class="text-primary">{{ annee.moyenneTrimestre3|number_format(2) ?? '-' }}</h5>
+                                                <h5 class="text-primary">{{ annee.moyenneTrimestre3 is not null ? annee.moyenneTrimestre3|number_format(2) : '-' }}</h5>
                                             </div>
                                         </div>
                                     {% endif %}

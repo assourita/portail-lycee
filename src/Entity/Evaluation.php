@@ -45,7 +45,7 @@ class Evaluation
     #[ORM\JoinColumn(nullable: false)]
     private ?Enseignant $enseignant = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'evaluations')]
     #[ORM\JoinColumn(nullable: true)]
     private ?PeriodeAcademique $periodeAcademique = null;
 

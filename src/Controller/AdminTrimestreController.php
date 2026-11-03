@@ -118,7 +118,7 @@ class AdminTrimestreController extends AbstractController
     #[Route('/{id}/delete', name: 'admin_trimestre_delete', methods: ['POST'])]
     public function delete(Request $request, Trimestre $trimestre): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$trimestre->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete-trimestre', $request->request->get('_token'))) {
             $this->entityManager->remove($trimestre);
             $this->entityManager->flush();
 

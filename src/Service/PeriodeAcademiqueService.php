@@ -5,8 +5,9 @@ namespace App\Service;
 use App\Entity\PeriodeAcademique;
 use App\Repository\PeriodeAcademiqueRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Service\ResetInterface;
 
-class PeriodeAcademiqueService
+class PeriodeAcademiqueService implements ResetInterface
 {
     private ?PeriodeAcademique $periodeActive = null;
 
@@ -65,6 +66,11 @@ class PeriodeAcademiqueService
      * Forcer le rechargement de la période active (utile après modification)
      */
     public function refreshPeriodeActive(): void
+    {
+        $this->periodeActive = null;
+    }
+
+    public function reset(): void
     {
         $this->periodeActive = null;
     }
