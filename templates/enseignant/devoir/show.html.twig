@@ -88,6 +88,7 @@
                                     {{ devoir.consignes|nl2br }}
                                 </div>
                             {% endif %}
+                            {% include '_partials/liste_fichiers.html.twig' with {'fichiers': devoir.listeDocuments, 'route': 'fichier_devoir', 'id': devoir.id, 'titre': 'Documents fournis'} %}
 
                             <hr>
 
@@ -226,16 +227,23 @@
                         </div>
                         <div class="card-body d-grid gap-2">
                             {% if devoir.statut == 'brouillon' %}
-                                <button class="btn btn-success" onclick="publierDevoir()">
-                                    <i class="fas fa-paper-plane me-1"></i>Publier le Devoir
-                                </button>
+                                <form method="post" action="{{ path('enseignant_devoir_publier', {'id': devoir.id}) }}" class="d-grid">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('publier-devoir' ~ devoir.id) }}">
+                                    <button class="btn btn-success">
+                                        <i class="fas fa-paper-plane me-1"></i>Publier le Devoir
+                                    </button>
+                                </form>
                             {% endif %}
                             <a href="{{ path('enseignant_devoir_edit', {'id': devoir.id}) }}" class="btn btn-warning">
                                 <i class="fas fa-edit me-1"></i>Modifier
                             </a>
-                            <button class="btn btn-danger" onclick="deleteDevoir({{ devoir.id }})">
-                                <i class="fas fa-trash me-1"></i>Supprimer
-                            </button>
+                            <form method="post" action="{{ path('enseignant_devoir_delete', {'id': devoir.id}) }}" class="d-grid"
+                                  onsubmit="return confirm('Supprimer ce devoir et toutes les copies rendues ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete-devoir') }}">
+                                <button class="btn btn-danger">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

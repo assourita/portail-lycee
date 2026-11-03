@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\AbsenceRepository;
+use App\Service\FichierUploader;
 use App\Service\PeriodeAcademiqueService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,7 +19,8 @@ class EtudiantAbsenceController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private AbsenceRepository $absenceRepository,
-        private PeriodeAcademiqueService $periodeService
+        private PeriodeAcademiqueService $periodeService,
+        private FichierUploader $uploader
     ) {}
 
     #[Route('/', name: 'etudiant_absences_index', methods: ['GET'])]
@@ -95,16 +97,33 @@ class EtudiantAbsenceController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette absence.');
         }
 
-        if ($request->isMethod('POST')) {
-            $justification = $request->request->get('justification');
+        if ($absence->isJustifiee()) {
+            $this->addFlash('info', 'Cette absence a déjà été validée comme justifiée.');
+            return $this->redirectToRoute('etudiant_absence_show', ['id' => $absence->getId()]);
+        }
 
-            if ($justification) {
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('justifier'.$absence->getId(), $request->request->get('_token'))) {
+                throw $this->createAccessDeniedException('Token de sécurité invalide.');
+            }
+
+            $justification = trim((string) $request->request->get('justification'));
+
+            if ($justification !== '') {
+                $document = $request->files->get('document');
+                if ($document) {
+                    try {
+                        $infos = $this->uploader->upload($document, FichierController::DOSSIER_JUSTIFICATIFS);
+                    } catch (\InvalidArgumentException $e) {
+                        $this->addFlash('error', $e->getMessage());
+                        return $this->redirectToRoute('etudiant_absence_justifier', ['id' => $absence->getId()]);
+                    }
+                    $this->uploader->supprimer(FichierController::DOSSIER_JUSTIFICATIFS, $absence->getDocumentJustificatif());
+                    $absence->setDocumentJustificatif($infos['fichier']);
+                }
+
                 $absence->setJustification($justification);
                 $absence->setDateModification(new \DateTime());
-
-                // TODO: Gérer l'upload du document justificatif
-                // Pour l'instant, on sauvegarde juste la justification texte
-
                 $this->entityManager->flush();
 
                 $this->addFlash('success', 'Justification envoyée avec succès ! Elle sera examinée par l\'administration.');

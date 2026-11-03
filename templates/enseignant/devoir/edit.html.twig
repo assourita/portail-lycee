@@ -42,7 +42,8 @@
                             </h5>
                         </div>
                         <div class="card-body">
-                            <form method="post">
+                            <form method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="_token" value="{{ csrf_token('devoir') }}">
                                 <div class="mb-3">
                                     <label for="titre" class="form-label">
                                         <i class="fas fa-heading me-1"></i>Titre du devoir *
@@ -102,6 +103,34 @@
                                         <option value="publie" {% if devoir.statut == 'publie' %}selected{% endif %}>Publié</option>
                                         <option value="cloture" {% if devoir.statut == 'cloture' %}selected{% endif %}>Clôturé</option>
                                     </select>
+                                </div>
+
+                                {% if devoir.listeDocuments|length > 0 %}
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="fas fa-paperclip me-1"></i>Documents joints</label>
+                                        <ul class="list-group">
+                                            {% for document in devoir.listeDocuments %}
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <a href="{{ path('fichier_devoir', {'id': devoir.id, 'fichier': document.fichier}) }}">
+                                                        <i class="fas fa-file me-1"></i>{{ document.nom }}
+                                                    </a>
+                                                    <div class="form-check mb-0">
+                                                        <input class="form-check-input" type="checkbox" name="supprimer_documents[]"
+                                                               value="{{ document.fichier }}" id="suppr{{ loop.index }}">
+                                                        <label class="form-check-label text-danger small" for="suppr{{ loop.index }}">Retirer</label>
+                                                    </div>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+
+                                <div class="mb-3">
+                                    <label for="documents" class="form-label">
+                                        <i class="fas fa-upload me-1"></i>Ajouter des documents
+                                    </label>
+                                    <input type="file" class="form-control" id="documents" name="documents[]" multiple>
+                                    <div class="form-text">10 Mo maximum par fichier.</div>
                                 </div>
 
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">

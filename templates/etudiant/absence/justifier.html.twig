@@ -73,15 +73,32 @@
                             </h5>
                         </div>
                         <div class="card-body">
-                            <form method="post">
+                            <form method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="_token" value="{{ csrf_token('justifier' ~ absence.id) }}">
                                 <div class="mb-3">
                                     <label for="justification" class="form-label">
                                         <i class="fas fa-comment me-1"></i>Justification *
                                     </label>
                                     <textarea class="form-control" id="justification" name="justification" rows="6" 
-                                              placeholder="Expliquez la raison de votre absence..." required></textarea>
+                                              placeholder="Expliquez la raison de votre absence..." required>{{ absence.justification }}</textarea>
                                     <div class="form-text">
                                         Soyez précis et honnête dans votre justification. Elle sera examinée par l'administration.
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="document" class="form-label">
+                                        <i class="fas fa-paperclip me-1"></i>Document justificatif (facultatif)
+                                    </label>
+                                    <input type="file" class="form-control" id="document" name="document"
+                                           accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.odt">
+                                    <div class="form-text">
+                                        Certificat médical, convocation... PDF, image ou document texte, 10 Mo maximum.
+                                        {% if absence.documentJustificatif %}
+                                            Un document a déjà été envoyé :
+                                            <a href="{{ path('fichier_absence_justificatif', {'id': absence.id}) }}">le consulter</a>.
+                                            En envoyer un nouveau le remplacera.
+                                        {% endif %}
                                     </div>
                                 </div>
 

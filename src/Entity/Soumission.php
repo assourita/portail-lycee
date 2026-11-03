@@ -90,6 +90,47 @@ class Soumission
         return $this;
     }
 
+    /**
+     * @return list<array{nom: string, fichier: string}>
+     */
+    public function getListeFichiers(): array
+    {
+        $liste = $this->fichiers ? json_decode($this->fichiers, true) : [];
+
+        return is_array($liste) ? array_values($liste) : [];
+    }
+
+    /**
+     * @param array{nom: string, fichier: string} $fichier
+     */
+    public function ajouterFichier(array $fichier): static
+    {
+        $liste = $this->getListeFichiers();
+        $liste[] = $fichier;
+        $this->fichiers = json_encode($liste, JSON_UNESCAPED_UNICODE);
+
+        return $this;
+    }
+
+    public function retirerFichier(string $nomStockage): static
+    {
+        $liste = array_filter($this->getListeFichiers(), fn (array $f) => $f['fichier'] !== $nomStockage);
+        $this->fichiers = $liste ? json_encode(array_values($liste), JSON_UNESCAPED_UNICODE) : null;
+
+        return $this;
+    }
+
+    public function getFichier(string $nomStockage): ?array
+    {
+        foreach ($this->getListeFichiers() as $fichier) {
+            if ($fichier['fichier'] === $nomStockage) {
+                return $fichier;
+            }
+        }
+
+        return null;
+    }
+
     public function getStatut(): ?string
     {
         return $this->statut;

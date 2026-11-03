@@ -46,6 +46,7 @@
                                     {{ devoir.consignes|nl2br }}
                                 </div>
                             {% endif %}
+                            {% include '_partials/liste_fichiers.html.twig' with {'fichiers': devoir.listeDocuments, 'route': 'fichier_devoir', 'id': devoir.id, 'titre': 'Documents fournis'} %}
 
                             <hr>
 
@@ -88,6 +89,7 @@
                                         {{ soumission.commentaire|nl2br }}
                                     </div>
                                 {% endif %}
+                                {% include '_partials/liste_fichiers.html.twig' with {'fichiers': soumission.listeFichiers, 'route': 'fichier_soumission', 'id': soumission.id, 'titre': 'Fichiers rendus'} %}
 
                                 {% if soumission.statut == 'corrige' %}
                                     <hr>

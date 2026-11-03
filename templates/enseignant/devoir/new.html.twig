@@ -47,7 +47,8 @@
                             </h5>
                         </div>
                         <div class="card-body">
-                            <form method="post">
+                            <form method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="_token" value="{{ csrf_token('devoir') }}">
                                 <div class="mb-3">
                                     <label for="titre" class="form-label">
                                         <i class="fas fa-heading me-1"></i>Titre du devoir *
@@ -127,6 +128,14 @@
                                         <i class="fas fa-info-circle me-1"></i>
                                         Vous pouvez créer un brouillon et le publier plus tard.
                                     </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="documents" class="form-label">
+                                        <i class="fas fa-paperclip me-1"></i>Documents pour les étudiants
+                                    </label>
+                                    <input type="file" class="form-control" id="documents" name="documents[]" multiple>
+                                    <div class="form-text">Énoncé, ressources... 10 Mo maximum par fichier.</div>
                                 </div>
 
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">

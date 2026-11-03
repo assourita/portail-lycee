@@ -6,6 +6,7 @@ use App\Entity\Devoir;
 use App\Entity\Soumission;
 use App\Repository\DevoirRepository;
 use App\Repository\SoumissionRepository;
+use App\Service\FichierUploader;
 use App\Service\PeriodeAcademiqueService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,7 +23,8 @@ class EtudiantDevoirController extends AbstractController
         private EntityManagerInterface $entityManager,
         private DevoirRepository $devoirRepository,
         private SoumissionRepository $soumissionRepository,
-        private PeriodeAcademiqueService $periodeService
+        private PeriodeAcademiqueService $periodeService,
+        private FichierUploader $uploader
     ) {}
 
     #[Route('/', name: 'etudiant_devoirs_index', methods: ['GET'])]
@@ -91,8 +93,7 @@ class EtudiantDevoirController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        // Vérifier que l'étudiant a accès à ce devoir (via sa filière)
-        if ($devoir->getMatiere()->getFiliere() !== $etudiant->getFiliere()) {
+        if ($devoir->getMatiere()->getFiliere() !== $etudiant->getFiliere() || $devoir->getStatut() === 'brouillon') {
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce devoir.');
         }
 
@@ -114,9 +115,13 @@ class EtudiantDevoirController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        // Vérifier que l'étudiant a accès à ce devoir
-        if ($devoir->getMatiere()->getFiliere() !== $etudiant->getFiliere()) {
+        if ($devoir->getMatiere()->getFiliere() !== $etudiant->getFiliere() || $devoir->getStatut() === 'brouillon') {
             throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce devoir.');
+        }
+
+        if ($devoir->getStatut() === 'cloture') {
+            $this->addFlash('error', 'Ce devoir est clôturé, il n\'accepte plus de rendu.');
+            return $this->redirectToRoute('etudiant_devoir_show', ['id' => $devoir->getId()]);
         }
 
         // Vérifier si une soumission existe déjà
@@ -134,6 +139,10 @@ class EtudiantDevoirController extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('soumettre'.$devoir->getId(), $request->request->get('_token'))) {
+                throw $this->createAccessDeniedException('Token de sécurité invalide.');
+            }
+
             $commentaire = $request->request->get('commentaire');
             $action = $request->request->get('action'); // 'brouillon' ou 'soumettre'
 
@@ -144,24 +153,46 @@ class EtudiantDevoirController extends AbstractController
                 $this->entityManager->persist($soumission);
             }
 
+            foreach ($request->request->all('supprimer_fichiers') as $nomStockage) {
+                if ($soumission->getFichier($nomStockage)) {
+                    $this->uploader->supprimer(FichierController::DOSSIER_SOUMISSIONS, $nomStockage);
+                    $soumission->retirerFichier($nomStockage);
+                }
+            }
+
+            foreach (array_filter($request->files->all('fichiers')) as $fichier) {
+                try {
+                    $soumission->ajouterFichier($this->uploader->upload($fichier, FichierController::DOSSIER_SOUMISSIONS));
+                } catch (\InvalidArgumentException $e) {
+                    $this->addFlash('error', $e->getMessage());
+                    $action = 'brouillon';
+                }
+            }
+
+            if ($action === 'soumettre' && !trim((string) $commentaire) && !$soumission->getListeFichiers()) {
+                $this->addFlash('error', 'Votre rendu est vide : rédigez une réponse ou joignez au moins un fichier.');
+                $action = 'brouillon';
+            }
+
             $soumission->setCommentaire($commentaire);
+            $soumission->setDateSoumission(new \DateTime());
             
             if ($action === 'soumettre') {
                 $soumission->setStatut('soumis');
-                $soumission->setDateSoumission(new \DateTime());
                 $this->addFlash('success', 'Devoir soumis avec succès !');
             } else {
                 $soumission->setStatut('brouillon');
-                $this->addFlash('success', 'Brouillon enregistré avec succès !');
+                $this->addFlash('success', 'Brouillon enregistré.');
             }
 
             $soumission->setDateModification(new \DateTime());
 
-            // TODO: Gérer l'upload des fichiers
-
             $this->entityManager->flush();
 
-            return $this->redirectToRoute('etudiant_devoir_show', ['id' => $devoir->getId()]);
+            return $this->redirectToRoute(
+                $action === 'soumettre' ? 'etudiant_devoir_show' : 'etudiant_devoir_soumettre',
+                ['id' => $devoir->getId()]
+            );
         }
 
         return $this->render('etudiant/devoir/soumettre.html.twig', [

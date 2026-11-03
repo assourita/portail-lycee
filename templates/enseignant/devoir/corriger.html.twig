@@ -61,6 +61,7 @@
                             {% else %}
                                 <p class="text-muted">Aucun commentaire fourni</p>
                             {% endif %}
+                            {% include '_partials/liste_fichiers.html.twig' with {'fichiers': soumission.listeFichiers, 'route': 'fichier_soumission', 'id': soumission.id, 'titre': 'Fichiers rendus'} %}
                         </div>
                     </div>
 

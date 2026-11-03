@@ -98,6 +98,13 @@
                             </div>
                             <div class="card-body">
                                 <p class="bg-light p-3 rounded">{{ absence.justification }}</p>
+                                {% if absence.documentJustificatif %}
+                                    <p>
+                                        <a href="{{ path('fichier_absence_justificatif', {'id': absence.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-file-download me-1"></i>Télécharger le justificatif
+                                        </a>
+                                    </p>
+                                {% endif %}
                                 
                                 {% if absence.justifiee %}
                                     <div class="alert alert-success">

@@ -1,0 +1,13 @@
+{# Attend : fichiers (liste de {nom, fichier}), route, id, titre #}
+{% if fichiers|length > 0 %}
+    <p class="mt-3 mb-1"><strong>{{ titre }} :</strong></p>
+    <ul class="list-unstyled mb-0">
+        {% for fichier in fichiers %}
+            <li class="mb-1">
+                <a href="{{ path(route, {'id': id, 'fichier': fichier.fichier}) }}">
+                    <i class="fas fa-file-download me-1"></i>{{ fichier.nom }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

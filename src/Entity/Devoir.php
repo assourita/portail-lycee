@@ -188,6 +188,47 @@ class Devoir
         return $this;
     }
 
+    /**
+     * @return list<array{nom: string, fichier: string}>
+     */
+    public function getListeDocuments(): array
+    {
+        $liste = $this->documentsJoints ? json_decode($this->documentsJoints, true) : [];
+
+        return is_array($liste) ? array_values($liste) : [];
+    }
+
+    /**
+     * @param array{nom: string, fichier: string} $document
+     */
+    public function ajouterDocument(array $document): static
+    {
+        $liste = $this->getListeDocuments();
+        $liste[] = $document;
+        $this->documentsJoints = json_encode($liste, JSON_UNESCAPED_UNICODE);
+
+        return $this;
+    }
+
+    public function retirerDocument(string $nomStockage): static
+    {
+        $liste = array_filter($this->getListeDocuments(), fn (array $d) => $d['fichier'] !== $nomStockage);
+        $this->documentsJoints = $liste ? json_encode(array_values($liste), JSON_UNESCAPED_UNICODE) : null;
+
+        return $this;
+    }
+
+    public function getDocument(string $nomStockage): ?array
+    {
+        foreach ($this->getListeDocuments() as $document) {
+            if ($document['fichier'] === $nomStockage) {
+                return $document;
+            }
+        }
+
+        return null;
+    }
+
     public function getMatiere(): ?Matiere
     {
         return $this->matiere;
