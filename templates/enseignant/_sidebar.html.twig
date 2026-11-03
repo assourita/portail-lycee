@@ -1,0 +1,104 @@
+<!-- Sidebar Enseignant -->
+<nav class="sidebar">
+    <div class="sidebar-content">
+        <div class="sidebar-header mb-4">
+            <h5 class="text-center text-white">
+                <i class="fas fa-chalkboard-teacher me-2"></i>
+                Espace Enseignant
+            </h5>
+            {% if app.user.enseignant %}
+                <div class="text-center">
+                    <small class="text-muted d-block">{{ app.user.enseignant.nom }} {{ app.user.enseignant.prenom }}</small>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Période Active -->
+        <div class="alert alert-success mx-2 mb-3 py-2">
+            <small>
+                <i class="fas fa-calendar-check me-1"></i>
+                <strong>Période Active :</strong><br>
+                <span class="text-dark">1er Trimestre 2024-2025</span>
+            </small>
+        </div>
+        
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if app.request.attributes.get('_route') == 'enseignant_dashboard' %}active{% endif %}" href="{{ path('enseignant_dashboard') }}">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if app.request.attributes.get('_route') starts with 'enseignant_cours' %}active{% endif %}" href="{{ path('enseignant_cours_index') }}">
+                    <i class="fas fa-book me-2"></i>Mes cours
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if app.request.attributes.get('_route') == 'app_enseignant_emploi_du_temps' %}active{% endif %}" href="{{ path('app_enseignant_emploi_du_temps') }}">
+                    <i class="fas fa-calendar me-2"></i>Emploi du temps
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if app.request.attributes.get('_route') == 'app_enseignant_mes_filieres' %}active{% endif %}" href="{{ path('app_enseignant_mes_filieres') }}">
+                    <i class="fas fa-users me-2"></i>Mes filières
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if app.request.attributes.get('_route') == 'enseignant_mes_matieres' %}active{% endif %}" href="{{ path('enseignant_mes_matieres') }}">
+                    <i class="fas fa-chalkboard-teacher me-2"></i>Mes matières
+                </a>
+            </li>
+            
+            <li><hr class="dropdown-divider bg-secondary my-3"></li>
+            
+            <li class="nav-item">
+                <h6 class="sidebar-heading px-3 mt-2 mb-2 text-muted">
+                    <small>ÉVALUATIONS</small>
+                </h6>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link {% if app.request.attributes.get('_route') starts with 'enseignant_evaluations' %}active{% endif %}" href="{{ path('enseignant_evaluations_index') }}">
+                    <i class="fas fa-clipboard-list me-2"></i>Mes Évaluations
+                    <span class="badge bg-primary ms-auto">Nouveau</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if app.request.attributes.get('_route') starts with 'enseignant_notes' %}active{% endif %}" href="{{ path('enseignant_notes_index') }}">
+                    <i class="fas fa-pen me-2"></i>Saisir des Notes
+                    <span class="badge bg-success ms-auto">Nouveau</span>
+                </a>
+            </li>
+            
+            <li><hr class="dropdown-divider bg-secondary my-3"></li>
+            
+            <li class="nav-item">
+                <h6 class="sidebar-heading px-3 mt-2 mb-2 text-muted">
+                    <small>GESTION</small>
+                </h6>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link {% if app.request.attributes.get('_route') starts with 'enseignant_absences' %}active{% endif %}" href="{{ path('enseignant_absences_index') }}">
+                    <i class="fas fa-user-clock me-2"></i>Absences
+                    <span class="badge bg-warning ms-auto">Nouveau</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if app.request.attributes.get('_route') starts with 'enseignant_devoirs' %}active{% endif %}" href="{{ path('enseignant_devoirs_index') }}">
+                    <i class="fas fa-tasks me-2"></i>Devoirs
+                    <span class="badge bg-info ms-auto">Nouveau</span>
+                </a>
+            </li>
+            
+            <li><hr class="dropdown-divider bg-secondary my-3"></li>
+            
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_logout') }}">
+                    <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                </a>
+            </li>
+            
+        </ul>
+    </div>
+</nav>

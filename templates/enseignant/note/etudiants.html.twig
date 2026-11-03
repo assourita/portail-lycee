@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des étudiants{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Liste des étudiants par matière</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('enseignant_note_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour aux notes
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                <div class="card-body">
+                    {% for matiere, data in etudiantsParMatiere %}
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary">
+                                <h4 class="card-title text-white">{{ matiere }}</h4>
+                                <p class="text-white mb-0">Filière : {{ data.filiere.nom }}</p>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Nom</th>
+                                                <th>Prénom</th>
+                                                <th>Email</th>
+                                                <th>Date de naissance</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for etudiant in data.etudiants %}
+                                                <tr>
+                                                    <td>{{ etudiant.nom }}</td>
+                                                    <td>{{ etudiant.prenom }}</td>
+                                                    <td>{{ etudiant.email }}</td>
+                                                    <td>{{ etudiant.dateNaissance|date('d/m/Y') }}</td>
+                                                    <td>
+                                                        <a href="{{ path('enseignant_note_new', {'etudiant': etudiant.id}) }}" 
+                                                           class="btn btn-primary btn-sm">
+                                                            <i class="fas fa-plus"></i> Ajouter une note
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="5" class="text-center">Aucun étudiant dans cette filière</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            Aucune matière assignée ou aucune filière associée aux matières.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %} 

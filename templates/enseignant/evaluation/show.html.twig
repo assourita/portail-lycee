@@ -1,0 +1,206 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ evaluation.nom }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-clipboard-list me-2 text-primary"></i>
+                        {{ evaluation.nom }}
+                    </h1>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-book me-1"></i>{{ evaluation.matiere.nom }} - 
+                        <i class="fas fa-calendar me-1"></i>{{ evaluation.dateEvaluation|date('d/m/Y') }}
+                    </p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{{ path('enseignant_note_saisir_groupe', {'evaluation': evaluation.id, 'matiere': evaluation.matiere.id}) }}" 
+                           class="btn btn-success">
+                            <i class="fas fa-pen me-1"></i>Saisir des Notes
+                        </a>
+                        <a href="{{ path('enseignant_evaluation_edit', {'id': evaluation.id}) }}" class="btn btn-warning">
+                            <i class="fas fa-edit me-1"></i>Modifier
+                        </a>
+                        <a href="{{ path('enseignant_evaluations_index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Retour
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Détails de l'évaluation -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Détails de l'Évaluation
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if evaluation.description %}
+                                <p><strong>Description :</strong></p>
+                                <p class="bg-light p-3 rounded">{{ evaluation.description }}</p>
+                            {% endif %}
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Date :</strong> {{ evaluation.dateEvaluation|date('d/m/Y') }}</p>
+                                    <p><strong>Coefficient :</strong> <span class="badge bg-info">x{{ evaluation.coefficient }}</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Note maximale :</strong> {{ evaluation.noteMax }}</p>
+                                    <p><strong>Trimestre :</strong> {{ evaluation.trimestre.nom }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes saisies -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list me-2"></i>Notes Saisies
+                                <span class="badge bg-secondary ms-2">{{ notes|length }}</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if notes|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Étudiant</th>
+                                                <th>Note</th>
+                                                <th>Commentaire</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for note in notes %}
+                                                <tr>
+                                                    <td>{{ note.etudiant.nom }} {{ note.etudiant.prenom }}</td>
+                                                    <td>
+                                                        <span class="badge {% if note.valeur >= 16 %}bg-success{% elseif note.valeur >= 12 %}bg-info{% elseif note.valeur >= 10 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                            {{ note.valeur }}/{{ evaluation.noteMax }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        {% if note.commentaire %}
+                                                            <small>{{ note.commentaire }}</small>
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ note.dateNote|date('d/m/Y') }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Statistiques -->
+                                <hr>
+                                <div class="row text-center">
+                                    <div class="col-md-4">
+                                        <h6 class="text-muted">Moyenne</h6>
+                                        {% set somme = 0 %}
+                                        {% for note in notes %}
+                                            {% set somme = somme + note.valeur %}
+                                        {% endfor %}
+                                        {% set moyenne = notes|length > 0 ? somme / notes|length : 0 %}
+                                        <h3 class="{% if moyenne >= 12 %}text-success{% elseif moyenne >= 10 %}text-warning{% else %}text-danger{% endif %}">
+                                            {{ moyenne|number_format(2) }}/{{ evaluation.noteMax }}
+                                        </h3>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="text-muted">Note Min</h6>
+                                        <h3 class="text-danger">
+                                            {% set min = null %}
+                                            {% for note in notes %}
+                                                {% if min is null or note.valeur < min %}
+                                                    {% set min = note.valeur %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ min ?? '-' }}
+                                        </h3>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="text-muted">Note Max</h6>
+                                        <h3 class="text-success">
+                                            {% set max = null %}
+                                            {% for note in notes %}
+                                                {% if max is null or note.valeur > max %}
+                                                    {% set max = note.valeur %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ max ?? '-' }}
+                                        </h3>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Aucune note saisie</h5>
+                                    <p class="text-muted">Commencez par saisir les notes des étudiants.</p>
+                                    <a href="{{ path('enseignant_note_saisir_groupe', {'evaluation': evaluation.id, 'matiere': evaluation.matiere.id}) }}" 
+                                       class="btn btn-success">
+                                        <i class="fas fa-pen me-1"></i>Saisir les Notes
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Informations -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Créée le :</strong><br>{{ evaluation.dateCreation|date('d/m/Y à H:i') }}</p>
+                            {% if evaluation.dateModification %}
+                                <p><strong>Modifiée le :</strong><br>{{ evaluation.dateModification|date('d/m/Y à H:i') }}</p>
+                            {% endif %}
+                            <p><strong>Période :</strong><br>{{ evaluation.periodeAcademique.periode }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Actions rapides -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-bolt me-2"></i>Actions Rapides
+                            </h6>
+                        </div>
+                        <div class="card-body d-grid gap-2">
+                            <a href="{{ path('enseignant_note_saisir_groupe', {'evaluation': evaluation.id, 'matiere': evaluation.matiere.id}) }}" 
+                               class="btn btn-success">
+                                <i class="fas fa-pen me-1"></i>Saisir des Notes
+                            </a>
+                            <a href="{{ path('enseignant_evaluation_edit', {'id': evaluation.id}) }}" class="btn btn-warning">
+                                <i class="fas fa-edit me-1"></i>Modifier
+                            </a>
+                            <button class="btn btn-danger" onclick="deleteEvaluation({{ evaluation.id }})">
+                                <i class="fas fa-trash me-1"></i>Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Comptable{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'comptable/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Dashboard Comptable</h1>
+            </div>
+
+            <!-- Quick Info Cards -->
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Paiements du mois</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ montantTotalMois|number_format(0, ',', ' ') }} €</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Factures en attente</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ facturesEnAttente }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-file-invoice fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Taux de paiement</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ tauxPaiement }}%</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Retards de paiement</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ retardsPaiement }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Derniers paiements -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Derniers paiements</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Étudiant</th>
+                                    <th>Type</th>
+                                    <th>Montant</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>05/04/2024</td>
+                                    <td>Jean Dupont</td>
+                                    <td>Frais de scolarité</td>
+                                    <td>500 €</td>
+                                    <td><span class="badge bg-success">Payé</span></td>
+                                </tr>
+                                <tr>
+                                    <td>04/04/2024</td>
+                                    <td>Marie Martin</td>
+                                    <td>Frais d'inscription</td>
+                                    <td>250 €</td>
+                                    <td><span class="badge bg-warning">En attente</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

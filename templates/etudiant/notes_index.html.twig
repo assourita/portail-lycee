@@ -1,0 +1,287 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Notes - Mon Portail Lycée{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .notes-container {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .notes-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin: -20px -20px 30px -20px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        
+        .notes-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .notes-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .notes-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-number.total { color: #667eea; }
+        .stat-number.average { color: #28a745; }
+        .stat-number.highest { color: #ffc107; }
+        .stat-number.lowest { color: #dc3545; }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+        
+        .note-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid #e9ecef;
+        }
+        
+        .note-card.excellent {
+            border-left-color: #28a745;
+        }
+        
+        .note-card.good {
+            border-left-color: #28a745;
+        }
+        
+        .note-card.average {
+            border-left-color: #ffc107;
+        }
+        
+        .note-card.poor {
+            border-left-color: #dc3545;
+        }
+        
+        .note-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .note-info {
+            flex-grow: 1;
+        }
+        
+        .note-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .note-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .note-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: white;
+            min-width: 80px;
+            text-align: center;
+            margin-left: 15px;
+        }
+        
+        .note-value.excellent {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+        
+        .note-value.good {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+        
+        .note-value.average {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+        }
+        
+        .note-value.poor {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+        }
+        
+        .note-coefficient {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .note-appreciation {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .note-appreciation h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+        }
+        
+        .note-appreciation p {
+            color: #6c757d;
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .notes-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .note-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .note-value {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="notes-container">
+    <div class="notes-header">
+        <h1 class="notes-title">
+            <i class="fas fa-graduation-cap me-3"></i>
+            Mes Notes
+        </h1>
+        <p class="notes-subtitle">
+            Filière : {{ etudiant.filiere.nom }} - Période : {{ periodeActive.periode }} {{ periodeActive.anneeScolaire }}
+        </p>
+    </div>
+
+    <div class="notes-stats">
+        <div class="stat-card">
+            <div class="stat-number total">{{ notes|length }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number average">{{ moyenneGenerale|number_format(1) }}</div>
+            <div class="stat-label">Moyenne</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number highest">{{ notes|length > 0 ? (notes|first).valeur : 0 }}</div>
+            <div class="stat-label">Plus haute</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number lowest">{{ notes|length > 0 ? (notes|last).valeur : 0 }}</div>
+            <div class="stat-label">Plus basse</div>
+        </div>
+    </div>
+
+    <div class="notes-grid">
+        {% if notes|length > 0 %}
+            {% for note in notes %}
+                <div class="note-card {{ note.valeur >= 15 ? 'excellent' : (note.valeur >= 12 ? 'good' : (note.valeur >= 10 ? 'average' : 'poor') }}">
+                    <div class="note-header">
+                        <div class="note-info">
+                            <div class="note-title">{{ note.matiere.nom }}</div>
+                            <div class="note-meta">
+                                <span><i class="fas fa-calendar me-2"></i>{{ note.dateNote|date('d/m/Y') }}</span>
+                                <span><i class="fas fa-user me-2"></i>{{ note.enseignant ? note.enseignant.nom : 'Enseignant non assigné' }}</span>
+                            </div>
+                        </div>
+                        <div class="note-value {{ note.valeur >= 15 ? 'excellent' : (note.valeur >= 12 ? 'good' : (note.valeur >= 10 ? 'average' : 'poor') }}">
+                            {{ note.valeur }}/20
+                        </div>
+                    </div>
+
+                    {% if note.coefficient %}
+                        <div class="note-coefficient">
+                            Coefficient : {{ note.coefficient }}
+                        </div>
+                    {% endif %}
+
+                    {% if note.appreciation %}
+                        <div class="note-appreciation">
+                            <h4>Appréciation</h4>
+                            <p>{{ note.appreciation }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-graduation-cap"></i>
+                <h3>Aucune note trouvée</h3>
+                <p>Vous n'avez pas de notes enregistrées pour cette période.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

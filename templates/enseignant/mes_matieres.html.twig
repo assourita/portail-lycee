@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Matières{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Mes Matières</h1>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-chalkboard-teacher me-2"></i>Matières assignées</h5>
+                </div>
+                <div class="card-body">
+                    {% if matieres|length > 0 %}
+                        <div class="row">
+                            {% for matiere in matieres %}
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title">
+                                                <i class="fas fa-book me-2 text-primary"></i>
+                                                {{ matiere.nom }}
+                                            </h5>
+                                            <p class="card-text">
+                                                <strong>Filière :</strong>
+                                                {% if matiere.filiere %}
+                                                    <span class="badge bg-info">{{ matiere.filiere.nom }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">Non assignée</span>
+                                                {% endif %}
+                                            </p>
+                                            <p class="card-text">
+                                                <strong>Coefficient :</strong> {{ matiere.coeficient }}
+                                            </p>
+                                            <p class="card-text">
+                                                <strong>Nombre de cours :</strong> {{ matiere.cours|length }}
+                                            </p>
+                                        </div>
+                                        <div class="card-footer">
+                                            <div class="btn-group w-100" role="group">
+                                                <a href="{{ path('enseignant_matiere_cours', {'id': matiere.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-book-open me-1"></i>Cours
+                                                </a>
+                                                <a href="{{ path('enseignant_matiere_notes', {'id': matiere.id}) }}" class="btn btn-sm btn-outline-success">
+                                                    <i class="fas fa-graduation-cap me-1"></i>Notes
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-chalkboard-teacher fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">Aucune matière assignée</h4>
+                            <p class="text-muted">Contactez l'administrateur pour vous assigner des matières.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if matieres|length > 0 %}
+                <div class="card mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-chart-bar me-2"></i>Statistiques</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-primary">{{ matieres|length }}</h3>
+                                    <p class="text-muted">Matières assignées</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-success">
+                                        {% set totalCours = 0 %}
+                                        {% for matiere in matieres %}
+                                            {% set totalCours = totalCours + matiere.cours|length %}
+                                        {% endfor %}
+                                        {{ totalCours }}
+                                    </h3>
+                                    <p class="text-muted">Total des cours</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-warning">
+                                        {% set filieresUniques = [] %}
+                                        {% for matiere in matieres %}
+                                            {% if matiere.filiere and matiere.filiere not in filieresUniques %}
+                                                {% set filieresUniques = filieresUniques|merge([matiere.filiere]) %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ filieresUniques|length }}
+                                    </h3>
+                                    <p class="text-muted">Filières concernées</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-info">
+                                        {% set totalCoefficient = 0 %}
+                                        {% for matiere in matieres %}
+                                            {% set totalCoefficient = totalCoefficient + matiere.coeficient %}
+                                        {% endfor %}
+                                        {{ totalCoefficient }}
+                                    </h3>
+                                    <p class="text-muted">Coefficient total</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}

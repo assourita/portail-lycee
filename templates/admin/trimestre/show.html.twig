@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ trimestre.nom }} - {{ trimestre.classe.nom }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-calendar-week me-2 text-primary"></i>
+                        {{ trimestre.nom }}
+                    </h1>
+                    <p class="text-muted mb-0">{{ trimestre.classe.nom }} - {{ trimestre.anneeScolaire }}</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_trimestre_edit', {'id': trimestre.id}) }}" class="btn btn-warning me-2">
+                        <i class="fas fa-edit me-1"></i>Modifier
+                    </a>
+                    <a href="{{ path('admin_trimestres_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informations du trimestre -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Classe</h6>
+                                    <p><i class="fas fa-school me-2 text-primary"></i>{{ trimestre.classe.nom }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Année Scolaire</h6>
+                                    <p><span class="badge bg-primary">{{ trimestre.anneeScolaire }}</span></p>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Date de début</h6>
+                                    <p><i class="fas fa-play me-2 text-success"></i>{{ trimestre.dateDebut|date('d/m/Y') }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Date de fin</h6>
+                                    <p><i class="fas fa-stop me-2 text-danger"></i>{{ trimestre.dateFin|date('d/m/Y') }}</p>
+                                </div>
+                            </div>
+
+                            {% if trimestre.description %}
+                                <div class="mb-3">
+                                    <h6 class="text-muted">Description</h6>
+                                    <p>{{ trimestre.description }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card bg-info text-white mb-3">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar-alt fa-3x mb-3"></i>
+                            <h4>{{ trimestre.nom }}</h4>
+                            <p class="mb-0">{{ trimestre.anneeScolaire }}</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-clock me-2"></i>Durée
+                            </h6>
+                        </div>
+                        <div class="card-body text-center">
+                            {% set duree = trimestre.dateFin.diff(trimestre.dateDebut).days %}
+                            <h3 class="text-primary">{{ duree }}</h3>
+                            <p class="mb-0">jours</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+

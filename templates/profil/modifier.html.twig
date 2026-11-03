@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mon profil{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% if user.etudiant %}
+            {% include 'etudiant/_sidebar.html.twig' %}
+        {% elseif user.enseignant %}
+            {% include 'enseignant/_sidebar.html.twig' %}
+        {% elseif user.comptable %}
+            {% include 'comptable/_sidebar.html.twig' %}
+        {% elseif user.admin %}
+            {% include 'admin/_sidebar.html.twig' %}
+        {% endif %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-user-edit me-2 text-primary"></i>
+                    Modifier mon profil
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('app_profil') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h6 class="m-0 font-weight-bold text-primary">
+                                <i class="fas fa-edit me-2"></i>Informations du compte
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            {{ form_start(form) }}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form_row(form.username) }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form_row(form.email) }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form_row(form.plainPassword, {
+                                        'label': 'Nouveau mot de passe (laisser vide pour ne pas changer)',
+                                        'required': false
+                                    }) }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                                    </button>
+                                    <a href="{{ path('app_profil') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>Annuler
+                                    </a>
+                                </div>
+                            </div>
+
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h6 class="m-0 font-weight-bold text-info">
+                                <i class="fas fa-info-circle me-2"></i>Informations
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6 class="text-primary">
+                                    <i class="fas fa-key me-2"></i>Mot de passe
+                                </h6>
+                                <p class="small text-muted">
+                                    Laissez le champ du mot de passe vide si vous ne souhaitez pas le modifier.
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="text-primary">
+                                    <i class="fas fa-user me-2"></i>Nom d'utilisateur
+                                </h6>
+                                <p class="small text-muted">
+                                    Le nom d'utilisateur doit être unique dans le système.
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="text-primary">
+                                    <i class="fas fa-envelope me-2"></i>Email
+                                </h6>
+                                <p class="small text-muted">
+                                    L'adresse email sera utilisée pour les notifications.
+                                </p>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading">
+                                    <i class="fas fa-shield-alt me-2"></i>Sécurité
+                                </h6>
+                                <p class="mb-0">
+                                    Pour plus de sécurité, vous pouvez également modifier vos informations personnelles 
+                                    <a href="{{ path('app_profil_modifier_specifique') }}" class="alert-link">ici</a>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

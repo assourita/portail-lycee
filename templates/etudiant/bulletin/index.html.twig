@@ -1,0 +1,125 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Bulletins{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'etudiant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-file-alt me-2 text-primary"></i>
+                        Mes Bulletins
+                    </h1>
+                    <p class="text-muted mb-0">Consultez vos bulletins de notes</p>
+                </div>
+            </div>
+
+            <!-- Informations de l'étudiant -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px;">
+                                        <i class="fas fa-user fa-2x"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-10">
+                                    <h4 class="mb-1">{{ etudiant.nom }} {{ etudiant.prenom }}</h4>
+                                    <p class="text-muted mb-1">
+                                        <i class="fas fa-graduation-cap me-2"></i>{{ etudiant.filiere.nom }}
+                                    </p>
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-envelope me-2"></i>{{ etudiant.email }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Liste des bulletins -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Liste de vos Bulletins
+                        <span class="badge bg-secondary ms-2">{{ bulletins|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if bulletins|length > 0 %}
+                        <div class="row">
+                            {% for bulletin in bulletins %}
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100 shadow-sm border-left-primary">
+                                        <div class="card-header bg-primary text-white">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-calendar-alt me-2"></i>{{ bulletin.periode }}
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row text-center mb-3">
+                                                <div class="col-6">
+                                                    <h6 class="text-muted mb-1">Année Scolaire</h6>
+                                                    <span class="badge bg-info">{{ bulletin.anneeScolaire }}</span>
+                                                </div>
+                                                <div class="col-6">
+                                                    <h6 class="text-muted mb-1">Date</h6>
+                                                    <small class="text-muted">{{ bulletin.dateCreation|date('d/m/Y') }}</small>
+                                                </div>
+                                            </div>
+                                            
+                                            {% if bulletin.commentaire %}
+                                                <div class="alert alert-info mb-3">
+                                                    <small>
+                                                        <i class="fas fa-comment me-1"></i>
+                                                        {{ bulletin.commentaire|slice(0, 100) }}{% if bulletin.commentaire|length > 100 %}...{% endif %}
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+
+                                            <div class="d-grid">
+                                                <a href="{{ path('etudiant_bulletin_show', {'id': bulletin.id}) }}" class="btn btn-primary">
+                                                    <i class="fas fa-eye me-1"></i>Voir le Bulletin
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun bulletin disponible</h5>
+                            <p class="text-muted">Vos bulletins seront disponibles une fois générés par l'administration.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

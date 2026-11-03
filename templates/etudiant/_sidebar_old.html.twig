@@ -1,0 +1,128 @@
+<nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+    <div class="position-sticky pt-3">
+        <div class="sidebar-content">
+            <div class="sidebar-header mb-4">
+                <h5 class="text-center text-white">
+                    <i class="fas fa-user-graduate me-2"></i>
+                    Espace Étudiant
+                </h5>
+                {% if app.user.etudiant %}
+                    <div class="text-center">
+                        <small class="text-muted d-block">{{ app.user.etudiant.nom }} {{ app.user.etudiant.prenom }}</small>
+                        {% if app.user.etudiant.filiere %}
+                            <span class="badge bg-primary mt-1">{{ app.user.etudiant.filiere.nom }}</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Période Active -->
+            <div class="alert alert-info mx-2 mb-3 py-2">
+                <small>
+                    <i class="fas fa-calendar-check me-1"></i>
+                    <strong>Période :</strong><br>
+                    <span class="text-dark">1er Trimestre 2024-2025</span>
+                </small>
+            </div>
+            
+            <ul class="nav flex-column">
+                {% if is_granted('ROLE_ETUDIANT') %}
+                    <li class="sidebar-item">
+                        <a class="sidebar-link" href="{{ path('etudiant_dashboard') }}">
+                            <i class="align-middle" data-feather="sliders"></i> 
+                            <span class="align-middle">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a data-bs-target="#pedagogie" data-bs-toggle="collapse" class="sidebar-link collapsed">
+                            <i class="align-middle" data-feather="book"></i> 
+                            <span class="align-middle">PÉDAGOGIE</span>
+                        </a>
+                    </li>
+                    <ul id="pedagogie" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{ path('etudiant_cours_index') }}">Mes Cours</a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{ path('etudiant_devoirs_index') }}">Mes Devoirs</a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{ path('etudiant_notes_index') }}">Mes Notes</a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{ path('etudiant_bulletins_index') }}">Mes Bulletins</a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{ path('etudiant_emploi_du_temps') }}">Mon Emploi du Temps</a></li>
+                    </ul>
+                    <li class="sidebar-item">
+                        <a class="sidebar-link" href="{{ path('etudiant_evaluations_index') }}">
+                            <i class="align-middle" data-feather="check-square"></i> 
+                            <span class="align-middle">Évaluations</span>
+                        </a>
+                    </li>
+                {% endif %}
+                    </a>
+                </li>
+                
+                <li><hr class="dropdown-divider bg-secondary my-3"></li>
+                
+                <li class="nav-item">
+                    <h6 class="sidebar-heading px-3 mt-2 mb-2 text-muted">
+                        <small>ÉVALUATIONS</small>
+                    </h6>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'etudiant_evaluations_index' ? 'active' : '' }}" 
+                       href="{{ path('etudiant_evaluations_index') }}">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        Évaluations Programmées
+                        <span class="badge bg-info ms-auto">Nouveau</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'etudiant_notes_index' ? 'active' : '' }}" 
+                       href="{{ path('etudiant_notes_index') }}">
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        Mes Notes
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') starts with 'etudiant_bulletins' ? 'active' : '' }}" 
+                       href="{{ path('etudiant_bulletins_index') }}">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Mes Bulletins
+                    </a>
+                </li>
+                
+                <li><hr class="dropdown-divider bg-secondary my-3"></li>
+                
+                <li class="nav-item">
+                    <h6 class="sidebar-heading px-3 mt-2 mb-2 text-muted">
+                        <small>SUIVI</small>
+                    </h6>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'etudiant_emploi_du_temps' ? 'active' : '' }}" 
+                       href="{{ path('etudiant_emploi_du_temps') }}">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Emploi du temps
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') starts with 'etudiant_absences' ? 'active' : '' }}" 
+                       href="{{ path('etudiant_absences_index') }}">
+                        <i class="fas fa-user-clock me-2"></i>
+                        Mes Absences
+                        <span class="badge bg-warning ms-auto">Nouveau</span>
+                    </a>
+                </li>
+                
+                <li><hr class="dropdown-divider bg-secondary my-3"></li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_logout') }}">
+                        <i class="fas fa-sign-out-alt me-2"></i>
+                        Déconnexion
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

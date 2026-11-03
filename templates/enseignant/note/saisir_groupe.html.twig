@@ -1,0 +1,200 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Saisir des Notes{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-pen me-2 text-primary"></i>
+                        Saisir des Notes
+                    </h1>
+                    {% if evaluation %}
+                        <p class="text-muted mb-0">{{ evaluation.nom }} - {{ evaluation.matiere.nom }}</p>
+                    {% elseif matiere %}
+                        <p class="text-muted mb-0">{{ matiere.nom }}</p>
+                    {% endif %}
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('enseignant_notes_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Sélection de la matière et évaluation -->
+            {% if not matiere %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-filter me-2"></i>Sélectionner la Matière
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="get">
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label for="matiere" class="form-label">Matière *</label>
+                                    <select class="form-select" id="matiere" name="matiere" required>
+                                        <option value="">Sélectionner une matière</option>
+                                        {% for mat in matieres %}
+                                            <option value="{{ mat.id }}">
+                                                {{ mat.nom }} ({{ mat.filiere.nom }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end mb-3">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-arrow-right me-1"></i>Continuer
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Formulaire de saisie des notes -->
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-book me-2"></i>{{ matiere.nom }}
+                                </h5>
+                                {% if evaluation %}
+                                    <small>Évaluation : {{ evaluation.nom }} (Note max: {{ evaluation.noteMax }})</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <span class="badge bg-light text-dark">{{ etudiants|length }} étudiant(s)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            <input type="hidden" name="matiere" value="{{ matiere.id }}">
+                            {% if evaluation %}
+                                <input type="hidden" name="evaluation" value="{{ evaluation.id }}">
+                            {% endif %}
+
+                            <!-- Informations générales -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="type" class="form-label">Type de note</label>
+                                    <select class="form-select" id="type" name="type">
+                                        <option value="devoir">Devoir</option>
+                                        <option value="examen">Examen</option>
+                                        <option value="controle">Contrôle</option>
+                                        <option value="participation">Participation</option>
+                                        <option value="projet">Projet</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="commentaire_general" class="form-label">Commentaire général (optionnel)</label>
+                                    <input type="text" class="form-control" id="commentaire_general" 
+                                           name="commentaire_general" placeholder="Appliqué à tous les étudiants">
+                                </div>
+                            </div>
+
+                            <!-- Tableau de saisie -->
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th style="width: 5%;">#</th>
+                                            <th style="width: 30%;">Étudiant</th>
+                                            <th style="width: 15%;">Note *</th>
+                                            <th style="width: 50%;">Commentaire individuel</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for etudiant in etudiants %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td>
+                                                    <strong>{{ etudiant.nom }} {{ etudiant.prenom }}</strong>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control" 
+                                                           name="notes[{{ etudiant.id }}][valeur]" 
+                                                           min="0" max="20" step="0.5" 
+                                                           placeholder="0-20">
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control" 
+                                                           name="notes[{{ etudiant.id }}][commentaire]" 
+                                                           placeholder="Commentaire (optionnel)">
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Astuce :</strong> Vous pouvez laisser vide les notes des étudiants absents. 
+                                Seules les notes remplies seront enregistrées.
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="{{ path('enseignant_evaluations_index') }}" class="btn btn-secondary me-md-2">
+                                    <i class="fas fa-times me-1"></i>Annuler
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save me-1"></i>Enregistrer les Notes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus sur la première cellule de note
+    const firstNoteInput = document.querySelector('input[name*="[valeur]"]');
+    if (firstNoteInput) {
+        firstNoteInput.focus();
+    }
+
+    // Navigation au clavier (Enter pour passer à la note suivante)
+    const noteInputs = document.querySelectorAll('input[name*="[valeur]"]');
+    noteInputs.forEach((input, index) => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (index < noteInputs.length - 1) {
+                    noteInputs[index + 1].focus();
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

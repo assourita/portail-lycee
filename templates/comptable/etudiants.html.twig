@@ -1,0 +1,201 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Étudiants{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('comptable_dashboard') }}">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('comptable_paiements') }}">
+                            <i class="fas fa-money-bill"></i> Paiements
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('comptable_factures') }}">
+                            <i class="fas fa-file-invoice"></i> Factures
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('comptable_rapports') }}">
+                            <i class="fas fa-chart-line"></i> Rapports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ path('comptable_etudiants') }}">
+                            <i class="fas fa-users"></i> Étudiants
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Gestion des Étudiants</h1>
+                <div>
+                    <button class="btn btn-success me-2">
+                        <i class="fas fa-file-excel"></i> Exporter Excel
+                    </button>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-envelope"></i> Envoyer Rappels
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filtres -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="statutPaiement" class="form-label">Statut paiement</label>
+                            <select class="form-select" id="statutPaiement">
+                                <option value="">Tous</option>
+                                <option value="a_jour">À jour</option>
+                                <option value="en_retard">En retard</option>
+                                <option value="paiement_partiel">Paiement partiel</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="classe" class="form-label">Classe</label>
+                            <select class="form-select" id="classe">
+                                <option value="">Toutes</option>
+                                <option value="1ere">1ère année</option>
+                                <option value="2eme">2ème année</option>
+                                <option value="3eme">3ème année</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="recherche" class="form-label">Recherche</label>
+                            <input type="text" class="form-control" id="recherche" placeholder="Nom, prénom, email...">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button class="btn btn-secondary w-100">
+                                <i class="fas fa-search"></i> Filtrer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tableau des étudiants -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Nom & Prénom</th>
+                                    <th>Email</th>
+                                    <th>Classe</th>
+                                    <th>Total dû</th>
+                                    <th>Total payé</th>
+                                    <th>Solde</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Photo">
+                                    </td>
+                                    <td><strong>Jean Dupont</strong></td>
+                                    <td>jean.dupont@email.com</td>
+                                    <td>2ème année</td>
+                                    <td>1 500 €</td>
+                                    <td>1 500 €</td>
+                                    <td class="text-success">0 €</td>
+                                    <td><span class="badge bg-success">À jour</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" title="Voir détails">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" title="Voir compte">
+                                            <i class="fas fa-euro-sign"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-success" title="Envoyer email">
+                                            <i class="fas fa-envelope"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="table-warning">
+                                    <td>
+                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Photo">
+                                    </td>
+                                    <td><strong>Marie Martin</strong></td>
+                                    <td>marie.martin@email.com</td>
+                                    <td>1ère année</td>
+                                    <td>2 000 €</td>
+                                    <td>800 €</td>
+                                    <td class="text-danger">-1 200 €</td>
+                                    <td><span class="badge bg-warning">En retard</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" title="Voir détails">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" title="Voir compte">
+                                            <i class="fas fa-euro-sign"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" title="Envoyer rappel">
+                                            <i class="fas fa-exclamation"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Photo">
+                                    </td>
+                                    <td><strong>Pierre Durand</strong></td>
+                                    <td>pierre.durand@email.com</td>
+                                    <td>3ème année</td>
+                                    <td>1 800 €</td>
+                                    <td>900 €</td>
+                                    <td class="text-warning">-900 €</td>
+                                    <td><span class="badge bg-info">Paiement partiel</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" title="Voir détails">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" title="Voir compte">
+                                            <i class="fas fa-euro-sign"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-success" title="Envoyer email">
+                                            <i class="fas fa-envelope"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Pagination">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">Précédent</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Suivant</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}

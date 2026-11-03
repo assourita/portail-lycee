@@ -1,0 +1,159 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de l'Absence{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-user-clock me-2 text-primary"></i>
+                        Détails de l'Absence
+                    </h1>
+                    <p class="text-muted mb-0">
+                        {{ absence.etudiant.nom }} {{ absence.etudiant.prenom }} - {{ absence.date|date('d/m/Y') }}
+                    </p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('enseignant_absences_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Informations de l'absence -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <strong><i class="fas fa-user me-2 text-primary"></i>Étudiant :</strong>
+                                    <p>{{ absence.etudiant.nom }} {{ absence.etudiant.prenom }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong><i class="fas fa-graduation-cap me-2 text-primary"></i>Filière :</strong>
+                                    <p>{{ absence.etudiant.filiere.nom }}</p>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <strong><i class="fas fa-calendar me-2 text-primary"></i>Date :</strong>
+                                    <p>{{ absence.date|date('d/m/Y') }}</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong><i class="fas fa-tag me-2 text-primary"></i>Type :</strong>
+                                    <p>
+                                        {% if absence.type == 'absence' %}
+                                            <span class="badge bg-danger">Absence</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Retard</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong><i class="fas fa-clock me-2 text-primary"></i>Période :</strong>
+                                    <p>{{ absence.periode|capitalize }}</p>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <strong><i class="fas fa-book me-2 text-primary"></i>Matière :</strong>
+                                    <p>{{ absence.matiere ? absence.matiere.nom : '-' }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong><i class="fas fa-hourglass me-2 text-primary"></i>Durée :</strong>
+                                    <p>{{ absence.dureeHeures|number_format(1) }} heure(s)</p>
+                                </div>
+                            </div>
+
+                            {% if absence.motif %}
+                                <div class="mb-3">
+                                    <strong><i class="fas fa-comment me-2 text-primary"></i>Motif :</strong>
+                                    <p class="bg-light p-3 rounded">{{ absence.motif }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Justification -->
+                    {% if absence.justification %}
+                        <div class="card">
+                            <div class="card-header {% if absence.justifiee %}bg-success{% else %}bg-warning{% endif %} text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-file-alt me-2"></i>Justification de l'Étudiant
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="bg-light p-3 rounded">{{ absence.justification }}</p>
+                                
+                                {% if absence.justifiee %}
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <strong>Justification validée par l'administration</strong>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-clock me-2"></i>
+                                        <strong>En attente de validation</strong>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Statut -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Statut
+                            </h6>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if absence.justifiee %}
+                                <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                                <h5 class="text-success">Justifiée</h5>
+                            {% elseif absence.justification %}
+                                <i class="fas fa-clock fa-4x text-warning mb-3"></i>
+                                <h5 class="text-warning">En attente</h5>
+                            {% else %}
+                                <i class="fas fa-times-circle fa-4x text-danger mb-3"></i>
+                                <h5 class="text-danger">Non justifiée</h5>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Informations -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-clock me-2"></i>Dates
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Enregistrée le :</strong><br>{{ absence.dateCreation|date('d/m/Y à H:i') }}</p>
+                            {% if absence.dateModification %}
+                                <p><strong>Modifiée le :</strong><br>{{ absence.dateModification|date('d/m/Y à H:i') }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

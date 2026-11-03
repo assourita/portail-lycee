@@ -1,0 +1,160 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Notes{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-chart-line me-2 text-primary"></i>
+                        Notes Saisies
+                    </h1>
+                    {% if periodeActive %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                        </p>
+                    {% endif %}
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('enseignant_note_saisir_groupe') }}" class="btn btn-success me-2">
+                        <i class="fas fa-users me-1"></i>Saisie Groupée
+                    </a>
+                    <a href="{{ path('enseignant_note_saisir') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Saisir une Note
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Total Notes</h6>
+                            <h2 class="mb-0">{{ notes|length }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des notes -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Liste des Notes
+                        <span class="badge bg-secondary ms-2">{{ notes|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if notes|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Étudiant</th>
+                                        <th>Matière</th>
+                                        <th>Évaluation</th>
+                                        <th>Note</th>
+                                        <th>Type</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for note in notes %}
+                                        <tr>
+                                            <td>{{ note.dateNote|date('d/m/Y') }}</td>
+                                            <td>{{ note.etudiant.nom }} {{ note.etudiant.prenom }}</td>
+                                            <td>{{ note.matiere.nom }}</td>
+                                            <td>
+                                                {% if note.evaluation %}
+                                                    {{ note.evaluation.nom }}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if note.valeur >= 16 %}bg-success{% elseif note.valeur >= 12 %}bg-info{% elseif note.valeur >= 10 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                    {{ note.valeur }}/20
+                                                </span>
+                                            </td>
+                                            <td>{{ note.type|capitalize }}</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ path('enseignant_note_edit', {'id': note.id}) }}" 
+                                                       class="btn btn-sm btn-warning" title="Modifier">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-danger" 
+                                                            onclick="deleteNote({{ note.id }})" title="Supprimer">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucune note saisie</h5>
+                            <p class="text-muted">Commencez par saisir vos premières notes.</p>
+                            <a href="{{ path('enseignant_note_saisir_groupe') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Saisir des Notes
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette note ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="delete-form" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteNote(noteId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const form = document.getElementById('delete-form');
+    form.action = '{{ path('enseignant_note_delete', {'id': '__ID__'}) }}'.replace('__ID__', noteId);
+    modal.show();
+}
+</script>
+{% endblock %}

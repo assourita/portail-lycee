@@ -1,0 +1,168 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paramètres{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% if user.etudiant %}
+            {% include 'etudiant/_sidebar.html.twig' %}
+        {% elseif user.enseignant %}
+            {% include 'enseignant/_sidebar.html.twig' %}
+        {% elseif user.comptable %}
+            {% include 'comptable/_sidebar.html.twig' %}
+        {% elseif user.admin %}
+            {% include 'admin/_sidebar.html.twig' %}
+        {% endif %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-cog me-2 text-primary"></i>
+                    Paramètres
+                </h1>
+            </div>
+
+            <!-- Navigation des paramètres -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="list-group">
+                        <a href="{{ path('app_parametres') }}" class="list-group-item list-group-item-action active">
+                            <i class="fas fa-cog me-2"></i>Général
+                        </a>
+                        <a href="{{ path('app_parametres_securite') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-shield-alt me-2"></i>Sécurité
+                        </a>
+                        <a href="{{ path('app_parametres_notifications') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-bell me-2"></i>Notifications
+                        </a>
+                        <a href="{{ path('app_parametres_confidentialite') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-lock me-2"></i>Confidentialité
+                        </a>
+                        <a href="{{ path('app_parametres_aide') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-question-circle me-2"></i>Aide
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <!-- Paramètres généraux -->
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h6 class="m-0 font-weight-bold text-primary">
+                                <i class="fas fa-cog me-2"></i>Paramètres généraux
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{{ path('app_parametres_modifier') }}">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="theme" class="form-label">
+                                            <i class="fas fa-palette me-2"></i>Thème
+                                        </label>
+                                        <select class="form-select" id="theme" name="theme">
+                                            <option value="light" {{ parametres.theme == 'light' ? 'selected' : '' }}>
+                                                <i class="fas fa-sun me-2"></i>Clair
+                                            </option>
+                                            <option value="dark" {{ parametres.theme == 'dark' ? 'selected' : '' }}>
+                                                <i class="fas fa-moon me-2"></i>Sombre
+                                            </option>
+                                            <option value="auto" {{ parametres.theme == 'auto' ? 'selected' : '' }}>
+                                                <i class="fas fa-adjust me-2"></i>Automatique
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="langue" class="form-label">
+                                            <i class="fas fa-language me-2"></i>Langue
+                                        </label>
+                                        <select class="form-select" id="langue" name="langue">
+                                            <option value="fr" {{ parametres.langue == 'fr' ? 'selected' : '' }}>
+                                                🇫🇷 Français
+                                            </option>
+                                            <option value="en" {{ parametres.langue == 'en' ? 'selected' : '' }}>
+                                                🇬🇧 English
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="notifications_email" 
+                                                   name="notifications_email" {{ parametres.notifications_email ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="notifications_email">
+                                                <i class="fas fa-envelope me-2"></i>Notifications par email
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="notifications_sms" 
+                                                   name="notifications_sms" {{ parametres.notifications_sms ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="notifications_sms">
+                                                <i class="fas fa-sms me-2"></i>Notifications par SMS
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                                        </button>
+                                        <a href="{{ path('app_profil') }}" class="btn btn-secondary">
+                                            <i class="fas fa-arrow-left me-2"></i>Retour au profil
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Cartes d'information -->
+                    <div class="row mt-4">
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-left-info shadow h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-palette me-2"></i>Thème
+                                    </h6>
+                                    <p class="card-text">
+                                        Choisissez entre le thème clair, sombre ou automatique selon vos préférences.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-left-success shadow h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-bell me-2"></i>Notifications
+                                    </h6>
+                                    <p class="card-text">
+                                        Recevez des alertes par email ou SMS pour rester informé.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-left-warning shadow h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-language me-2"></i>Langue
+                                    </h6>
+                                    <p class="card-text">
+                                        Sélectionnez votre langue préférée pour l'interface.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

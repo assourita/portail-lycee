@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Cours{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Mes Cours</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('enseignant_cours_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nouveau cours
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                {% for cours in cours %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ cours.titre }}</h5>
+                            <p class="card-text">{{ cours.description|slice(0, 100) }}...</p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-book"></i> {{ cours.matiere.nom }}
+                                </small>
+                            </p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-graduation-cap"></i> {{ cours.matiere.filiere.nom }}
+                                </small>
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ path('enseignant_cours_show', {'id': cours.id}) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye"></i> Voir
+                            </a>
+                            <a href="{{ path('enseignant_cours_edit', {'id': cours.id}) }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                            <a href="{{ path('enseignant_chapitre_new', {'id': cours.id}) }}" class="btn btn-success btn-sm">
+                                <i class="fas fa-plus"></i> Ajouter un chapitre
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        Vous n'avez pas encore créé de cours. 
+                        <a href="{{ path('enseignant_cours_new') }}" class="alert-link">Créez votre premier cours</a>.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %} 

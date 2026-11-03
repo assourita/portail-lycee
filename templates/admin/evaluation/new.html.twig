@@ -1,0 +1,168 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Évaluation{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-plus me-2 text-primary"></i>
+                        Nouvelle Évaluation
+                    </h1>
+                    {% if periodeActive %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                        </p>
+                    {% endif %}
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_evaluations_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Formulaire -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Informations de l'Évaluation
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <div class="mb-3">
+                                    <label for="nom" class="form-label">
+                                        <i class="fas fa-heading me-1"></i>Nom de l'évaluation *
+                                    </label>
+                                    <input type="text" class="form-control" id="nom" name="nom" 
+                                           placeholder="Ex: Devoir Surveillé 1, Contrôle Continu..." required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-align-left me-1"></i>Description
+                                    </label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"
+                                              placeholder="Description de l'évaluation (optionnel)"></textarea>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="matiere" class="form-label">
+                                            <i class="fas fa-book me-1"></i>Matière *
+                                        </label>
+                                        <select class="form-select" id="matiere" name="matiere" required>
+                                            <option value="">Sélectionner une matière</option>
+                                            {% for matiere in matieres %}
+                                                <option value="{{ matiere.id }}">
+                                                    {{ matiere.nom }} ({{ matiere.filiere.nom }})
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="trimestre" class="form-label">
+                                            <i class="fas fa-calendar-week me-1"></i>Trimestre *
+                                        </label>
+                                        <select class="form-select" id="trimestre" name="trimestre" required>
+                                            <option value="">Sélectionner un trimestre</option>
+                                            {% for trimestre in trimestres %}
+                                                <option value="{{ trimestre.id }}">
+                                                    {{ trimestre.nom }} ({{ trimestre.classe.nom }})
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="date_evaluation" class="form-label">
+                                            <i class="fas fa-calendar me-1"></i>Date *
+                                        </label>
+                                        <input type="date" class="form-control" id="date_evaluation" 
+                                               name="date_evaluation" required>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="coefficient" class="form-label">
+                                            <i class="fas fa-weight me-1"></i>Coefficient *
+                                        </label>
+                                        <input type="number" class="form-control" id="coefficient" 
+                                               name="coefficient" value="1" min="1" max="10" required>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="note_max" class="form-label">
+                                            <i class="fas fa-star me-1"></i>Note Max *
+                                        </label>
+                                        <input type="number" class="form-control" id="note_max" 
+                                               name="note_max" value="20" min="1" max="100" required>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ path('admin_evaluations_index') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times me-1"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>Créer l'Évaluation
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <h6>Types d'évaluations :</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check me-1 text-success"></i>Devoir Surveillé (DS)</li>
+                                <li><i class="fas fa-check me-1 text-success"></i>Contrôle Continu (CC)</li>
+                                <li><i class="fas fa-check me-1 text-success"></i>Interrogation</li>
+                                <li><i class="fas fa-check me-1 text-success"></i>Examen</li>
+                                <li><i class="fas fa-check me-1 text-success"></i>Projet</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Important :</h6>
+                            <ul class="list-unstyled text-muted">
+                                <li><i class="fas fa-info me-1"></i>Le coefficient affecte le poids de l'évaluation</li>
+                                <li><i class="fas fa-info me-1"></i>La note max peut être différente de 20</li>
+                                <li><i class="fas fa-info me-1"></i>L'enseignant sera automatiquement lié</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Matières - Mon Portail Lycée{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .matieres-container {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .matieres-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin: -20px -20px 30px -20px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        
+        .matieres-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .matieres-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .matieres-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .matiere-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid #667eea;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .matiere-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        
+        .matiere-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .matiere-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .matiere-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 20px;
+        }
+        
+        .matiere-info h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0 0 5px 0;
+        }
+        
+        .matiere-info p {
+            color: #6c757d;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        .matiere-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .matieres-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .matieres-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="matieres-container">
+    <div class="matieres-header">
+        <h1 class="matieres-title">
+            <i class="fas fa-book-open me-3"></i>
+            Mes Matières
+        </h1>
+        <p class="matieres-subtitle">
+            Filière : {{ etudiant.filiere.nom }} - Période : {{ periodeActive.periode }} {{ periodeActive.anneeScolaire }}
+        </p>
+    </div>
+
+    <div class="matieres-grid">
+        {% if matieres|length > 0 %}
+            {% for matiere in matieres %}
+                <div class="matiere-card">
+                    <div class="matiere-header">
+                        <div class="matiere-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="matiere-info">
+                            <h3>{{ matiere.nom }}</h3>
+                            <div class="devoir-description">
+                                {{ matiere.description|default('Pas de description disponible pour cette matière.') }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="matiere-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">{{ matiere.cours|length ?? 0 }}</span>
+                            <span class="stat-label">Cours</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">{{ matiere.coefficient|default(1) }}</span>
+                            <span class="stat-label">Coefficient</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">{{ matiere.heures|default(0) }}h</span>
+                            <span class="stat-label">Heures</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-book-open"></i>
+                <h3>Aucune matière trouvée</h3>
+                <p>Les matières de votre filière seront affichées ici.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

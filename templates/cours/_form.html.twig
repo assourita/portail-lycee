@@ -1,0 +1,51 @@
+{{ form_start(form) }}
+    {{ form_row(form.titre) }}
+    {{ form_row(form.contenu) }}
+    {{ form_row(form.matiere) }}
+
+    <div class="mb-3">
+        <h3>Pièces jointes</h3>
+        <div class="pieces-jointes" data-prototype="{{ form_widget(form.piecesJointes.vars.prototype)|e('html_attr') }}">
+            {% for pieceJointe in form.piecesJointes %}
+                <div class="piece-jointe-item mb-3">
+                    {{ form_row(pieceJointe.nom) }}
+                    {{ form_row(pieceJointe.fichierFile) }}
+                </div>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn btn-secondary add-piece-jointe">
+            <i class="fas fa-plus"></i> Ajouter une pièce jointe
+        </button>
+    </div>
+
+    <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+{{ form_end(form) }}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var $collectionHolder = $('.pieces-jointes');
+            var $addButton = $('.add-piece-jointe');
+            var $newLinkLi = $('<div></div>');
+
+            $collectionHolder.append($newLinkLi);
+            $collectionHolder.data('index', $collectionHolder.find('.piece-jointe-item').length);
+
+            $addButton.on('click', function(e) {
+                e.preventDefault();
+                addForm($collectionHolder, $newLinkLi);
+            });
+
+            function addForm($collectionHolder, $newLinkLi) {
+                var prototype = $collectionHolder.data('prototype');
+                var index = $collectionHolder.data('index');
+                var newForm = prototype.replace(/__name__/g, index);
+                $collectionHolder.data('index', index + 1);
+                var $newFormLi = $('<div class="piece-jointe-item mb-3"></div>').append(newForm);
+                $newLinkLi.before($newFormLi);
+            }
+        });
+    </script>
+{% endblock %} 

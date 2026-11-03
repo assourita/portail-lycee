@@ -1,0 +1,250 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Périodes Académiques{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                        Gestion des Périodes Académiques
+                    </h1>
+                    <p class="text-muted mb-0">Gérer les années scolaires et trimestres actifs</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_periode_academique_new') }}" class="btn btn-primary me-2">
+                        <i class="fas fa-plus me-1"></i>Nouvelle Période
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Période active actuelle -->
+            {% if periodeActive %}
+                <div class="alert alert-success mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="mb-1">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Période Active Actuelle
+                            </h5>
+                            <p class="mb-0">
+                                <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                                <br>
+                                <small class="text-muted">
+                                    Du {{ periodeActive.dateDebut|date('d/m/Y') }} au {{ periodeActive.dateFin|date('d/m/Y') }}
+                                    | Statut: {{ periodeActive.statut }}
+                                </small>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <form method="post" action="{{ path('admin_periode_academique_deactivate', {'id': periodeActive.id}) }}" style="display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('deactivate' ~ periodeActive.id) }}">
+                                <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir désactiver cette période ?')">
+                                    <i class="fas fa-pause me-1"></i>Désactiver
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-warning mb-4">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Aucune période active !</strong> Veuillez activer une période pour que le système fonctionne correctement.
+                </div>
+            {% endif %}
+
+            <!-- Actions rapides -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-magic me-2"></i>Actions Rapides
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{{ path('admin_periodes_academiques_create_from_trimestres') }}" class="mb-3">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="annee_scolaire" placeholder="2024-2025" required>
+                                    <button type="submit" class="btn btn-info">
+                                        <i class="fas fa-sync me-1"></i>Créer depuis Trimestres
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">Créer automatiquement les périodes à partir des trimestres existants</small>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-1"><strong>Années disponibles :</strong></p>
+                            {% for annee in anneesScolaires %}
+                                <span class="badge bg-secondary me-1">{{ annee }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des périodes -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Liste des Périodes Académiques
+                        <span class="badge bg-secondary ms-2">{{ periodes|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if periodes|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Année Scolaire</th>
+                                        <th>Période</th>
+                                        <th>Dates</th>
+                                        <th>Statut</th>
+                                        <th>Données</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for periode in periodes %}
+                                        <tr class="{% if periode.isActive %}table-success{% endif %}">
+                                            <td>
+                                                <span class="badge bg-primary">{{ periode.anneeScolaire }}</span>
+                                            </td>
+                                            <td>
+                                                <strong>{{ periode.periode }}</strong>
+                                                {% if periode.isActive %}
+                                                    <span class="badge bg-success ms-1">ACTIVE</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    {{ periode.dateDebut|date('d/m/Y') }} - {{ periode.dateFin|date('d/m/Y') }}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                {% set statut = periode.statut %}
+                                                {% if statut == 'En cours' %}
+                                                    <span class="badge bg-success">{{ statut }}</span>
+                                                {% elseif statut == 'À venir' %}
+                                                    <span class="badge bg-info">{{ statut }}</span>
+                                                {% elseif statut == 'Terminée' %}
+                                                    <span class="badge bg-secondary">{{ statut }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">{{ statut }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    {{ periode.notes|length }} notes, 
+                                                    {{ periode.cours|length }} cours,
+                                                    {{ periode.evaluations|length }} évaluations
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    {% if not periode.isActive %}
+                                                        <form method="post" action="{{ path('admin_periode_academique_activate', {'id': periode.id}) }}" style="display: inline;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('activate' ~ periode.id) }}">
+                                                            <button type="submit" class="btn btn-success btn-sm" title="Activer">
+                                                                <i class="fas fa-play"></i>
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                    
+                                                    <a href="{{ path('admin_periode_academique_edit', {'id': periode.id}) }}" class="btn btn-warning btn-sm" title="Modifier">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    
+                                                    <button type="button" class="btn btn-danger btn-sm" onclick="deletePeriode({{ periode.id }})" title="Supprimer">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucune période académique créée</h5>
+                            <p class="text-muted">Commencez par créer votre première période académique.</p>
+                            <a href="{{ path('admin_periode_academique_new') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Créer une Période
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette période académique ?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Attention :</strong> Cette action supprimera également toutes les données associées (notes, cours, évaluations).
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="delete-form" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deletePeriode(periodeId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const form = document.getElementById('delete-form');
+    form.action = '{{ path('admin_periode_academique_delete', {'id': '__ID__'}) }}'.replace('__ID__', periodeId);
+    modal.show();
+}
+</script>
+{% endblock %}

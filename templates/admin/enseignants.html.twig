@@ -1,0 +1,113 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Enseignants{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Gestion des Enseignants</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_enseignant_new') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus me-1"></i>Nouvel enseignant
+                    </a>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Liste des enseignants</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Email</th>
+                                    <th>Matières</th>
+                                    <th>Date d'embauche</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for enseignant in enseignants %}
+                                <tr>
+                                    <td>{{ enseignant.id }}</td>
+                                    <td>{{ enseignant.nom }}</td>
+                                    <td>{{ enseignant.prenom }}</td>
+                                    <td>{{ enseignant.email }}</td>
+                                    <td>
+                                        {% if enseignant.matieres|length > 0 %}
+                                            {% set matieresAffichees = enseignant.matieres|slice(0, 4) %}
+                                            {% for matiere in matieresAffichees %}
+                                                <span class="badge bg-primary me-1 mb-1" title="{{ matiere.nom }} ({{ matiere.filiere ? matiere.filiere.nom : 'Filière non assignée' }})">
+                                                    {{ matiere.nom }}{% if matiere.filiere %} ({{ matiere.filiere.nom }}){% endif %}
+                                                </span>
+                                            {% endfor %}
+                                            {% if enseignant.matieres|length > 4 %}
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#matieresModal{{ enseignant.id }}"
+                                                        title="Voir toutes les matières">
+                                                    +{{ enseignant.matieres|length - 4 }} plus
+                                                </button>
+                                                
+                                                <!-- Modal pour afficher toutes les matières -->
+                                                <div class="modal fade" id="matieresModal{{ enseignant.id }}" tabindex="-1">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Matières de {{ enseignant.nom }} {{ enseignant.prenom }}</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="row">
+                                                                    {% for matiere in enseignant.matieres %}
+                                                                        <div class="col-md-6 mb-2">
+                                                                            <span class="badge bg-primary me-1 mb-1">
+                                                                                {{ matiere.nom }}{% if matiere.filiere %} ({{ matiere.filiere.nom }}){% endif %}
+                                                                            </span>
+                                                                        </div>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">Aucune matière assignée</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ enseignant.dateEmbauche|date('Y-m-d') }}</td>
+                                    <td>
+                                        <a href="{{ path('admin_enseignant_show', {'id': enseignant.id}) }}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ path('admin_enseignant_edit', {'id': enseignant.id}) }}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('admin_enseignant_delete', {'id': enseignant.id}) }}" style="display:inline-block" onsubmit="return confirm('Voulez-vous vraiment supprimer cet enseignant ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete-enseignant-' ~ enseignant.id) }}">
+                                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %} 

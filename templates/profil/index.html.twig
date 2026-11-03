@@ -1,0 +1,217 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Profil{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% if user.etudiant %}
+            {% include 'etudiant/_sidebar.html.twig' %}
+        {% elseif user.enseignant %}
+            {% include 'enseignant/_sidebar.html.twig' %}
+        {% elseif user.comptable %}
+            {% include 'comptable/_sidebar.html.twig' %}
+        {% elseif user.admin %}
+            {% include 'admin/_sidebar.html.twig' %}
+        {% endif %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-user me-2 text-primary"></i>
+                    Mon Profil
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{{ path('app_profil_modifier') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit me-1"></i>Modifier
+                        </a>
+                        <a href="{{ path('app_profil_statistiques') }}" class="btn btn-sm btn-outline-info">
+                            <i class="fas fa-chart-bar me-1"></i>Statistiques
+                        </a>
+                        <a href="{{ path('app_parametres') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-cog me-1"></i>Paramètres
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations principales -->
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card border-left-primary shadow h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                {% if user.etudiant %}
+                                    <i class="fas fa-user-graduate fa-4x text-primary"></i>
+                                {% elseif user.enseignant %}
+                                    <i class="fas fa-chalkboard-teacher fa-4x text-primary"></i>
+                                {% elseif user.comptable %}
+                                    <i class="fas fa-calculator fa-4x text-primary"></i>
+                                {% elseif user.admin %}
+                                    <i class="fas fa-user-shield fa-4x text-primary"></i>
+                                {% endif %}
+                            </div>
+                            <h5 class="card-title">
+                                {{ user.username }}
+                            </h5>
+                            <p class="card-text text-muted">
+                                {% if user.etudiant %}
+                                    Étudiant
+                                {% elseif user.enseignant %}
+                                    Enseignant
+                                {% elseif user.comptable %}
+                                    Comptable
+                                {% elseif user.admin %}
+                                    Administrateur
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-header">
+                            <h6 class="m-0 font-weight-bold text-primary">
+                                <i class="fas fa-info-circle me-2"></i>Informations générales
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <strong>Nom d'utilisateur:</strong><br>
+                                    {{ user.username }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Email:</strong><br>
+                                    {{ user.email ?: 'Non renseigné' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Dernière connexion:</strong><br>
+                                    {{ user.lastLogin ? user.lastLogin|date('d/m/Y H:i') : 'Jamais' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Compte actif:</strong><br>
+                                    <span class="badge {{ user.isActivate ? 'bg-success' : 'bg-danger' }}">
+                                        {{ user.isActivate ? 'Oui' : 'Non' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations spécifiques au rôle -->
+            {% if profilInfo %}
+                <div class="card shadow mb-4">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-user-tag me-2"></i>Informations spécifiques
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% if role == 'etudiant' %}
+                                <div class="col-md-6 mb-3">
+                                    <strong>Nom complet:</strong><br>
+                                    {{ profilInfo.nom }} {{ profilInfo.prenom }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Filière:</strong><br>
+                                    {{ profilInfo.filiere ? profilInfo.filiere.nom : 'Non assignée' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Téléphone:</strong><br>
+                                    {{ profilInfo.telephone ?: 'Non renseigné' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Adresse:</strong><br>
+                                    {{ profilInfo.adresse ?: 'Non renseignée' }}
+                                </div>
+                            {% elseif role == 'enseignant' %}
+                                <div class="col-md-6 mb-3">
+                                    <strong>Nom complet:</strong><br>
+                                    {{ profilInfo.nom }} {{ profilInfo.prenom }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Spécialité:</strong><br>
+                                    {{ profilInfo.specialite ?: 'Non spécifiée' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Téléphone:</strong><br>
+                                    {{ profilInfo.telephone ?: 'Non renseigné' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Adresse:</strong><br>
+                                    {{ profilInfo.adresse ?: 'Non renseignée' }}
+                                </div>
+                            {% elseif role == 'comptable' %}
+                                <div class="col-md-6 mb-3">
+                                    <strong>Nom complet:</strong><br>
+                                    {{ profilInfo.nom }} {{ profilInfo.prenom }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Poste:</strong><br>
+                                    {{ profilInfo.poste ?: 'Non spécifié' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Téléphone:</strong><br>
+                                    {{ profilInfo.telephone ?: 'Non renseigné' }}
+                                </div>
+                            {% elseif role == 'admin' %}
+                                <div class="col-md-6 mb-3">
+                                    <strong>Nom complet:</strong><br>
+                                    {{ profilInfo.nom }} {{ profilInfo.prenom }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Poste:</strong><br>
+                                    {{ profilInfo.poste ?: 'Non spécifié' }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <strong>Téléphone:</strong><br>
+                                    {{ profilInfo.telephone ?: 'Non renseigné' }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Actions rapides -->
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-bolt me-2"></i>Actions rapides
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('app_profil_modifier') }}" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-edit me-2"></i>Modifier profil
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('app_profil_modifier_specifique') }}" class="btn btn-outline-info btn-block">
+                                <i class="fas fa-user-edit me-2"></i>Infos personnelles
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('app_parametres') }}" class="btn btn-outline-secondary btn-block">
+                                <i class="fas fa-cog me-2"></i>Paramètres
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ path('app_logout') }}" class="btn btn-outline-danger btn-block">
+                                <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

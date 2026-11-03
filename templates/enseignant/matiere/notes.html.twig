@@ -1,0 +1,297 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Notes - {{ matiere.nom }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Notes - {{ matiere.nom }}</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addNotesModal">
+                        <i class="fas fa-plus me-1"></i>Ajouter des notes
+                    </button>
+                    <a href="{{ path('enseignant_mes_matieres') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour aux matières
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informations de la matière -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-book me-2"></i>Informations de la matière</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nom :</strong> {{ matiere.nom }}</p>
+                            <p><strong>Coefficient :</strong> {{ matiere.coeficient }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Filière :</strong> 
+                                {% if matiere.filiere %}
+                                    <span class="badge bg-info">{{ matiere.filiere.nom }}</span>
+                                {% else %}
+                                    <span class="text-muted">Non assignée</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Nombre de notes :</strong> {{ notes|length }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            {% if notes|length > 0 %}
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-chart-bar me-2"></i>Statistiques</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-primary">{{ notes|length }}</h3>
+                                    <p class="text-muted">Total des notes</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-success">
+                                        {% set moyenne = 0 %}
+                                        {% if notes|length > 0 %}
+                                            {% set somme = 0 %}
+                                            {% for note in notes %}
+                                                {% set somme = somme + note.valeur %}
+                                            {% endfor %}
+                                            {% set moyenne = (somme / notes|length)|round(2) %}
+                                        {% endif %}
+                                        {{ moyenne }}/20
+                                    </h3>
+                                    <p class="text-muted">Moyenne</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-warning">
+                                        {% set maxNote = 0 %}
+                                        {% for note in notes %}
+                                            {% if note.valeur > maxNote %}
+                                                {% set maxNote = note.valeur %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ maxNote }}/20
+                                    </h3>
+                                    <p class="text-muted">Note maximale</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h3 class="text-danger">
+                                        {% set minNote = 20 %}
+                                        {% for note in notes %}
+                                            {% if note.valeur < minNote %}
+                                                {% set minNote = note.valeur %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {{ minNote }}/20
+                                    </h3>
+                                    <p class="text-muted">Note minimale</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Liste des notes -->
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-graduation-cap me-2"></i>Liste des notes ({{ notes|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if notes|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Étudiant</th>
+                                        <th>Note</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                        <th>Commentaire</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for note in notes %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ note.etudiant.nom }} {{ note.etudiant.prenom }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ note.etudiant.email }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if note.valeur >= 16 %}bg-success{% elseif note.valeur >= 12 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                                                    {{ note.valeur }}/20
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if note.type == 'devoir' %}
+                                                    <span class="badge bg-info">Devoir</span>
+                                                {% elseif note.type == 'examen' %}
+                                                    <span class="badge bg-warning">Examen</span>
+                                                {% elseif note.type == 'projet' %}
+                                                    <span class="badge bg-success">Projet</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Participation</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ note.dateNote|date('d/m/Y') }}</td>
+                                            <td>
+                                                {% if note.commentaire %}
+                                                    {{ note.commentaire|slice(0, 50) }}{% if note.commentaire|length > 50 %}...{% endif %}
+                                                {% else %}
+                                                    <span class="text-muted">Aucun commentaire</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ path('enseignant_note_show', {'id': note.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('enseignant_note_edit', {'id': note.id}) }}" class="btn btn-sm btn-outline-warning">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">Aucune note pour cette matière</h4>
+                            <p class="text-muted">Commencez par ajouter des notes pour vos étudiants.</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNotesModal">
+                                <i class="fas fa-plus me-1"></i>Ajouter des notes
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal pour ajouter des notes -->
+<div class="modal fade" id="addNotesModal" tabindex="-1" aria-labelledby="addNotesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addNotesModalLabel">
+                    <i class="fas fa-graduation-cap me-2"></i>Ajouter des notes - {{ matiere.nom }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ path('enseignant_matiere_notes_add', {'id': matiere.id}) }}" method="POST">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="typeNote" class="form-label">Type de note</label>
+                            <select class="form-select" id="typeNote" name="typeNote" required>
+                                <option value="">Sélectionnez un type</option>
+                                <option value="devoir">Devoir</option>
+                                <option value="examen">Examen</option>
+                                <option value="projet">Projet</option>
+                                <option value="participation">Participation</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="dateNote" class="form-label">Date de la note</label>
+                            <input type="date" class="form-control" id="dateNote" name="dateNote" value="{{ "now"|date("Y-m-d") }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="commentaireGlobal" class="form-label">Commentaire global (optionnel)</label>
+                        <textarea class="form-control" id="commentaireGlobal" name="commentaireGlobal" rows="2" placeholder="Commentaire qui s'appliquera à toutes les notes..."></textarea>
+                    </div>
+
+                    <hr>
+                    <h6 class="mb-3">
+                        <i class="fas fa-users me-2"></i>Étudiants de la filière {{ matiere.filiere ? matiere.filiere.nom : 'Non assignée' }}
+                    </h6>
+                    
+                    {% if matiere.filiere and matiere.filiere.etudiants|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Étudiant</th>
+                                        <th>Email</th>
+                                        <th>Note (/20)</th>
+                                        <th>Commentaire individuel</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for etudiant in matiere.filiere.etudiants %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ etudiant.nom }} {{ etudiant.prenom }}</strong>
+                                            </td>
+                                            <td>{{ etudiant.email ?: 'Non renseigné' }}</td>
+                                            <td>
+                                                <input type="number" 
+                                                       class="form-control" 
+                                                       name="notes[{{ etudiant.id }}]" 
+                                                       min="0" 
+                                                       max="20" 
+                                                       step="0.25" 
+                                                       placeholder="0.00"
+                                                       style="width: 100px;">
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control" 
+                                                          name="commentaires[{{ etudiant.id }}]" 
+                                                          rows="1" 
+                                                          placeholder="Commentaire individuel..."></textarea>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {% if not matiere.filiere %}
+                                Cette matière n'est pas assignée à une filière.
+                            {% else %}
+                                Aucun étudiant n'est inscrit dans la filière {{ matiere.filiere.nom }}.
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Annuler
+                    </button>
+                    {% if matiere.filiere and matiere.filiere.etudiants|length > 0 %}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Enregistrer les notes
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

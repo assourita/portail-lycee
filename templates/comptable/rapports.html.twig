@@ -1,0 +1,178 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rapports Comptables{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('comptable_dashboard') }}">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('comptable_paiements') }}">
+                            <i class="fas fa-money-bill"></i> Paiements
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('comptable_factures') }}">
+                            <i class="fas fa-file-invoice"></i> Factures
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ path('comptable_rapports') }}">
+                            <i class="fas fa-chart-line"></i> Rapports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('comptable_etudiants') }}">
+                            <i class="fas fa-users"></i> Étudiants
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Rapports Comptables</h1>
+            </div>
+
+            <!-- Filtres de période -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Période du rapport</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="dateDebut" class="form-label">Date début</label>
+                            <input type="date" class="form-control" id="dateDebut">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="dateFin" class="form-label">Date fin</label>
+                            <input type="date" class="form-control" id="dateFin">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button class="btn btn-primary w-100">
+                                <i class="fas fa-sync"></i> Générer le rapport
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Types de rapports -->
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-money-bill-wave fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">Rapport des Paiements</h5>
+                            <p class="card-text">Détail de tous les paiements reçus sur la période sélectionnée</p>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-download"></i> Exporter PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-file-invoice-dollar fa-3x text-success mb-3"></i>
+                            <h5 class="card-title">Rapport des Factures</h5>
+                            <p class="card-text">État des factures émises et leur statut de paiement</p>
+                            <button class="btn btn-success">
+                                <i class="fas fa-download"></i> Exporter PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-pie fa-3x text-info mb-3"></i>
+                            <h5 class="card-title">Analyse par Type</h5>
+                            <p class="card-text">Répartition des paiements par type (scolarité, inscription, etc.)</p>
+                            <button class="btn btn-info">
+                                <i class="fas fa-download"></i> Exporter PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                            <h5 class="card-title">Rapport des Retards</h5>
+                            <p class="card-text">Liste des paiements en retard et actions recommandées</p>
+                            <button class="btn btn-warning">
+                                <i class="fas fa-download"></i> Exporter PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphiques -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Vue d'ensemble</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <canvas id="graphiquePaiementsMois"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <canvas id="graphiqueRepartition"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Graphique des paiements mensuels
+const ctxPaiements = document.getElementById('graphiquePaiementsMois').getContext('2d');
+new Chart(ctxPaiements, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+        datasets: [{
+            label: 'Paiements mensuels (€)',
+            data: [12000, 19000, 15000, 25000, 22000, 30000],
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    }
+});
+
+// Graphique de répartition
+const ctxRepartition = document.getElementById('graphiqueRepartition').getContext('2d');
+new Chart(ctxRepartition, {
+    type: 'pie',
+    data: {
+        labels: ['Frais de scolarité', 'Frais d\'inscription', 'Autres'],
+        datasets: [{
+            data: [65, 25, 10],
+            backgroundColor: [
+                'rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 205, 86)'
+            ]
+        }]
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

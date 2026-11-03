@@ -1,0 +1,422 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - Mon Portail Lycée{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,133.3C960,128,1056,96,1152,90.7C1248,85,1344,107,1392,117.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            opacity: 0.3;
+        }
+        
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            overflow: hidden;
+            max-width: 450px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+            animation: slideInUp 0.8s ease-out;
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .login-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,133.3C960,128,1056,96,1152,90.7C1248,85,1344,107,1392,117.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            opacity: 0.3;
+        }
+        
+        .login-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .login-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .login-subtitle {
+            opacity: 0.9;
+            font-size: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .login-body {
+            padding: 40px 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 15px 20px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            background: white;
+            transform: translateY(-2px);
+        }
+        
+        .input-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+        
+        .form-check {
+            margin-bottom: 25px;
+        }
+        
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
+            cursor: pointer;
+        }
+        
+        .form-check-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+        
+        .form-check-label {
+            color: #2c3e50;
+            font-weight: 500;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 18px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn-login:hover::before {
+            left: 100%;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+        
+        .alert {
+            border-radius: 15px;
+            border: none;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            animation: shake 0.5s ease;
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            color: white;
+        }
+        
+        .login-footer {
+            text-align: center;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .login-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        
+        .login-footer a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e9ecef;
+        }
+        
+        .divider span {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0 20px;
+            color: #6c757d;
+            font-size: 0.9rem;
+            position: relative;
+        }
+        
+        .social-login {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            background: white;
+            color: #6c757d;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .social-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        @media (max-width: 576px) {
+            .login-card {
+                margin: 20px;
+            }
+            
+            .login-header {
+                padding: 30px 20px;
+            }
+            
+            .login-body {
+                padding: 30px 20px;
+            }
+            
+            .login-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h1 class="login-title">Connexion</h1>
+                <p class="login-subtitle">Accédez à votre espace personnel</p>
+            </div>
+            
+            <div class="login-body">
+                <form method="post">
+                    {% if error %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {{ error.messageKey|trans(error.messageData, 'security') }}
+                        </div>
+                    {% endif %}
+
+                    {% if app.user %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Vous êtes connecté en tant que <strong>{{ app.user.username }}</strong>. 
+                            <a href="{{ path('app_logout') }}" class="alert-link">Se déconnecter</a>
+                        </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="username" class="form-label">
+                            <i class="fas fa-user me-2"></i>Nom d'utilisateur
+                        </label>
+                        <input type="text" 
+                               value="{{ last_username }}" 
+                               name="username" 
+                               id="username" 
+                               class="form-control" 
+                               autocomplete="username" 
+                               required 
+                               autofocus
+                               placeholder="Entrez votre nom d'utilisateur">
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-lock me-2"></i>Mot de passe
+                        </label>
+                        <input type="password" 
+                               name="password" 
+                               id="password" 
+                               class="form-control" 
+                               autocomplete="current-password" 
+                               required
+                               placeholder="Entrez votre mot de passe">
+                        <i class="fas fa-lock input-icon"></i>
+                    </div>
+
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="_remember_me" id="remember_me">
+                        <label class="form-check-label" for="remember_me">
+                            <i class="fas fa-check-circle me-2"></i>Se souvenir de moi
+                        </label>
+                    </div>
+
+                    <button class="btn btn-login w-100" type="submit">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Se connecter
+                    </button>
+                </form>
+
+                <div class="divider">
+                    <span>ou</span>
+                </div>
+
+                <div class="social-login">
+                    <a href="#" class="social-btn">
+                        <i class="fab fa-google"></i>
+                        Google
+                    </a>
+                    <a href="#" class="social-btn">
+                        <i class="fab fa-microsoft"></i>
+                        Microsoft
+                    </a>
+                </div>
+            </div>
+            
+            <div class="login-footer">
+                <p class="mb-0">
+                    Pas encore de compte ? 
+                    <a href="{{ path('app_register') }}">Créer un compte</a>
+                </p>
+                <p class="mb-0 mt-2">
+                    <a href="{{ path('app_reset_password') }}">Mot de passe oublié ?</a>
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,268 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier l'Emploi du Temps{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-calendar-edit me-2"></i>Modifier l'Emploi du Temps
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_emploi_du_temps_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informations de la filière -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>Filière : {{ emploi_du_temps.filiere.nom }}
+                    </h5>
+                </div>
+            </div>
+
+            <!-- Formulaire d'édition -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>Emploi du temps
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="emploi-form" method="POST">
+                        <input type="hidden" name="filiere_id" value="{{ emploi_du_temps.filiere.id }}">
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">Créneaux horaires</h6>
+                            <div>
+                                <button type="button" class="btn btn-success btn-sm" onclick="addCreneau()">
+                                    <i class="fas fa-plus me-1"></i>Ajouter un créneau
+                                </button>
+                                <button type="button" class="btn btn-warning btn-sm" onclick="clearAll()">
+                                    <i class="fas fa-trash me-1"></i>Vider tout
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover" id="emploi-table">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th style="width: 12%">Jour</th>
+                                        <th style="width: 12%">Heure début</th>
+                                        <th style="width: 12%">Heure fin</th>
+                                        <th style="width: 20%">Matière</th>
+                                        <th style="width: 20%">Enseignant</th>
+                                        <th style="width: 16%">Cours (optionnel)</th>
+                                        <th style="width: 8%">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="emploi-tbody">
+                                    {% for emploi in emplois_existants %}
+                                    <tr id="creneau-{{ loop.index0 }}">
+                                        <td>
+                                            <select name="emploi_du_temps[{{ loop.index0 }}][jour]" class="form-select form-select-sm" required>
+                                                <option value="">Choisir un jour...</option>
+                                                {% for jour in jours %}
+                                                    <option value="{{ jour.id }}" {% if emploi.jour and emploi.jour.id == jour.id %}selected{% endif %}>
+                                                        {{ jour.nom }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="time" name="emploi_du_temps[{{ loop.index0 }}][heure_debut]" 
+                                                   class="form-control form-control-sm" 
+                                                   value="{{ emploi.heureDebut ? emploi.heureDebut.format('H:i') : '' }}" required>
+                                        </td>
+                                        <td>
+                                            <input type="time" name="emploi_du_temps[{{ loop.index0 }}][heure_fin]" 
+                                                   class="form-control form-control-sm" 
+                                                   value="{{ emploi.heureFin ? emploi.heureFin.format('H:i') : '' }}" required>
+                                        </td>
+                                        <td>
+                                            <select name="emploi_du_temps[{{ loop.index0 }}][matiere]" class="form-select form-select-sm matiere-select" required onchange="loadEnseignantsForCreneau({{ loop.index0 }}, this.value)">
+                                                <option value="">Choisir une matière...</option>
+                                                {% for matiere in matieres %}
+                                                    {% if matiere.filiere and matiere.filiere.id == emploi_du_temps.filiere.id %}
+                                                        <option value="{{ matiere.id }}" {% if emploi.matiere and emploi.matiere.id == matiere.id %}selected{% endif %}>
+                                                            {{ matiere.nom }}
+                                                        </option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select name="emploi_du_temps[{{ loop.index0 }}][enseignant]" class="form-select form-select-sm enseignant-select" required>
+                                                <option value="">Choisir un enseignant...</option>
+                                                {% if emploi.matiere and emploi.matiere.enseignant %}
+                                                    <option value="{{ emploi.matiere.enseignant.id }}" selected>
+                                                        {{ emploi.matiere.enseignant.nom }} {{ emploi.matiere.enseignant.prenom }}
+                                                    </option>
+                                                {% endif %}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="emploi_du_temps[{{ loop.index0 }}][cours]" 
+                                                   class="form-control form-control-sm" 
+                                                   value="{{ emploi.cours ? emploi.cours.titre : '' }}" 
+                                                   placeholder="Cours optionnel">
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="removeCreneau({{ loop.index0 }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                            <a href="{{ path('admin_emploi_du_temps_index') }}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times me-1"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+let creneauCount = {{ emplois_existants|length }};
+
+// Données pour les sélections dynamiques
+const jours = {{ jours_data|json_encode|raw }};
+const matieres = {{ matieres_data|json_encode|raw }};
+const enseignants = {{ enseignants_data|json_encode|raw }};
+
+// Debug: Afficher les données dans la console
+console.log('Jours:', jours);
+console.log('Matières:', matieres);
+console.log('Enseignants:', enseignants);
+
+function addCreneau() {
+    const tbody = document.getElementById('emploi-tbody');
+    const row = document.createElement('tr');
+    row.id = 'creneau-' + creneauCount;
+    
+    row.innerHTML = `
+        <td>
+            <select name="emploi_du_temps[${creneauCount}][jour]" class="form-select form-select-sm" required>
+                <option value="">Choisir un jour...</option>
+                ${jours.map(jour => `<option value="${jour.id}">${jour.nom}</option>`).join('')}
+            </select>
+        </td>
+        <td>
+            <input type="time" name="emploi_du_temps[${creneauCount}][heure_debut]" class="form-control form-control-sm" required>
+        </td>
+        <td>
+            <input type="time" name="emploi_du_temps[${creneauCount}][heure_fin]" class="form-control form-control-sm" required>
+        </td>
+        <td>
+            <select name="emploi_du_temps[${creneauCount}][matiere]" class="form-select form-select-sm matiere-select" required onchange="loadEnseignantsForCreneau(${creneauCount}, this.value)">
+                <option value="">Choisir une matière...</option>
+            </select>
+        </td>
+        <td>
+            <select name="emploi_du_temps[${creneauCount}][enseignant]" class="form-select form-select-sm enseignant-select" required>
+                <option value="">Choisir un enseignant...</option>
+            </select>
+        </td>
+        <td>
+            <input type="text" name="emploi_du_temps[${creneauCount}][cours]" class="form-control form-control-sm" placeholder="Cours optionnel">
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeCreneau(${creneauCount})">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+    
+    // Charger les matières pour ce créneau
+    loadMatieresForCreneau(creneauCount);
+    
+    creneauCount++;
+}
+
+function removeCreneau(id) {
+    const row = document.getElementById('creneau-' + id);
+    if (row) {
+        row.remove();
+    }
+}
+
+function clearAll() {
+    if (confirm('Êtes-vous sûr de vouloir vider tout l\'emploi du temps ?')) {
+        document.getElementById('emploi-tbody').innerHTML = '';
+        creneauCount = 0;
+    }
+}
+
+function loadMatieresForCreneau(creneauIndex) {
+    const matiereSelect = document.querySelector(`#creneau-${creneauIndex} .matiere-select`);
+    if (!matiereSelect) return;
+    
+    // Filtrer les matières par filière
+    const filiereId = {{ emploi_du_temps.filiere.id }};
+    const matieresFiltrees = matieres.filter(matiere => matiere.filiere_id == filiereId);
+    
+    matiereSelect.innerHTML = '<option value="">Choisir une matière...</option>';
+    matieresFiltrees.forEach(matiere => {
+        const option = document.createElement('option');
+        option.value = matiere.id;
+        option.textContent = matiere.nom;
+        matiereSelect.appendChild(option);
+    });
+}
+
+function loadEnseignantsForCreneau(creneauIndex, matiereId) {
+    const enseignantSelect = document.querySelector(`#creneau-${creneauIndex} .enseignant-select`);
+    if (!enseignantSelect) return;
+    
+    enseignantSelect.innerHTML = '<option value="">Choisir un enseignant...</option>';
+    
+    if (!matiereId) return;
+    
+    // Trouver l'enseignant de la matière
+    const matiere = matieres.find(m => m.id == matiereId);
+    if (matiere && matiere.enseignant_id) {
+        const enseignant = enseignants.find(e => e.id == matiere.enseignant_id);
+        if (enseignant) {
+            const option = document.createElement('option');
+            option.value = enseignant.id;
+            option.textContent = enseignant.nom + ' ' + enseignant.prenom;
+            enseignantSelect.appendChild(option);
+        }
+    }
+}
+
+// Initialiser les matières et enseignants pour les créneaux existants
+document.addEventListener('DOMContentLoaded', function() {
+    for (let i = 0; i < creneauCount; i++) {
+        loadMatieresForCreneau(i);
+        
+        // Initialiser l'enseignant si une matière est déjà sélectionnée
+        const matiereSelect = document.querySelector(`#creneau-${i} .matiere-select`);
+        if (matiereSelect && matiereSelect.value) {
+            loadEnseignantsForCreneau(i, matiereSelect.value);
+        }
+    }
+});
+</script>
+{% endblock %}

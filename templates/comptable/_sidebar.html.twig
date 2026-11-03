@@ -1,0 +1,80 @@
+<nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+    <div class="position-sticky pt-3">
+        <div class="sidebar-content">
+            <div class="sidebar-header mb-4">
+                <h5 class="text-center text-dark">
+                    <i class="fas fa-calculator me-2"></i>
+                    Espace Comptable
+                </h5>
+                {% if app.user.comptable %}
+                    <div class="text-center">
+                        <small class="text-muted d-block">{{ app.user.comptable.nom }} {{ app.user.comptable.prenom }}</small>
+                        {% if app.user.comptable.poste %}
+                            <span class="badge bg-success mt-1">{{ app.user.comptable.poste }}</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <ul class="nav flex-column">
+                {% if is_granted('ROLE_COMPTABLE') %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if app.request.get('_route') == 'comptable_dashboard' %}active{% endif %}" 
+                           href="{{ path('comptable_dashboard') }}">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {% if app.request.get('_route') starts with 'comptable_paiements' %}active{% endif %}" 
+                           href="{{ path('comptable_paiements') }}">
+                            <i class="fas fa-money-bill me-2"></i>
+                            Paiements
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {% if app.request.get('_route') starts with 'comptable_factures' %}active{% endif %}" 
+                           href="{{ path('comptable_factures') }}">
+                            <i class="fas fa-file-invoice me-2"></i>
+                            Factures
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {% if app.request.get('_route') starts with 'comptable_etudiants' %}active{% endif %}" 
+                           href="{{ path('comptable_etudiants') }}">
+                            <i class="fas fa-user-graduate me-2"></i>
+                            Étudiants
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {% if app.request.get('_route') starts with 'comptable_rapports' %}active{% endif %}" 
+                           href="{{ path('comptable_rapports') }}">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Rapports
+                        </a>
+                    </li>
+                    
+                    <li><hr class="dropdown-divider bg-secondary my-3"></li>
+                    
+                    <!-- Section COMPTE -->
+                    <li class="nav-item">
+                        <h6 class="sidebar-heading px-3 mt-2 mb-2 text-muted">
+                            <small>COMPTE</small>
+                        </h6>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_logout') }}">
+                            <i class="fas fa-sign-out-alt me-2"></i>
+                            <span class="align-middle">Déconnexion</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

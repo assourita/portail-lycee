@@ -1,0 +1,168 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Trimestres{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-calendar-week me-2 text-primary"></i>
+                        Gestion des Trimestres
+                    </h1>
+                    <p class="text-muted mb-0">Gérer les périodes d'évaluation par classe</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_trimestre_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Nouveau Trimestre
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filtres -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-filter me-2"></i>Filtrer par classe
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <select class="form-select" id="classe-filter">
+                                <option value="">Toutes les classes</option>
+                                {% for classe in classes %}
+                                    <option value="{{ classe.id }}">{{ classe.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des trimestres par classe -->
+            {% for classe in classes %}
+                {% set trimestresClasse = trimestres|filter(t => t.classe.id == classe.id) %}
+                {% if trimestresClasse|length > 0 %}
+                    <div class="classe-section mb-4" data-classe="{{ classe.id }}">
+                        <h4 class="mb-3">
+                            <i class="fas fa-school me-2 text-primary"></i>{{ classe.nom }}
+                        </h4>
+                        
+                        <div class="row">
+                            {% for trimestre in trimestresClasse %}
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-header bg-info text-white">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-calendar-alt me-2"></i>{{ trimestre.nom }}
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-2">
+                                                <strong><i class="fas fa-calendar-check me-1"></i>Année scolaire :</strong><br>
+                                                <span class="badge bg-primary">{{ trimestre.anneeScolaire }}</span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <strong><i class="fas fa-play me-1"></i>Date de début :</strong><br>
+                                                {{ trimestre.dateDebut|date('d/m/Y') }}
+                                            </div>
+                                            <div class="mb-2">
+                                                <strong><i class="fas fa-stop me-1"></i>Date de fin :</strong><br>
+                                                {{ trimestre.dateFin|date('d/m/Y') }}
+                                            </div>
+                                            {% if trimestre.description %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">{{ trimestre.description }}</small>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="card-footer bg-light">
+                                            <div class="btn-group w-100" role="group">
+                                                <a href="{{ path('admin_trimestre_show', {'id': trimestre.id}) }}" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ path('admin_trimestre_edit', {'id': trimestre.id}) }}" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteTrimestre({{ trimestre.id }})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            {% if trimestres|length == 0 %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-week fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun trimestre créé</h5>
+                    <p class="text-muted">Commencez par créer votre premier trimestre.</p>
+                    <a href="{{ path('admin_trimestre_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Créer un Trimestre
+                    </a>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce trimestre ? Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="delete-form" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const classeFilter = document.getElementById('classe-filter');
+    
+    classeFilter.addEventListener('change', function() {
+        const selectedClasse = this.value;
+        const sections = document.querySelectorAll('.classe-section');
+        
+        sections.forEach(section => {
+            if (selectedClasse === '' || section.dataset.classe === selectedClasse) {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        });
+    });
+});
+
+function deleteTrimestre(trimestreId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const form = document.getElementById('delete-form');
+    form.action = '{{ path('admin_trimestre_delete', {'id': '__ID__'}) }}'.replace('__ID__', trimestreId);
+    modal.show();
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,162 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Emploi du Temps{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'etudiant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-calendar-alt me-2"></i>Mon Emploi du Temps
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button type="button" class="btn btn-outline-primary" onclick="window.print()">
+                        <i class="fas fa-print me-1"></i>Imprimer
+                    </button>
+                </div>
+            </div>
+
+            {% if emplois_par_jour %}
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-graduation-cap me-2"></i>
+                            Emploi du temps - {{ app.user.etudiant.filiere ? app.user.etudiant.filiere.nom : 'Filière non assignée' }}
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th style="width: 15%">Heure</th>
+                                        <th style="width: 12%">Lundi</th>
+                                        <th style="width: 12%">Mardi</th>
+                                        <th style="width: 12%">Mercredi</th>
+                                        <th style="width: 12%">Jeudi</th>
+                                        <th style="width: 12%">Vendredi</th>
+                                        <th style="width: 12%">Samedi</th>
+                                        <th style="width: 13%">Dimanche</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set heures = ['08:00', '09:30', '11:00', '14:00', '15:30', '17:00'] %}
+                                    {% for heure in heures %}
+                                        <tr>
+                                            <td class="fw-bold bg-light text-center">
+                                                <i class="fas fa-clock me-1"></i>{{ heure }}
+                                            </td>
+                                            {% for jour in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'] %}
+                                                <td class="text-center">
+                                                    {% set creneau_trouve = false %}
+                                                    {% for emploi in emplois_par_jour[jour]|default([]) %}
+                                                        {% set heure_debut = emploi.heureDebut|date('H:i') %}
+                                                        {% set heure_fin = emploi.heureFin|date('H:i') %}
+                                                        {% if heure_debut == heure %}
+                                                            <div class="p-2 border rounded bg-info text-white">
+                                                                <div class="fw-bold">{{ emploi.matiere.nom }}</div>
+                                                                <small>{{ emploi.enseignant.nom }} {{ emploi.enseignant.prenom }}</small>
+                                                                <br>
+                                                                <small>{{ heure_debut }} - {{ heure_fin }}</small>
+                                                            </div>
+                                                            {% set creneau_trouve = true %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    {% if not creneau_trouve %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Légende -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Informations
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Légende :</h6>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="bg-info text-white p-2 rounded me-3" style="width: 20px; height: 20px;"></div>
+                                    <span>Cours programmé</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="bg-light border p-2 rounded me-3" style="width: 20px; height: 20px;"></div>
+                                    <span>Heure</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-success">Statistiques :</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-book me-2"></i><strong>Total cours :</strong> {{ emplois_par_jour|length }}</li>
+                                    <li><i class="fas fa-clock me-2"></i><strong>Heures par semaine :</strong> 
+                                        {% set total_heures = 0 %}
+                                        {% for jour, emplois in emplois_par_jour %}
+                                            {% for emploi in emplois %}
+                                                {% set duree = emploi.heureFin|date('U') - emploi.heureDebut|date('U') %}
+                                                {% set total_heures = total_heures + (duree / 3600) %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                        {{ total_heures|round(1) }}h
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">Aucun emploi du temps</h4>
+                    <p class="text-muted">Votre emploi du temps n'a pas encore été configuré.</p>
+                    <p class="text-muted">Contactez l'administration pour plus d'informations.</p>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn-toolbar, .card-header, .sidebar {
+        display: none !important;
+    }
+    
+    .table {
+        font-size: 12px;
+    }
+    
+    .container-fluid {
+        margin: 0;
+        padding: 0;
+    }
+    
+    main {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+}
+
+.table td {
+    vertical-align: middle;
+    min-height: 60px;
+}
+
+.bg-info {
+    background-color: #0dcaf0 !important;
+}
+</style>
+{% endblock %}

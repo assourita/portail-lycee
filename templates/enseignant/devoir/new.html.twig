@@ -1,0 +1,178 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau Devoir{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-plus me-2 text-primary"></i>
+                        Nouveau Devoir
+                    </h1>
+                    {% if periodeActive %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                        </p>
+                    {% endif %}
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('enseignant_devoirs_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Formulaire -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Informations du Devoir
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <div class="mb-3">
+                                    <label for="titre" class="form-label">
+                                        <i class="fas fa-heading me-1"></i>Titre du devoir *
+                                    </label>
+                                    <input type="text" class="form-control" id="titre" name="titre" 
+                                           placeholder="Ex: Devoir Maison n°1, Exercices Chapitre 3..." required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="matiere" class="form-label">
+                                        <i class="fas fa-book me-1"></i>Matière *
+                                    </label>
+                                    <select class="form-select" id="matiere" name="matiere" required>
+                                        <option value="">Sélectionner une matière</option>
+                                        {% for matiere in matieres %}
+                                            <option value="{{ matiere.id }}">
+                                                {{ matiere.nom }} ({{ matiere.filiere.nom }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-align-left me-1"></i>Description *
+                                    </label>
+                                    <textarea class="form-control" id="description" name="description" rows="4" 
+                                              placeholder="Description générale du devoir..." required></textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="consignes" class="form-label">
+                                        <i class="fas fa-list-ol me-1"></i>Consignes détaillées
+                                    </label>
+                                    <textarea class="form-control" id="consignes" name="consignes" rows="6"
+                                              placeholder="Consignes détaillées, exercices à faire, format attendu..."></textarea>
+                                    <div class="form-text">Vous pouvez utiliser du texte formaté (Markdown supporté)</div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="date_echeance" class="form-label">
+                                            <i class="fas fa-calendar me-1"></i>Date limite *
+                                        </label>
+                                        <input type="datetime-local" class="form-control" id="date_echeance" 
+                                               name="date_echeance" required>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="note_max" class="form-label">
+                                            <i class="fas fa-star me-1"></i>Note maximale *
+                                        </label>
+                                        <input type="number" class="form-control" id="note_max" 
+                                               name="note_max" value="20" min="1" max="100" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="accepte_tardives" 
+                                               name="accepte_tardives" value="1">
+                                        <label class="form-check-label" for="accepte_tardives">
+                                            Accepter les soumissions tardives
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="statut" class="form-label">
+                                        <i class="fas fa-flag me-1"></i>Statut *
+                                    </label>
+                                    <select class="form-select" id="statut" name="statut" required>
+                                        <option value="brouillon">Brouillon (non visible par les étudiants)</option>
+                                        <option value="publie">Publier (visible par les étudiants)</option>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Vous pouvez créer un brouillon et le publier plus tard.
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ path('enseignant_devoirs_index') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times me-1"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>Créer le Devoir
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-lightbulb me-2"></i>Conseils
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <h6>Bonnes pratiques :</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-1"></i>Titre clair et précis</li>
+                                <li><i class="fas fa-check text-success me-1"></i>Consignes détaillées</li>
+                                <li><i class="fas fa-check text-success me-1"></i>Date limite réaliste</li>
+                                <li><i class="fas fa-check text-success me-1"></i>Critères d'évaluation explicites</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Types de devoirs :</h6>
+                            <ul class="list-unstyled text-muted">
+                                <li><i class="fas fa-home me-1"></i>Devoir Maison (DM)</li>
+                                <li><i class="fas fa-pen me-1"></i>Exercices</li>
+                                <li><i class="fas fa-project-diagram me-1"></i>Projet</li>
+                                <li><i class="fas fa-search me-1"></i>Recherche</li>
+                                <li><i class="fas fa-file-alt me-1"></i>Exposé</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

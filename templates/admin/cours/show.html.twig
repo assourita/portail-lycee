@@ -1,0 +1,167 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails du cours - {{ cours.titre }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-book me-2 text-primary"></i>
+                        {{ cours.titre }}
+                    </h1>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-graduation-cap me-1"></i>{{ cours.matiere.nom }}
+                        {% if cours.enseignant %}
+                            - <i class="fas fa-user me-1"></i>{{ cours.enseignant.nom }} {{ cours.enseignant.prenom }}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_matiere_show', {'id': cours.matiere.id}) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la matière
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informations générales -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar fa-2x mb-2"></i>
+                            <h6 class="card-title">Date d'ajout</h6>
+                            <p class="card-text">{{ cours.dateAjout|date('d/m/Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar-check fa-2x mb-2"></i>
+                            <h6 class="card-title">Date de publication</h6>
+                            <p class="card-text">{{ cours.datePublication|date('d/m/Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-list fa-2x mb-2"></i>
+                            <h6 class="card-title">Chapitres</h6>
+                            <p class="card-text">{{ cours.chapitres|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+                            <h6 class="card-title">Filière</h6>
+                            <p class="card-text">{{ cours.matiere.filiere.nom }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenu du cours -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-file-alt me-2"></i>Description du cours
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if cours.description %}
+                                <div class="mb-3">
+                                    <h6>Description :</h6>
+                                    <p class="text-muted">{{ cours.description|nl2br }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if cours.contenu %}
+                                <div>
+                                    <h6>Contenu :</h6>
+                                    <div class="border rounded p-3 bg-light">
+                                        {{ cours.contenu|nl2br }}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Aucun contenu disponible</h5>
+                                    <p class="text-muted">Ce cours n'a pas encore de contenu détaillé.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Informations sur l'enseignant -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-user me-2"></i>Enseignant responsable
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            {% if cours.enseignant %}
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">{{ cours.enseignant.nom }} {{ cours.enseignant.prenom }}</h6>
+                                        <small class="text-muted">{{ cours.enseignant.email }}</small>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p class="text-muted mb-0">Aucun enseignant assigné</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Chapitres du cours -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-list me-2"></i>Chapitres ({{ cours.chapitres|length }})
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            {% if cours.chapitres|length > 0 %}
+                                <div class="list-group list-group-flush">
+                                    {% for chapitre in cours.chapitres %}
+                                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                            <div>
+                                                <h6 class="mb-1">{{ chapitre.titre }}</h6>
+                                                {% if chapitre.contenu %}
+                                                    <small class="text-muted">{{ chapitre.contenu|slice(0, 50) }}{% if chapitre.contenu|length > 50 %}...{% endif %}</small>
+                                                {% endif %}
+                                            </div>
+                                            <span class="badge bg-primary rounded-pill">{{ loop.index }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-3">
+                                    <i class="fas fa-list fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted mb-0">Aucun chapitre disponible</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Évaluations{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'etudiant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Mes Évaluations</h1>
+            </div>
+
+            <!-- Informations de l'étudiant -->
+            <div class="alert alert-info mb-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Étudiant :</strong> {{ etudiant.nom }} {{ etudiant.prenom }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Filière :</strong> {{ etudiant.filiere.nom }}
+                    </div>
+                </div>
+                {% if periodeActive %}
+                <div class="row mt-2">
+                    <div class="col-md-12">
+                        <strong>Période active :</strong> {{ periodeActive.periode }} {{ periodeActive.anneeScolaire }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Liste des évaluations -->
+            <div class="row">
+                {% for evaluation in evaluations %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-clipboard-list me-2"></i>{{ evaluation.nom }}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-chalkboard-teacher me-1"></i>
+                                    <strong>Matière :</strong> {{ evaluation.matiere.nom }}
+                                </small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-user-tie me-1"></i>
+                                    <strong>Enseignant :</strong> {{ evaluation.enseignant.nom }} {{ evaluation.enseignant.prenom }}
+                                </small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    <strong>Date :</strong> {{ evaluation.dateEvaluation|date('d/m/Y H:i') }}
+                                </small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-star me-1"></i>
+                                    <strong>Note max :</strong> {{ evaluation.noteMax }}/20
+                                </small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-weight me-1"></i>
+                                    <strong>Coefficient :</strong> {{ evaluation.coefficient }}
+                                </small>
+                            </div>
+
+                            {% if evaluation.description %}
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    <strong>Description :</strong> {{ evaluation.description|slice(0, 100) }}{% if evaluation.description|length > 100 %}...{% endif %}
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-layer-group me-1"></i>
+                                    {{ evaluation.trimestre.nom }}
+                                </small>
+                                <span class="badge bg-info">À venir</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                        <h4>Aucune évaluation</h4>
+                        <p>Il n'y a actuellement aucune évaluation programmée pour votre filière.</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Statistiques -->
+            {% if evaluations|length > 0 %}
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Total Évaluations</h6>
+                            <h2 class="mb-0">{{ evaluations|length }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-success">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Ce mois</h6>
+                            <h2 class="mb-0">{{ evaluations|filter(e => e.dateEvaluation|date('Y-m') == "now"|date('Y-m'))|length }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">À venir</h6>
+                            <h2 class="mb-0">{{ evaluations|filter(e => e.dateEvaluation >= date())|length }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}

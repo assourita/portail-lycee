@@ -1,0 +1,185 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Période Académique{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-plus me-2 text-primary"></i>
+                        Nouvelle Période Académique
+                    </h1>
+                    <p class="text-muted mb-0">Créer une nouvelle période académique</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_periodes_academiques_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Formulaire -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Informations de la Période
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="annee_scolaire" class="form-label">
+                                            <i class="fas fa-calendar me-1"></i>Année Scolaire *
+                                        </label>
+                                        <input type="text" class="form-control" id="annee_scolaire" name="annee_scolaire" 
+                                               placeholder="2024-2025" required>
+                                        <div class="form-text">Format: YYYY-YYYY</div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="periode" class="form-label">
+                                            <i class="fas fa-clock me-1"></i>Période *
+                                        </label>
+                                        <select class="form-select" id="periode" name="periode" required>
+                                            <option value="">Sélectionner une période</option>
+                                            <option value="1er Trimestre">1er Trimestre</option>
+                                            <option value="2ème Trimestre">2ème Trimestre</option>
+                                            <option value="3ème Trimestre">3ème Trimestre</option>
+                                            <option value="1er Semestre">1er Semestre</option>
+                                            <option value="2ème Semestre">2ème Semestre</option>
+                                            <option value="Année Complète">Année Complète</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="date_debut" class="form-label">
+                                            <i class="fas fa-calendar-plus me-1"></i>Date de Début *
+                                        </label>
+                                        <input type="date" class="form-control" id="date_debut" name="date_debut" required>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="date_fin" class="form-label">
+                                            <i class="fas fa-calendar-minus me-1"></i>Date de Fin *
+                                        </label>
+                                        <input type="date" class="form-control" id="date_fin" name="date_fin" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1">
+                                        <label class="form-check-label" for="is_active">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            Activer cette période immédiatement
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Si coché, cette période deviendra la période active et toutes les autres seront désactivées.
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ path('admin_periodes_academiques_index') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times me-1"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>Créer la Période
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <h6>Périodes Scolaires Typiques :</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>1er Trimestre :</strong> Septembre - Décembre</li>
+                                <li><strong>2ème Trimestre :</strong> Janvier - Mars</li>
+                                <li><strong>3ème Trimestre :</strong> Avril - Juin</li>
+                                <li><strong>1er Semestre :</strong> Septembre - Janvier</li>
+                                <li><strong>2ème Semestre :</strong> Février - Juin</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Important :</h6>
+                            <ul class="list-unstyled text-muted">
+                                <li><i class="fas fa-check me-1"></i>Une seule période peut être active à la fois</li>
+                                <li><i class="fas fa-check me-1"></i>Les notes, cours et évaluations sont liés à une période</li>
+                                <li><i class="fas fa-check me-1"></i>Changer de période active affecte tout le système</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateDebutInput = document.getElementById('date_debut');
+    const dateFinInput = document.getElementById('date_fin');
+    const periodeSelect = document.getElementById('periode');
+    
+    // Validation des dates
+    function validateDates() {
+        const dateDebut = new Date(dateDebutInput.value);
+        const dateFin = new Date(dateFinInput.value);
+        
+        if (dateDebut && dateFin && dateDebut >= dateFin) {
+            dateFinInput.setCustomValidity('La date de fin doit être postérieure à la date de début');
+        } else {
+            dateFinInput.setCustomValidity('');
+        }
+    }
+    
+    dateDebutInput.addEventListener('change', validateDates);
+    dateFinInput.addEventListener('change', validateDates);
+    
+    // Suggestions de dates selon la période
+    periodeSelect.addEventListener('change', function() {
+        const periode = this.value;
+        const currentYear = new Date().getFullYear();
+        
+        if (periode.includes('1er Trimestre')) {
+            dateDebutInput.value = `${currentYear}-09-01`;
+            dateFinInput.value = `${currentYear}-12-20`;
+        } else if (periode.includes('2ème Trimestre')) {
+            dateDebutInput.value = `${currentYear + 1}-01-06`;
+            dateFinInput.value = `${currentYear + 1}-03-28`;
+        } else if (periode.includes('3ème Trimestre')) {
+            dateDebutInput.value = `${currentYear + 1}-04-07`;
+            dateFinInput.value = `${currentYear + 1}-06-30`;
+        } else if (periode.includes('1er Semestre')) {
+            dateDebutInput.value = `${currentYear}-09-01`;
+            dateFinInput.value = `${currentYear + 1}-01-31`;
+        } else if (periode.includes('2ème Semestre')) {
+            dateDebutInput.value = `${currentYear + 1}-02-03`;
+            dateFinInput.value = `${currentYear + 1}-06-30`;
+        }
+    });
+});
+</script>
+{% endblock %}

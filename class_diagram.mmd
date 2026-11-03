@@ -1,0 +1,87 @@
+classDiagram
+    class Utilisateur {
+        -int id
+        -string nom
+        -string prenom
+        -string telephone
+        -string motDePasse
+        -string adresse
+        -date dateInscription
+        +sInscrire() void
+        +seConnecter() void
+        +soumettreDemande() void
+        +consulterHistorique() void
+    }
+
+    class AgentMairie {
+        -int id
+        -string nom
+        -string prenom
+        -string email
+        -string motDePasse
+        -string poste
+        +validerDemande() void
+        +rejeterDemande() void
+        +consulterDossiers() void
+    }
+
+    class AdministrateurCentral {
+        -int id
+        -string nom
+        -string prenom
+        -string email
+        +gererDémarches() void
+        +gererTarifs() void
+        +gererAgents() void
+        +consulterRapports() void
+    }
+
+    class Demande {
+        -int id
+        -string type
+        -date dateSoumission
+        -string statut
+        -string justificatifs
+        +soumettre() void
+        +modifier() void
+        +annuler() void
+        +suivreStatut() void
+    }
+
+    class Démarche {
+        -int id
+        -string nom
+        -string description
+        -float tarif
+        +creerDémarche() void
+        +modifierDémarche() void
+        +supprimerDémarche() void
+    }
+
+    class Paiement {
+        -int id
+        -float montant
+        -date datePaiement
+        -string moyenPaiement
+        -string statut
+        +effectuerPaiement() void
+        +verifierPaiement() void
+    }
+
+    class Notification {
+        -int id
+        -string contenu
+        -date dateEnvoi
+        -string type
+        +envoyerNotification() void
+    }
+
+    %% Relations
+    Utilisateur "1" --> "0..*" Demande : soumet
+    Demande "1" --> "1" Paiement : nécessite
+    Demande "0..*" --> "1" Démarche : concerne
+    Demande "1" --> "0..*" Notification : génère
+    AgentMairie "1" --> "0..*" Demande : traite
+    AdministrateurCentral "1" --> "0..*" Démarche : gère
+
+

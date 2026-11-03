@@ -1,0 +1,104 @@
+@startuml Diagramme de Classes - Portail Mairie
+
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor LightBlue
+    BorderColor Black
+    ArrowColor Black
+}
+
+class Utilisateur {
+    - id: int
+    - nom: string
+    - prenom: string
+    - telephone: string
+    - motDePasse: string
+    - adresse: string
+    - dateInscription: date
+    --
+    + sInscrire(): void
+    + seConnecter(): void
+    + soumettreDemande(): void
+    + consulterHistorique(): void
+}
+
+class AgentMairie {
+    - id: int
+    - nom: string
+    - prenom: string
+    - email: string
+    - motDePasse: string
+    - poste: string
+    --
+    + validerDemande(): void
+    + rejeterDemande(): void
+    + consulterDossiers(): void
+}
+
+class AdministrateurCentral {
+    - id: int
+    - nom: string
+    - prenom: string
+    - email: string
+    --
+    + gererDémarches(): void
+    + gererTarifs(): void
+    + gererAgents(): void
+    + consulterRapports(): void
+}
+
+class Demande {
+    - id: int
+    - type: string
+    - dateSoumission: date
+    - statut: string
+    - justificatifs: string
+    --
+    + soumettre(): void
+    + modifier(): void
+    + annuler(): void
+    + suivreStatut(): void
+}
+
+class Démarche {
+    - id: int
+    - nom: string
+    - description: string
+    - tarif: float
+    --
+    + creerDémarche(): void
+    + modifierDémarche(): void
+    + supprimerDémarche(): void
+}
+
+class Paiement {
+    - id: int
+    - montant: float
+    - datePaiement: date
+    - moyenPaiement: string
+    - statut: string
+    --
+    + effectuerPaiement(): void
+    + verifierPaiement(): void
+}
+
+class Notification {
+    - id: int
+    - contenu: string
+    - dateEnvoi: date
+    - type: string
+    --
+    + envoyerNotification(): void
+}
+
+' Relations
+Utilisateur "1" --> "0..*" Demande : soumet
+Demande "1" --> "1" Paiement : nécessite
+Demande "0..*" --> "1" Démarche : concerne
+Demande "1" --> "0..*" Notification : génère
+AgentMairie "1" --> "0..*" Demande : traite
+AdministrateurCentral "1" --> "0..*" Démarche : gère
+
+@enduml
+
+

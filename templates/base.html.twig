@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
+        {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
+            <style>
+                /* Navbar harmonisée avec le design */
+                .navbar-modern {
+                    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+                    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+                    transition: all 0.3s ease !important;
+                    padding: 1rem 0 !important;
+                    min-height: 70px !important;
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    z-index: 1030 !important;
+                    width: 100% !important;
+                }
+
+                .navbar-modern.scrolled {
+                    background: rgba(44, 62, 80, 0.95) !important;
+                    backdrop-filter: blur(20px) !important;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.2) !important;
+                    padding: 0.8rem 0 !important;
+                    min-height: 65px !important;
+                }
+
+                /* Brand harmonisé */
+                .brand-container {
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 12px !important;
+                    padding: 0.3rem 0 !important;
+                }
+
+                .brand-icon {
+                    width: 40px !important;
+                    height: 40px !important;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                    border-radius: 8px !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    color: white !important;
+                    font-size: 1.1rem !important;
+                    transition: all 0.3s ease !important;
+                    flex-shrink: 0 !important;
+                    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+                }
+
+                .brand-icon:hover {
+                    transform: translateY(-1px) !important;
+                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+                }
+
+                .brand-text {
+                    display: flex !important;
+                    flex-direction: column !important;
+                    gap: 1px !important;
+                }
+
+                .brand-title {
+                    font-size: 1.3rem !important;
+                    font-weight: 600 !important;
+                    color: white !important;
+                    line-height: 1.2 !important;
+                    margin: 0 !important;
+                }
+
+                .brand-subtitle {
+                    font-size: 0.75rem !important;
+                    color: rgba(255,255,255,0.7) !important;
+                    font-weight: 400 !important;
+                    line-height: 1 !important;
+                    margin: 0 !important;
+                }
+
+                /* Liens de navigation harmonisés */
+                .navbar-modern .nav-link {
+                    color: rgba(255,255,255,0.9) !important;
+                    font-weight: 500 !important;
+                    padding: 0.6rem 1rem !important;
+                    border-radius: 6px !important;
+                    margin: 0 0.2rem !important;
+                    position: relative !important;
+                    transition: all 0.3s ease !important;
+                    text-decoration: none !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    white-space: nowrap !important;
+                }
+
+                .navbar-modern .nav-link:hover {
+                    color: white !important;
+                    background: rgba(255,255,255,0.1) !important;
+                }
+
+                .navbar-modern .nav-link::after {
+                    content: '' !important;
+                    position: absolute !important;
+                    bottom: 0 !important;
+                    left: 50% !important;
+                    width: 0 !important;
+                    height: 2px !important;
+                    background: linear-gradient(90deg, #667eea, #764ba2) !important;
+                    transition: all 0.3s ease !important;
+                    transform: translateX(-50%) !important;
+                }
+
+                .navbar-modern .nav-link:hover::after {
+                    width: 80% !important;
+                }
+
+                .navbar-modern .nav-link i {
+                    margin-right: 0.5rem !important;
+                    font-size: 0.9rem !important;
+                    color: rgba(255,255,255,0.7) !important;
+                    transition: all 0.3s ease !important;
+                }
+
+                .navbar-modern .nav-link:hover i {
+                    color: white !important;
+                }
+
+                /* Liens spéciaux par rôle - harmonisés */
+                .admin-link {
+                    background: linear-gradient(135deg, #ff6b6b, #ee5a24) !important;
+                    color: white !important;
+                    border-radius: 6px !important;
+                    padding: 0.6rem 1rem !important;
+                    font-weight: 500 !important;
+                    margin: 0 0.2rem !important;
+                    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.2) !important;
+                }
+
+                .admin-link:hover {
+                    background: linear-gradient(135deg, #ee5a24, #ff6b6b) !important;
+                    color: white !important;
+                    transform: translateY(-1px) !important;
+                }
+
+                .student-link {
+                    background: linear-gradient(135deg, #4ecdc4, #44a08d) !important;
+                    color: white !important;
+                    border-radius: 6px !important;
+                    padding: 0.6rem 1rem !important;
+                    font-weight: 500 !important;
+                    margin: 0 0.2rem !important;
+                    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.2) !important;
+                }
+
+                .student-link:hover {
+                    background: linear-gradient(135deg, #44a08d, #4ecdc4) !important;
+                    color: white !important;
+                    transform: translateY(-1px) !important;
+                }
+
+                .teacher-link {
+                    background: linear-gradient(135deg, #f093fb, #f5576c) !important;
+                    color: white !important;
+                    border-radius: 6px !important;
+                    padding: 0.6rem 1rem !important;
+                    font-weight: 500 !important;
+                    margin: 0 0.2rem !important;
+                    box-shadow: 0 2px 8px rgba(240, 147, 251, 0.2) !important;
+                }
+
+                .teacher-link:hover {
+                    background: linear-gradient(135deg, #f5576c, #f093fb) !important;
+                    color: white !important;
+                    transform: translateY(-1px) !important;
+                }
+
+                .accountant-link {
+                    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+                    color: white !important;
+                    border-radius: 6px !important;
+                    padding: 0.6rem 1rem !important;
+                    font-weight: 500 !important;
+                    margin: 0 0.2rem !important;
+                    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2) !important;
+                }
+
+                .accountant-link:hover {
+                    background: linear-gradient(135deg, #764ba2, #667eea) !important;
+                    color: white !important;
+                    transform: translateY(-1px) !important;
+                }
+
+                /* Bouton de connexion harmonisé */
+                .login-btn {
+                    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+                    color: white !important;
+                    border-radius: 6px !important;
+                    padding: 0.6rem 1.2rem !important;
+                    font-weight: 500 !important;
+                    border: none !important;
+                    transition: all 0.3s ease !important;
+                    margin-left: 0.5rem !important;
+                    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2) !important;
+                }
+
+                .login-btn:hover {
+                    background: linear-gradient(135deg, #764ba2, #667eea) !important;
+                    color: white !important;
+                    transform: translateY(-1px) !important;
+                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+                }
+
+                /* Profil utilisateur harmonisé */
+                .user-profile {
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 8px !important;
+                    padding: 0.5rem 1rem !important;
+                    border-radius: 6px !important;
+                    background: rgba(255,255,255,0.1) !important;
+                    transition: all 0.3s ease !important;
+                    margin-left: 0.5rem !important;
+                    border: 1px solid rgba(255,255,255,0.1) !important;
+                }
+
+                .user-profile:hover {
+                    background: rgba(255,255,255,0.15) !important;
+                    border-color: rgba(255,255,255,0.2) !important;
+                    transform: translateY(-1px) !important;
+                }
+
+                .user-avatar {
+                    width: 32px !important;
+                    height: 32px !important;
+                    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+                    border-radius: 50% !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    color: white !important;
+                    font-size: 0.9rem !important;
+                    transition: all 0.3s ease !important;
+                    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2) !important;
+                }
+
+                .user-profile:hover .user-avatar {
+                    transform: scale(1.05) !important;
+                    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3) !important;
+                }
+
+                .user-name {
+                    font-weight: 500 !important;
+                    color: white !important;
+                    font-size: 0.9rem !important;
+                }
+
+                /* Dropdowns harmonisés */
+                .dropdown-menu {
+                    background: rgba(44, 62, 80, 0.95) !important;
+                    backdrop-filter: blur(20px) !important;
+                    border: 1px solid rgba(255,255,255,0.1) !important;
+                    border-radius: 8px !important;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important;
+                    padding: 0.5rem 0 !important;
+                    margin-top: 0.5rem !important;
+                    min-width: 180px !important;
+                }
+
+                .dropdown-item {
+                    color: rgba(255,255,255,0.9) !important;
+                    padding: 0.6rem 1rem !important;
+                    transition: all 0.3s ease !important;
+                    border-radius: 4px !important;
+                    margin: 0.1rem 0.5rem !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    font-weight: 500 !important;
+                }
+
+                .dropdown-item:hover {
+                    background: rgba(255,255,255,0.1) !important;
+                    color: white !important;
+                    transform: translateX(4px) !important;
+                }
+
+                .dropdown-item i {
+                    margin-right: 0.6rem !important;
+                    width: 16px !important;
+                    text-align: center !important;
+                    color: rgba(255,255,255,0.7) !important;
+                }
+
+                .dropdown-item:hover i {
+                    color: white !important;
+                }
+
+                .logout-link {
+                    color: #ff6b6b !important;
+                    border-top: 1px solid rgba(255,255,255,0.1) !important;
+                    margin-top: 0.3rem !important;
+                    padding-top: 0.6rem !important;
+                }
+
+                .logout-link:hover {
+                    background: rgba(255, 107, 107, 0.1) !important;
+                    color: #ff6b6b !important;
+                }
+
+                /* Toggler harmonisé */
+                .custom-toggler {
+                    border: none !important;
+                    padding: 0.4rem !important;
+                    background: rgba(255,255,255,0.1) !important;
+                    border-radius: 4px !important;
+                    transition: all 0.3s ease !important;
+                }
+
+                .custom-toggler:hover {
+                    background: rgba(255,255,255,0.15) !important;
+                }
+
+                .toggler-icon {
+                    display: block !important;
+                    width: 24px !important;
+                    height: 2px !important;
+                    background: white !important;
+                    margin: 4px 0 !important;
+                    border-radius: 2px !important;
+                    transition: all 0.3s ease !important;
+                }
+
+                .custom-toggler[aria-expanded="true"] .toggler-icon:nth-child(1) {
+                    transform: rotate(45deg) translate(5px, 5px) !important;
+                }
+
+                .custom-toggler[aria-expanded="true"] .toggler-icon:nth-child(2) {
+                    opacity: 0 !important;
+                }
+
+                .custom-toggler[aria-expanded="true"] .toggler-icon:nth-child(3) {
+                    transform: rotate(-45deg) translate(5px, -5px) !important;
+                }
+
+                /* Compensation pour la navbar fixe */
+                body {
+                    padding-top: 70px !important;
+                }
+
+                /* Ajustement pour les pages avec contenu */
+                .container-fluid {
+                    padding-top: 0 !important;
+                }
+
+                /* Ajustement spécifique pour la page d'accueil */
+                .hero-section {
+                    margin-top: -70px !important;
+                    padding-top: 70px !important;
+                }
+
+                /* Sidebar synchronisée avec la navbar */
+                .sidebar {
+                    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+                    box-shadow: 2px 0 10px rgba(0,0,0,0.1) !important;
+                    border-right: 1px solid rgba(255,255,255,0.1) !important;
+                    top: 70px !important;
+                    height: calc(100vh - 70px) !important;
+                    z-index: 1020 !important;
+                    position: fixed !important;
+                    left: 0 !important;
+                    width: 250px !important;
+                    display: block !important;
+                    visibility: visible !important;
+                }
+
+                .sidebar-content {
+                    padding: 1.5rem 0 !important;
+                    height: 100% !important;
+                    overflow-y: auto !important;
+                }
+
+                .sidebar .nav {
+                    list-style: none !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                }
+
+                .sidebar .nav-item {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
+
+                .sidebar .nav-item a {
+                    color: #ffffff !important;
+                    text-decoration: none !important;
+                }
+
+                .sidebar .nav-link {
+                    color: #ffffff !important;
+                    padding: 0.8rem 1.5rem !important;
+                    margin: 0.2rem 0.8rem !important;
+                    border-radius: 8px !important;
+                    transition: all 0.3s ease !important;
+                    position: relative !important;
+                    font-weight: 500 !important;
+                    text-decoration: none !important;
+                    display: block !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                }
+
+                .sidebar .nav-link:hover {
+                    color: white !important;
+                    background: rgba(255,255,255,0.1) !important;
+                    transform: translateX(4px) !important;
+                }
+
+                .sidebar .nav-link.active {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                    color: white !important;
+                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+                    transform: translateX(4px) !important;
+                }
+
+                .sidebar .nav-link.active::before {
+                    content: '' !important;
+                    position: absolute !important;
+                    left: -8px !important;
+                    top: 50% !important;
+                    transform: translateY(-50%) !important;
+                    width: 4px !important;
+                    height: 60% !important;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                    border-radius: 2px !important;
+                }
+
+                .sidebar .nav-link i {
+                    margin-right: 0.8rem !important;
+                    font-size: 1rem !important;
+                    width: 20px !important;
+                    text-align: center !important;
+                    opacity: 1 !important;
+                    transition: all 0.3s ease !important;
+                    color: #ffffff !important;
+                    visibility: visible !important;
+                }
+
+                .sidebar .nav-link:hover i,
+                .sidebar .nav-link.active i {
+                    opacity: 1 !important;
+                    transform: scale(1.1) !important;
+                }
+
+                .sidebar .dropdown-divider {
+                    border-color: rgba(255,255,255,0.1) !important;
+                    margin: 1rem 0.8rem !important;
+                }
+
+                /* Animation d'apparition pour les éléments de la sidebar */
+                .sidebar .nav-item {
+                    animation: slideInLeft 0.5s ease forwards !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                }
+
+                .sidebar .nav-item:nth-child(1) { animation-delay: 0.1s !important; }
+                .sidebar .nav-item:nth-child(2) { animation-delay: 0.2s !important; }
+                .sidebar .nav-item:nth-child(3) { animation-delay: 0.3s !important; }
+                .sidebar .nav-item:nth-child(4) { animation-delay: 0.4s !important; }
+                .sidebar .nav-item:nth-child(5) { animation-delay: 0.5s !important; }
+                .sidebar .nav-item:nth-child(6) { animation-delay: 0.6s !important; }
+                .sidebar .nav-item:nth-child(7) { animation-delay: 0.7s !important; }
+                .sidebar .nav-item:nth-child(8) { animation-delay: 0.8s !important; }
+
+                @keyframes slideInLeft {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+
+                /* Ajustement du contenu principal pour la sidebar */
+                main.col-md-9 {
+                    margin-left: 250px !important;
+                    padding-left: 2rem !important;
+                    padding-top: 1rem !important;
+                }
+
+          /* Messages Flash améliorés */
+          .flash-messages-container {
+              position: fixed !important;
+              top: 70px !important;
+              left: 0 !important;
+              right: 0 !important;
+              z-index: 1050 !important;
+              padding: 0 15px !important;
+              max-width: 100% !important;
+          }
+
+          .flash-message {
+              margin-bottom: 10px !important;
+              border-radius: 8px !important;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+              border: none !important;
+              font-weight: 500 !important;
+              padding: 12px 20px !important;
+              animation: slideDown 0.3s ease-out !important;
+          }
+
+          .flash-message.alert-success {
+              background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+              color: white !important;
+          }
+
+          .flash-message.alert-danger {
+              background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%) !important;
+              color: white !important;
+          }
+
+          .flash-message.alert-warning {
+              background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%) !important;
+              color: #212529 !important;
+          }
+
+          .flash-message.alert-info {
+              background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%) !important;
+              color: white !important;
+          }
+
+          .flash-message .btn-close {
+              filter: brightness(0) invert(1) !important;
+              opacity: 0.8 !important;
+          }
+
+          .flash-message.alert-warning .btn-close {
+              filter: none !important;
+              opacity: 0.6 !important;
+          }
+
+          @keyframes slideDown {
+              from {
+                  transform: translateY(-100%);
+                  opacity: 0;
+              }
+              to {
+                  transform: translateY(0);
+                  opacity: 1;
+              }
+          }
+
+          /* Responsive pour la sidebar */
+          @media (max-width: 768px) {
+              .sidebar {
+                  top: 60px !important;
+                  height: calc(100vh - 60px) !important;
+                  width: 200px !important;
+              }
+              
+              .sidebar .nav-link {
+                  padding: 0.6rem 1rem !important;
+                  margin: 0.1rem 0.5rem !important;
+                  font-size: 0.9rem !important;
+              }
+              
+              .sidebar .nav-link i {
+                  margin-right: 0.6rem !important;
+                  font-size: 0.9rem !important;
+              }
+
+              main.col-md-9 {
+                  margin-left: 200px !important;
+                  padding-left: 1rem !important;
+              }
+
+              .flash-messages-container {
+                  top: 60px !important;
+              }
+          }
+
+          @media (max-width: 576px) {
+              .sidebar {
+                  width: 180px !important;
+              }
+
+              main.col-md-9 {
+                  margin-left: 180px !important;
+              }
+          }
+            </style>
+        {% endblock %}
+
+        {% block javascripts %}
+            {{ encore_entry_script_tags('app') }}
+        {% endblock %}
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-modern">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{{ path('app_home') }}">
+                    <div class="brand-container">
+                        <div class="brand-icon">
+                            <i class="fas fa-school"></i>
+                        </div>
+                        <div class="brand-text">
+                            <span class="brand-title">Mon Portail Lycée</span>
+                            <span class="brand-subtitle">Excellence Éducative</span>
+                        </div>
+                    </div>
+                </a>
+                
+                <button class="navbar-toggler custom-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="toggler-icon"></span>
+                    <span class="toggler-icon"></span>
+                    <span class="toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_home') }}">
+                                <i class="fas fa-home me-2"></i>Accueil
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-graduation-cap me-2"></i>Formations
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#subjects"><i class="fas fa-book me-2"></i>Nos Matières</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-calendar me-2"></i>Emploi du Temps</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-chart-line me-2"></i>Résultats</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-newspaper me-2"></i>Actualités
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-envelope me-2"></i>Contact
+                            </a>
+                        </li>
+                        
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle admin-link" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-crown me-2"></i>Administration
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ path('admin_dashboard') }}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                                    <li><a class="dropdown-item" href="{{ path('admin_etudiants') }}"><i class="fas fa-users me-2"></i>Étudiants</a></li>
+                                    <li><a class="dropdown-item" href="{{ path('admin_enseignants') }}"><i class="fas fa-chalkboard-teacher me-2"></i>Enseignants</a></li>
+                                    <li><a class="dropdown-item" href="{{ path('admin_matieres') }}"><i class="fas fa-book me-2"></i>Matières</a></li>
+                                </ul>
+                            </li>
+                        {% endif %}
+                        
+                        {% if is_granted('ROLE_ETUDIANT') %}
+                            <li class="nav-item">
+                                <a class="nav-link student-link" href="{{ path('etudiant_dashboard') }}">
+                                    <i class="fas fa-user-graduate me-2"></i>Mon Espace
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% if is_granted('ROLE_ENSEIGNANT') %}
+                            <li class="nav-item">
+                                <a class="nav-link teacher-link" href="{{ path('enseignant_dashboard') }}">
+                                    <i class="fas fa-chalkboard-teacher me-2"></i>Mon Espace
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% if is_granted('ROLE_COMPTABLE') %}
+                            <li class="nav-item">
+                                <a class="nav-link accountant-link" href="{{ path('comptable_dashboard') }}">
+                                    <i class="fas fa-calculator me-2"></i>Mon Espace
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    
+                    <ul class="navbar-nav">
+                        {% if app.user %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle user-profile" href="#" role="button" data-bs-toggle="dropdown">
+                                    <div class="user-avatar">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <span class="user-name">{{ app.user.username }}</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{{ path('app_profil') }}"><i class="fas fa-user me-2"></i>Profil</a></li>
+                                    <li><a class="dropdown-item" href="{{ path('app_parametres') }}"><i class="fas fa-cog me-2"></i>Paramètres</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link login-btn" href="{{ path('app_login') }}">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Connexion
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Messages Flash -->
+        <div class="flash-messages-container">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show flash-message" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show flash-message" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('warning') %}
+                <div class="alert alert-warning alert-dismissible fade show flash-message" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('info') %}
+                <div class="alert alert-info alert-dismissible fade show flash-message" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="container-fluid py-4">
+            {% block body %}{% endblock %}
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Animation pour les cartes
+            document.addEventListener('DOMContentLoaded', function() {
+                const cards = document.querySelectorAll('.stat-card, .card');
+                cards.forEach((card, index) => {
+                    card.style.animationDelay = `${index * 0.1}s`;
+                    card.classList.add('animate-fade-in');
+                });
+
+                // Effet de scroll pour la navbar (maintenant fixe)
+                const navbar = document.querySelector('.navbar-modern');
+                if (navbar) {
+                    // Appliquer l'effet scrolled par défaut pour la navbar fixe
+                    navbar.classList.add('scrolled');
+                    
+                    window.addEventListener('scroll', function() {
+                        if (window.scrollY > 50) {
+                            navbar.classList.add('scrolled');
+                        } else {
+                            navbar.classList.remove('scrolled');
+                        }
+                    });
+                }
+
+                // Animation des dropdowns
+                const dropdowns = document.querySelectorAll('.dropdown-toggle');
+                dropdowns.forEach(dropdown => {
+                    dropdown.addEventListener('show.bs.dropdown', function() {
+                        const menu = this.nextElementSibling;
+                        menu.style.opacity = '0';
+                        menu.style.transform = 'translateY(-10px)';
+                        
+                        setTimeout(() => {
+                            menu.style.transition = 'all 0.3s ease';
+                            menu.style.opacity = '1';
+                            menu.style.transform = 'translateY(0)';
+                        }, 10);
+                    });
+                });
+
+                // Effet de pulsation pour le brand icon
+                const brandIcon = document.querySelector('.brand-icon');
+                if (brandIcon) {
+                    setInterval(() => {
+                        brandIcon.style.transform = 'scale(1.05)';
+                        setTimeout(() => {
+                            brandIcon.style.transform = 'scale(1)';
+                        }, 200);
+                    }, 3000);
+                }
+            });
+        </script>
+    </body>
+</html>

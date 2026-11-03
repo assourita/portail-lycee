@@ -1,0 +1,129 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier une Note{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-edit me-2 text-warning"></i>
+                        Modifier une Note
+                    </h1>
+                    <p class="text-muted mb-0">
+                        {{ note.etudiant.nom }} {{ note.etudiant.prenom }} - {{ note.matiere.nom }}
+                    </p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('enseignant_notes_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Formulaire -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Modifier la Note
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <div class="mb-3">
+                                    <label class="form-label">Étudiant</label>
+                                    <input type="text" class="form-control" 
+                                           value="{{ note.etudiant.nom }} {{ note.etudiant.prenom }}" disabled>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Matière</label>
+                                    <input type="text" class="form-control" 
+                                           value="{{ note.matiere.nom }}" disabled>
+                                </div>
+
+                                {% if note.evaluation %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Évaluation</label>
+                                        <input type="text" class="form-control" 
+                                               value="{{ note.evaluation.nom }}" disabled>
+                                    </div>
+                                {% endif %}
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="valeur" class="form-label">
+                                            <i class="fas fa-star me-1"></i>Note * (sur 20)
+                                        </label>
+                                        <input type="number" class="form-control" id="valeur" name="valeur" 
+                                               value="{{ note.valeur }}" min="0" max="20" step="0.5" required>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Type</label>
+                                        <input type="text" class="form-control" 
+                                               value="{{ note.type|capitalize }}" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="commentaire" class="form-label">
+                                        <i class="fas fa-comment me-1"></i>Commentaire
+                                    </label>
+                                    <textarea class="form-control" id="commentaire" name="commentaire" rows="3">{{ note.commentaire }}</textarea>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ path('enseignant_notes_index') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times me-1"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-save me-1"></i>Enregistrer les Modifications
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Informations -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Date de création :</strong><br>{{ note.dateNote|date('d/m/Y à H:i') }}</p>
+                            <p><strong>Période :</strong><br>{{ note.periodeAcademique ? note.periodeAcademique.periode : '-' }}</p>
+                            
+                            <hr>
+                            
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Attention :</strong> Cette modification affectera les bulletins et moyennes.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

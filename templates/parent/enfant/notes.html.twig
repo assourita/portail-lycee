@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Notes de {{ enfant.prenom }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'parent/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-chart-line me-2 text-primary"></i>
+                        Notes de {{ enfant.prenom }} {{ enfant.nom }}
+                    </h1>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-graduation-cap me-1"></i>{{ enfant.filiere.nom }}
+                    </p>
+                    {% if periodeActive %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                        </p>
+                    {% endif %}
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('parent_dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <!-- Notes par matière -->
+            {% if notesParMatiere|length > 0 %}
+                {% for matiereNom, data in notesParMatiere %}
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-book me-2"></i>{{ matiereNom }}
+                                    </h5>
+                                    <small>Enseignant : {{ data.matiere.enseignant.nom }} {{ data.matiere.enseignant.prenom }}</small>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <h3 class="mb-0">{{ data.moyenne|number_format(2) }}/20</h3>
+                                    <small>Moyenne</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Note</th>
+                                            <th>Commentaire</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for note in data.notes %}
+                                            <tr>
+                                                <td>{{ note.dateNote|date('d/m/Y') }}</td>
+                                                <td>{{ note.type|capitalize }}</td>
+                                                <td>
+                                                    <span class="badge {% if note.valeur >= 16 %}bg-success{% elseif note.valeur >= 12 %}bg-info{% elseif note.valeur >= 10 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                        {{ note.valeur }}/20
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {% if note.commentaire %}
+                                                        <small>{{ note.commentaire }}</small>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucune note enregistrée pour cette période.
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}

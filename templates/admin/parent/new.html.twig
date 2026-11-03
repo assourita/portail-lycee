@@ -1,0 +1,177 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau Parent{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-plus me-2 text-primary"></i>
+                        Nouveau Parent
+                    </h1>
+                    <p class="text-muted mb-0">Créer un nouveau compte parent</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_parents_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Formulaire -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Informations du Parent
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="nom" class="form-label">
+                                            <i class="fas fa-user me-1"></i>Nom *
+                                        </label>
+                                        <input type="text" class="form-control" id="nom" name="nom" required>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="prenom" class="form-label">
+                                            <i class="fas fa-user me-1"></i>Prénom *
+                                        </label>
+                                        <input type="text" class="form-control" id="prenom" name="prenom" required>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">
+                                            <i class="fas fa-envelope me-1"></i>Email *
+                                        </label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="telephone" class="form-label">
+                                            <i class="fas fa-phone me-1"></i>Téléphone
+                                        </label>
+                                        <input type="tel" class="form-control" id="telephone" name="telephone">
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="lien_parente" class="form-label">
+                                            <i class="fas fa-link me-1"></i>Lien de parenté *
+                                        </label>
+                                        <select class="form-select" id="lien_parente" name="lien_parente" required>
+                                            <option value="">Sélectionner...</option>
+                                            <option value="pere">Père</option>
+                                            <option value="mere">Mère</option>
+                                            <option value="tuteur">Tuteur légal</option>
+                                            <option value="autre">Autre</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="profession" class="form-label">
+                                            <i class="fas fa-briefcase me-1"></i>Profession
+                                        </label>
+                                        <input type="text" class="form-control" id="profession" name="profession">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-user-graduate me-1"></i>Enfants *
+                                    </label>
+                                    <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                                        {% for etudiant in etudiants %}
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       name="enfants[]" value="{{ etudiant.id }}" 
+                                                       id="enfant{{ etudiant.id }}">
+                                                <label class="form-check-label" for="enfant{{ etudiant.id }}">
+                                                    {{ etudiant.nom }} {{ etudiant.prenom }} ({{ etudiant.filiere.nom }})
+                                                </label>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="form-text">Sélectionnez un ou plusieurs enfants</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="creer_compte" 
+                                               name="creer_compte" value="1" checked>
+                                        <label class="form-check-label" for="creer_compte">
+                                            <i class="fas fa-user-plus me-1"></i>
+                                            Créer un compte utilisateur pour ce parent
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        Un mot de passe temporaire sera généré et affiché après la création.
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ path('admin_parents_index') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times me-1"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>Créer le Parent
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <h6>Liens de parenté :</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-male me-1"></i>Père</li>
+                                <li><i class="fas fa-female me-1"></i>Mère</li>
+                                <li><i class="fas fa-user-shield me-1"></i>Tuteur légal</li>
+                                <li><i class="fas fa-users me-1"></i>Autre</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Important :</h6>
+                            <ul class="list-unstyled text-muted">
+                                <li><i class="fas fa-check me-1"></i>Un parent peut avoir plusieurs enfants</li>
+                                <li><i class="fas fa-check me-1"></i>L'email doit être unique</li>
+                                <li><i class="fas fa-check me-1"></i>Le compte permet l'accès au portail</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

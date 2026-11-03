@@ -1,0 +1,224 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau Bulletin{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-plus me-2 text-primary"></i>
+                        Nouveau Bulletin
+                    </h1>
+                    <p class="text-muted mb-0">Créer un nouveau bulletin de notes pour un étudiant</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_bulletins_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Formulaire de création -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Informations du Bulletin
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" id="bulletin-form">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="filiere-select" class="form-label">
+                                            <i class="fas fa-graduation-cap me-1"></i>Filière *
+                                        </label>
+                                        <select class="form-select" id="filiere-select" name="filiere" required>
+                                            <option value="">Sélectionner une filière</option>
+                                            {% for filiere in filieres %}
+                                                <option value="{{ filiere.id }}" 
+                                                        {% if selectedFiliere and selectedFiliere.id == filiere.id %}selected{% endif %}>
+                                                    {{ filiere.nom }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="etudiant-select" class="form-label">
+                                            <i class="fas fa-user-graduate me-1"></i>Étudiant *
+                                        </label>
+                                        <select class="form-select" id="etudiant-select" name="etudiant" required disabled>
+                                            <option value="">Sélectionner d'abord une filière</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="periode" class="form-label">
+                                            <i class="fas fa-calendar-alt me-1"></i>Période *
+                                        </label>
+                                        <select class="form-select" id="periode" name="periode" required>
+                                            <option value="">Sélectionner une période</option>
+                                            <option value="1er Trimestre">1er Trimestre</option>
+                                            <option value="2ème Trimestre">2ème Trimestre</option>
+                                            <option value="3ème Trimestre">3ème Trimestre</option>
+                                            <option value="1er Semestre">1er Semestre</option>
+                                            <option value="2ème Semestre">2ème Semestre</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="annee_scolaire" class="form-label">
+                                            <i class="fas fa-calendar me-1"></i>Année Scolaire *
+                                        </label>
+                                        <select class="form-select" id="annee_scolaire" name="annee_scolaire" required>
+                                            <option value="">Sélectionner une année</option>
+                                            <option value="2023-2024">2023-2024</option>
+                                            <option value="2024-2025" selected>2024-2025</option>
+                                            <option value="2025-2026">2025-2026</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="commentaire" class="form-label">
+                                        <i class="fas fa-comment me-1"></i>Commentaire (optionnel)
+                                    </label>
+                                    <textarea class="form-control" id="commentaire" name="commentaire" rows="3" 
+                                              placeholder="Commentaires généraux sur le bulletin..."></textarea>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ path('admin_bulletins_index') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times me-1"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>Créer le Bulletin
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Informations sur l'étudiant sélectionné -->
+                    <div class="card" id="etudiant-info" style="display: none;">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-user me-2"></i>Informations de l'étudiant
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="etudiant-details">
+                                <!-- Les détails de l'étudiant seront chargés ici -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aide -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Aide
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <h6>Comment créer un bulletin :</h6>
+                            <ol class="small">
+                                <li>Sélectionnez la filière de l'étudiant</li>
+                                <li>Choisissez l'étudiant dans la liste</li>
+                                <li>Définissez la période et l'année scolaire</li>
+                                <li>Ajoutez un commentaire si nécessaire</li>
+                                <li>Cliquez sur "Créer le Bulletin"</li>
+                            </ol>
+                            <hr>
+                            <p class="small text-muted mb-0">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Le bulletin sera créé avec toutes les notes existantes de l'étudiant pour cette période.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filiereSelect = document.getElementById('filiere-select');
+    const etudiantSelect = document.getElementById('etudiant-select');
+    const etudiantInfo = document.getElementById('etudiant-info');
+    const etudiantDetails = document.getElementById('etudiant-details');
+
+    // Charger les étudiants quand une filière est sélectionnée
+    filiereSelect.addEventListener('change', function() {
+        const filiereId = this.value;
+        
+        if (filiereId) {
+            // Activer le select des étudiants
+            etudiantSelect.disabled = false;
+            etudiantSelect.innerHTML = '<option value="">Chargement...</option>';
+            
+            // Charger les étudiants via AJAX
+            fetch(`{{ path('admin_bulletin_api_etudiants', {'filiereId': '__FILIERE_ID__'}) }}`.replace('__FILIERE_ID__', filiereId))
+                .then(response => response.json())
+                .then(data => {
+                    etudiantSelect.innerHTML = '<option value="">Sélectionner un étudiant</option>';
+                    
+                    data.forEach(etudiant => {
+                        const option = document.createElement('option');
+                        option.value = etudiant.id;
+                        option.textContent = `${etudiant.nom} ${etudiant.prenom}`;
+                        option.dataset.email = etudiant.email;
+                        etudiantSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des étudiants:', error);
+                    etudiantSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                });
+        } else {
+            etudiantSelect.disabled = true;
+            etudiantSelect.innerHTML = '<option value="">Sélectionner d\'abord une filière</option>';
+            etudiantInfo.style.display = 'none';
+        }
+    });
+
+    // Afficher les informations de l'étudiant sélectionné
+    etudiantSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        
+        if (this.value) {
+            etudiantDetails.innerHTML = `
+                <div class="d-flex align-items-center mb-3">
+                    <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">${selectedOption.textContent}</h6>
+                        <small class="text-muted">${selectedOption.dataset.email}</small>
+                    </div>
+                </div>
+            `;
+            etudiantInfo.style.display = 'block';
+        } else {
+            etudiantInfo.style.display = 'none';
+        }
+    });
+
+    // Charger les étudiants si une filière est présélectionnée
+    {% if selectedFiliere %}
+        filiereSelect.dispatchEvent(new Event('change'));
+    {% endif %}
+});
+</script>
+{% endblock %}

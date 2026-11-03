@@ -1,0 +1,208 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Devoirs{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-tasks me-2 text-primary"></i>
+                        Mes Devoirs
+                    </h1>
+                    {% if periodeActive %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                        </p>
+                    {% endif %}
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('enseignant_devoir_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Nouveau Devoir
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Total Devoirs</h6>
+                            <h2 class="mb-0">{{ stats.total }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Publiés</h6>
+                            <h2 class="mb-0">{{ stats.publies }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Brouillons</h6>
+                            <h2 class="mb-0">{{ stats.brouillons }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-danger">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">À Corriger</h6>
+                            <h2 class="mb-0">{{ stats.a_corriger }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des devoirs -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Liste de mes Devoirs
+                        <span class="badge bg-secondary ms-2">{{ devoirs|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if devoirs|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Titre</th>
+                                        <th>Matière</th>
+                                        <th>Date limite</th>
+                                        <th>Soumissions</th>
+                                        <th>À corriger</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for devoir in devoirs %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ devoir.titre }}</strong>
+                                                <br><small class="text-muted">{{ devoir.description|slice(0, 50) }}...</small>
+                                            </td>
+                                            <td>{{ devoir.matiere.nom }}</td>
+                                            <td>
+                                                {{ devoir.dateEcheance|date('d/m/Y H:i') }}
+                                                {% if devoir.isEnRetard %}
+                                                    <br><span class="badge bg-danger">Échéance dépassée</span>
+                                                {% else %}
+                                                    <br><small class="text-muted">Dans {{ devoir.joursRestants }} jour(s)</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ devoir.soumissions|length }}</span>
+                                                <br><small class="text-muted">{{ devoir.tauxSoumission|number_format(0) }}%</small>
+                                            </td>
+                                            <td>
+                                                {% set aCorreger = 0 %}
+                                                {% for soumission in devoir.soumissions %}
+                                                    {% if soumission.statut == 'soumis' %}
+                                                        {% set aCorreger = aCorreger + 1 %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <span class="badge bg-warning">{{ aCorreger }}</span>
+                                            </td>
+                                            <td>
+                                                {% if devoir.statut == 'publie' %}
+                                                    <span class="badge bg-success">Publié</span>
+                                                {% elseif devoir.statut == 'brouillon' %}
+                                                    <span class="badge bg-secondary">Brouillon</span>
+                                                {% else %}
+                                                    <span class="badge bg-dark">Clôturé</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ path('enseignant_devoir_show', {'id': devoir.id}) }}" 
+                                                       class="btn btn-sm btn-info" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('enseignant_devoir_edit', {'id': devoir.id}) }}" 
+                                                       class="btn btn-sm btn-warning" title="Modifier">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-danger" 
+                                                            onclick="deleteDevoir({{ devoir.id }})" title="Supprimer">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun devoir créé</h5>
+                            <p class="text-muted">Commencez par créer votre premier devoir.</p>
+                            <a href="{{ path('enseignant_devoir_new') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Créer un Devoir
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce devoir ?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Attention :</strong> Toutes les soumissions des étudiants seront également supprimées.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="delete-form" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteDevoir(devoirId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const form = document.getElementById('delete-form');
+    form.action = '{{ path('enseignant_devoir_delete', {'id': '__ID__'}) }}'.replace('__ID__', devoirId);
+    modal.show();
+}
+</script>
+{% endblock %}

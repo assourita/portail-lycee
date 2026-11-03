@@ -1,0 +1,193 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Absences{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'etudiant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-user-clock me-2 text-primary"></i>
+                        Mes Absences
+                    </h1>
+                    {% if periodeActive %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Total Absences</h6>
+                            <h2 class="mb-0">{{ stats.total }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Justifiées</h6>
+                            <h2 class="mb-0">{{ stats.justifiees }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-danger">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Non Justifiées</h6>
+                            <h2 class="mb-0">{{ stats.non_justifiees }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white {% if stats.taux_assiduite >= 90 %}bg-success{% elseif stats.taux_assiduite >= 75 %}bg-warning{% else %}bg-danger{% endif %}">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Taux d'Assiduité</h6>
+                            <h2 class="mb-0">{{ stats.taux_assiduite|number_format(1) }}%</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations complémentaires -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="alert {% if stats.taux_assiduite >= 90 %}alert-success{% elseif stats.taux_assiduite >= 75 %}alert-warning{% else %}alert-danger{% endif %}">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-1">
+                                    {% if stats.taux_assiduite >= 90 %}
+                                        <i class="fas fa-check-circle me-2"></i>Excellente assiduité !
+                                    {% elseif stats.taux_assiduite >= 75 %}
+                                        <i class="fas fa-exclamation-triangle me-2"></i>Assiduité à surveiller
+                                    {% else %}
+                                        <i class="fas fa-times-circle me-2"></i>Assiduité insuffisante
+                                    {% endif %}
+                                </h5>
+                                <p class="mb-0">
+                                    Vous avez cumulé <strong>{{ heuresAbsence|number_format(1) }} heures</strong> d'absence.
+                                    {% if stats.non_justifiees > 0 %}
+                                        <br>Vous avez <strong>{{ stats.non_justifiees }} absence(s) non justifiée(s)</strong>. Pensez à les justifier.
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="progress" style="height: 30px;">
+                                    <div class="progress-bar {% if stats.taux_assiduite >= 90 %}bg-success{% elseif stats.taux_assiduite >= 75 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ stats.taux_assiduite }}%;" 
+                                         aria-valuenow="{{ stats.taux_assiduite }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ stats.taux_assiduite|number_format(1) }}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des absences -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Historique de mes Absences
+                        <span class="badge bg-secondary ms-2">{{ absences|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if absences|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Période</th>
+                                        <th>Matière</th>
+                                        <th>Durée</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for absence in absences %}
+                                        <tr>
+                                            <td>{{ absence.date|date('d/m/Y') }}</td>
+                                            <td>
+                                                {% if absence.type == 'absence' %}
+                                                    <span class="badge bg-danger">Absence</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Retard</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ absence.periode|capitalize }}</td>
+                                            <td>{{ absence.matiere ? absence.matiere.nom : '-' }}</td>
+                                            <td>{{ absence.dureeHeures|number_format(1) }}h</td>
+                                            <td>
+                                                {% if absence.justifiee %}
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check me-1"></i>Justifiée
+                                                    </span>
+                                                {% elseif absence.justification %}
+                                                    <span class="badge bg-warning">
+                                                        <i class="fas fa-clock me-1"></i>En attente
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">
+                                                        <i class="fas fa-times me-1"></i>Non justifiée
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ path('etudiant_absence_show', {'id': absence.id}) }}" 
+                                                       class="btn btn-sm btn-info" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    {% if not absence.justifiee and not absence.justification %}
+                                                        <a href="{{ path('etudiant_absence_justifier', {'id': absence.id}) }}" 
+                                                           class="btn btn-sm btn-primary" title="Justifier">
+                                                            <i class="fas fa-file-alt"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-success">Aucune absence enregistrée</h5>
+                            <p class="text-muted">Vous n'avez aucune absence pour cette période. Continuez comme ça !</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

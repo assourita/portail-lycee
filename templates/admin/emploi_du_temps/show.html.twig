@@ -1,0 +1,294 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Emploi du Temps - {{ emploi_du_temps.jour ? emploi_du_temps.jour.nom : 'Non défini' }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-calendar-day me-2"></i>Détails de l'emploi du temps
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_emploi_du_temps_index') }}" class="btn btn-secondary me-2">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                    <a href="{{ path('admin_emploi_du_temps_edit', {'id': emploi_du_temps.id}) }}" class="btn btn-warning me-2">
+                        <i class="fas fa-edit me-1"></i>Modifier
+                    </a>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete({{ emploi_du_temps.id }})">
+                        <i class="fas fa-trash me-1"></i>Supprimer
+                    </button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations générales
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="fw-bold text-primary">ID :</td>
+                                            <td>{{ emploi_du_temps.id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-primary">Jour :</td>
+                                            <td>
+                                                {% if emploi_du_temps.jour %}
+                                                    <span class="badge bg-info fs-6">{{ emploi_du_temps.jour.nom }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">Non défini</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-primary">Heure de début :</td>
+                                            <td>
+                                                <span class="badge bg-success fs-6">
+                                                    <i class="fas fa-clock me-1"></i>{{ emploi_du_temps.heureDebut|date('H:i') }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-primary">Heure de fin :</td>
+                                            <td>
+                                                <span class="badge bg-danger fs-6">
+                                                    <i class="fas fa-clock me-1"></i>{{ emploi_du_temps.heureFin|date('H:i') }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="fw-bold text-primary">Durée :</td>
+                                            <td>
+                                                {% set duree = emploi_du_temps.heureFin|date('U') - emploi_du_temps.heureDebut|date('U') %}
+                                                {% set heures = duree // 3600 %}
+                                                {% set minutes = (duree % 3600) // 60 %}
+                                                <span class="badge bg-warning fs-6">
+                                                    <i class="fas fa-hourglass-half me-1"></i>
+                                                    {% if heures > 0 %}{{ heures }}h{% endif %}{% if minutes > 0 %}{{ minutes }}min{% endif %}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-primary">Date :</td>
+                                            <td>
+                                                {% if emploi_du_temps.date %}
+                                                    <span class="badge bg-secondary fs-6">
+                                                        <i class="fas fa-calendar me-1"></i>{{ emploi_du_temps.date|date('d/m/Y') }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">Cours récurrent</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-graduation-cap me-2"></i>Informations pédagogiques
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="fw-bold text-primary">Filière :</td>
+                                            <td>
+                                                {% if emploi_du_temps.filiere %}
+                                                    <span class="badge bg-primary fs-6">
+                                                        <i class="fas fa-users me-1"></i>{{ emploi_du_temps.filiere.nom }}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">Non assignée</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-primary">Matière :</td>
+                                            <td>
+                                                {% if emploi_du_temps.matiere %}
+                                                    <span class="text-success fw-bold">{{ emploi_du_temps.matiere.nom }}</span>
+                                                    {% if emploi_du_temps.matiere.filiere %}
+                                                        <br><small class="text-muted">{{ emploi_du_temps.matiere.filiere.nom }}</small>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="text-muted">Non assignée</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="fw-bold text-primary">Enseignant :</td>
+                                            <td>
+                                                {% if emploi_du_temps.enseignant %}
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-user-tie me-2 text-primary"></i>
+                                                        <div>
+                                                            <strong>{{ emploi_du_temps.enseignant.nom }} {{ emploi_du_temps.enseignant.prenom }}</strong>
+                                                            {% if emploi_du_temps.enseignant.specialite %}
+                                                                <br><small class="text-muted">{{ emploi_du_temps.enseignant.specialite }}</small>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">Non assigné</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-primary">Cours :</td>
+                                            <td>
+                                                {% if emploi_du_temps.cours %}
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-book me-2 text-success"></i>
+                                                        <div>
+                                                            <strong class="text-success">{{ emploi_du_temps.cours.titre }}</strong>
+                                                            {% if emploi_du_temps.cours.description %}
+                                                                <br><small class="text-muted">{{ emploi_du_temps.cours.description|slice(0, 100) }}{% if emploi_du_temps.cours.description|length > 100 %}...{% endif %}</small>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">Cours général</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Statistiques
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <div class="display-6 text-primary">
+                                    {% set duree = emploi_du_temps.heureFin|date('U') - emploi_du_temps.heureDebut|date('U') %}
+                                    {% set heures = duree // 3600 %}
+                                    {% set minutes = (duree % 3600) // 60 %}
+                                    {% if heures > 0 %}{{ heures }}h{% endif %}{% if minutes > 0 %}{{ minutes }}min{% endif %}
+                                </div>
+                                <p class="text-muted">Durée du cours</p>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="text-success">
+                                        <i class="fas fa-clock fa-2x mb-2"></i>
+                                        <br>
+                                        <strong>{{ emploi_du_temps.heureDebut|date('H:i') }}</strong>
+                                        <br>
+                                        <small class="text-muted">Début</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-danger">
+                                        <i class="fas fa-clock fa-2x mb-2"></i>
+                                        <br>
+                                        <strong>{{ emploi_du_temps.heureFin|date('H:i') }}</strong>
+                                        <br>
+                                        <small class="text-muted">Fin</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-tools me-2"></i>Actions rapides
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ path('admin_emploi_du_temps_edit', {'id': emploi_du_temps.id}) }}" class="btn btn-warning">
+                                    <i class="fas fa-edit me-1"></i>Modifier
+                                </a>
+                                {% if emploi_du_temps.filiere %}
+                                    <a href="{{ path('admin_emploi_du_temps_filiere', {'id': emploi_du_temps.filiere.id}) }}" class="btn btn-info">
+                                        <i class="fas fa-graduation-cap me-1"></i>Voir la filière
+                                    </a>
+                                {% endif %}
+                                {% if emploi_du_temps.enseignant %}
+                                    <a href="{{ path('admin_emploi_du_temps_enseignant', {'id': emploi_du_temps.enseignant.id}) }}" class="btn btn-primary">
+                                        <i class="fas fa-user-tie me-1"></i>Voir l'enseignant
+                                    </a>
+                                {% endif %}
+                                <button type="button" class="btn btn-danger" onclick="confirmDelete({{ emploi_du_temps.id }})">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer cet emploi du temps ? Cette action est irréversible.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(id) {
+    const deleteForm = document.getElementById('deleteForm');
+    deleteForm.action = '{{ path('admin_emploi_du_temps_delete', {'id': '__ID__'}) }}'.replace('__ID__', id);
+    deleteForm.querySelector('input[name="_token"]').value = '{{ csrf_token('delete') }}';
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

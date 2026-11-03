@@ -1,0 +1,155 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Notes{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'etudiant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Mes Notes</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-download"></i> Exporter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations de l'étudiant -->
+            <div class="alert alert-info mb-4">
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Étudiant :</strong> {{ etudiant.nom }} {{ etudiant.prenom }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Filière :</strong> {{ etudiant.filiere.nom }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Total des notes :</strong> {{ notes|length }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Statistiques par matière -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card shadow">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Statistiques par matière</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if statistiquesParMatiere|length > 0 %}
+                                {% for matiere, stats in statistiquesParMatiere %}
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ matiere }}</h6>
+                                        <span class="badge bg-primary">{{ stats.total }} note(s)</span>
+                                    </div>
+                                    <div class="progress mt-2" style="height: 8px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {{ (stats.moyenne / 20) * 100 }}%"
+                                             aria-valuenow="{{ stats.moyenne }}" aria-valuemin="0" aria-valuemax="20">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Moyenne: {{ stats.moyenne }}/20</small>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted text-center">Aucune note disponible.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liste des notes -->
+                <div class="col-lg-8 mb-4">
+                    <div class="card shadow">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-success">Historique des notes</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if notes|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Matière</th>
+                                                <th>Note</th>
+                                                <th>Type</th>
+                                                <th>Date</th>
+                                                <th>Commentaire</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for note in notes %}
+                                            <tr>
+                                                <td>{{ note.matiere.nom }}</td>
+                                                <td>
+                                                    <span class="badge {% if note.valeur >= 16 %}bg-success{% elseif note.valeur >= 12 %}bg-warning{% else %}bg-danger{% endif %} fs-6">
+                                                        {{ note.valeur }}/20
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {% if note.type == 'devoir' %}
+                                                        <span class="badge bg-info">Devoir</span>
+                                                    {% elseif note.type == 'examen' %}
+                                                        <span class="badge bg-warning">Examen</span>
+                                                    {% elseif note.type == 'projet' %}
+                                                        <span class="badge bg-success">Projet</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">Participation</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ note.dateNote|date('d/m/Y') }}</td>
+                                                <td>
+                                                    {% if note.commentaire %}
+                                                        <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ note.commentaire }}">
+                                                            {{ note.commentaire }}
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Aucune note disponible</h5>
+                                    <p class="text-muted">Vous n'avez pas encore de notes enregistrées.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<style>
+.progress {
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-top: none;
+}
+
+.fs-6 {
+    font-size: 0.9rem !important;
+}
+</style>
+{% endblock %}

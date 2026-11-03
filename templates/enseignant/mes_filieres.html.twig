@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Filières{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Mes Filières et Matières</h1>
+            </div>
+
+        {% for filiere in filieres %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">{{ filiere.nom }}</h2>
+                </div>
+                <div class="card-body">
+                    <h3 class="h6 mb-3">Matières enseignées :</h3>
+                    <div class="row">
+                        {% for matiere in matieres %}
+                            {% if matiere.filiere == filiere %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h4 class="card-title h6">{{ matiere.nom }}</h4>
+                                            <p class="card-text">
+                                                Coefficient : {{ matiere.coeficient }}
+                                            </p>
+                                            <a href="{{ path('enseignant_filiere_etudiants', {'id': filiere.id}) }}" class="btn btn-sm btn-primary">
+                                                Voir les étudiants
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                Vous n'êtes pas assigné à aucune filière pour le moment.
+            </div>
+        {% endfor %}
+        </main>
+    </div>
+</div>
+{% endblock %} 

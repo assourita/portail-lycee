@@ -1,0 +1,244 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Bulletins{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-file-alt me-2 text-primary"></i>
+                        Gestion des Bulletins
+                    </h1>
+                    <p class="text-muted mb-0">Gérer les bulletins par classe et par trimestre</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_bulletin_generer') }}" class="btn btn-success me-2">
+                        <i class="fas fa-magic me-1"></i>Générer par Classe
+                    </a>
+                </div>
+            </div>
+
+            <!-- Alerte d'information -->
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Génération par classe :</strong> Cliquez sur "Générer par Classe" pour créer automatiquement les bulletins de tous les étudiants d'une classe (toutes filières confondues) pour un trimestre donné.
+            </div>
+
+            <!-- Filtres -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-filter me-2"></i>Filtrer par filière
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <select class="form-select" id="filiere-filter">
+                                <option value="">Toutes les filières</option>
+                                {% for filiere in filieres %}
+                                    <option value="{{ filiere.id }}">{{ filiere.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-calendar me-2"></i>Année scolaire
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <select class="form-select" id="annee-filter">
+                                <option value="">Toutes les années</option>
+                                <option value="2023-2024">2023-2024</option>
+                                <option value="2024-2025">2024-2025</option>
+                                <option value="2025-2026">2025-2026</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-clock me-2"></i>Période
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <select class="form-select" id="periode-filter">
+                                <option value="">Toutes les périodes</option>
+                                <option value="1er Trimestre">1er Trimestre</option>
+                                <option value="2ème Trimestre">2ème Trimestre</option>
+                                <option value="3ème Trimestre">3ème Trimestre</option>
+                                <option value="1er Semestre">1er Semestre</option>
+                                <option value="2ème Semestre">2ème Semestre</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des bulletins -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Liste des Bulletins
+                        <span class="badge bg-secondary ms-2" id="bulletins-count">{{ bulletins|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if bulletins|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="bulletins-table">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Étudiant</th>
+                                        <th>Filière</th>
+                                        <th>Période</th>
+                                        <th>Année Scolaire</th>
+                                        <th>Date de Création</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bulletin in bulletins %}
+                                        <tr data-filiere="{{ bulletin.etudiant.filiere.id }}" 
+                                            data-annee="{{ bulletin.anneeScolaire }}" 
+                                            data-periode="{{ bulletin.periode }}">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0">{{ bulletin.etudiant.nom }} {{ bulletin.etudiant.prenom }}</h6>
+                                                        <small class="text-muted">{{ bulletin.etudiant.email }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ bulletin.etudiant.filiere.nom }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-warning">{{ bulletin.periode }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success">{{ bulletin.anneeScolaire }}</span>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    {{ bulletin.dateCreation|date('d/m/Y H:i') }}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ path('admin_bulletin_show', {'id': bulletin.id}) }}" class="btn btn-primary btn-sm">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('admin_bulletin_edit', {'id': bulletin.id}) }}" class="btn btn-warning btn-sm">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteBulletin({{ bulletin.id }})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun bulletin créé</h5>
+                            <p class="text-muted">Commencez par créer votre premier bulletin.</p>
+                            <a href="{{ path('admin_bulletin_new') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Créer un Bulletin
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce bulletin ? Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="delete-form" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Filtrage des bulletins
+document.addEventListener('DOMContentLoaded', function() {
+    const filiereFilter = document.getElementById('filiere-filter');
+    const anneeFilter = document.getElementById('annee-filter');
+    const periodeFilter = document.getElementById('periode-filter');
+    const table = document.getElementById('bulletins-table');
+    const countBadge = document.getElementById('bulletins-count');
+
+    function filterBulletins() {
+        const filiereValue = filiereFilter.value;
+        const anneeValue = anneeFilter.value;
+        const periodeValue = periodeFilter.value;
+        
+        const rows = table.querySelectorAll('tbody tr');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const filiere = row.getAttribute('data-filiere');
+            const annee = row.getAttribute('data-annee');
+            const periode = row.getAttribute('data-periode');
+            
+            const showRow = (!filiereValue || filiere === filiereValue) &&
+                          (!anneeValue || annee === anneeValue) &&
+                          (!periodeValue || periode === periodeValue);
+            
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
+        });
+
+        countBadge.textContent = visibleCount;
+    }
+
+    filiereFilter.addEventListener('change', filterBulletins);
+    anneeFilter.addEventListener('change', filterBulletins);
+    periodeFilter.addEventListener('change', filterBulletins);
+});
+
+function deleteBulletin(bulletinId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const form = document.getElementById('delete-form');
+    form.action = '{{ path('admin_bulletin_delete', {'id': '__ID__'}) }}'.replace('__ID__', bulletinId);
+    modal.show();
+}
+</script>
+{% endblock %}

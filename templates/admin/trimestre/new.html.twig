@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau Trimestre{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-plus me-2 text-primary"></i>
+                        Nouveau Trimestre
+                    </h1>
+                    <p class="text-muted mb-0">Créer un nouveau trimestre pour une classe</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_trimestres_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Formulaire de création -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Informations du Trimestre
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="classe" class="form-label">
+                                            <i class="fas fa-school me-1"></i>Classe *
+                                        </label>
+                                        <select class="form-select" id="classe" name="classe" required>
+                                            <option value="">Sélectionner une classe</option>
+                                            {% for classe in classes %}
+                                                <option value="{{ classe.id }}">{{ classe.nom }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="nom" class="form-label">
+                                            <i class="fas fa-tag me-1"></i>Nom du trimestre *
+                                        </label>
+                                        <select class="form-select" id="nom" name="nom" required>
+                                            <option value="">Sélectionner</option>
+                                            <option value="1er Trimestre">1er Trimestre</option>
+                                            <option value="2ème Trimestre">2ème Trimestre</option>
+                                            <option value="3ème Trimestre">3ème Trimestre</option>
+                                            <option value="1er Semestre">1er Semestre</option>
+                                            <option value="2ème Semestre">2ème Semestre</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="annee_scolaire" class="form-label">
+                                            <i class="fas fa-calendar me-1"></i>Année Scolaire *
+                                        </label>
+                                        <select class="form-select" id="annee_scolaire" name="annee_scolaire" required>
+                                            <option value="2023-2024">2023-2024</option>
+                                            <option value="2024-2025" selected>2024-2025</option>
+                                            <option value="2025-2026">2025-2026</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="date_debut" class="form-label">
+                                            <i class="fas fa-play me-1"></i>Date de début *
+                                        </label>
+                                        <input type="date" class="form-control" id="date_debut" name="date_debut" required>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label for="date_fin" class="form-label">
+                                            <i class="fas fa-stop me-1"></i>Date de fin *
+                                        </label>
+                                        <input type="date" class="form-control" id="date_fin" name="date_fin" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-align-left me-1"></i>Description (optionnel)
+                                    </label>
+                                    <textarea class="form-control" id="description" name="description" rows="3" 
+                                              placeholder="Description du trimestre..."></textarea>
+                                </div>
+
+                                <hr>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ path('admin_trimestres_index') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times me-1"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>Créer le Trimestre
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Aide -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Aide
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <h6>Comment créer un trimestre :</h6>
+                            <ol class="small">
+                                <li>Sélectionnez la classe</li>
+                                <li>Choisissez le nom du trimestre</li>
+                                <li>Définissez l'année scolaire</li>
+                                <li>Indiquez les dates de début et fin</li>
+                                <li>Ajoutez une description (optionnel)</li>
+                            </ol>
+                            <hr>
+                            <p class="small text-muted mb-0">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Les trimestres sont utilisés pour la génération automatique des bulletins.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+

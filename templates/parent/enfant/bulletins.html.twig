@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bulletins de {{ enfant.prenom }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'parent/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-file-alt me-2 text-primary"></i>
+                        Bulletins de {{ enfant.prenom }} {{ enfant.nom }}
+                    </h1>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-graduation-cap me-1"></i>{{ enfant.filiere.nom }}
+                    </p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('parent_dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <!-- Liste des bulletins -->
+            {% if bulletins|length > 0 %}
+                <div class="row">
+                    {% for bulletin in bulletins %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-file-alt me-2"></i>
+                                        {{ bulletin.periode }}
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Année scolaire :</strong> {{ bulletin.anneeScolaire }}</p>
+                                    <p><strong>Date de création :</strong> {{ bulletin.dateCreation|date('d/m/Y') }}</p>
+
+                                    {% if bulletin.commentaire %}
+                                        <hr>
+                                        <p><strong>Commentaire :</strong></p>
+                                        <p class="bg-light p-2 rounded">{{ bulletin.commentaire }}</p>
+                                    {% endif %}
+
+                                    <div class="d-grid mt-3">
+                                        <a href="{{ path('etudiant_bulletin_show', {'id': bulletin.id}) }}" 
+                                           class="btn btn-primary" target="_blank">
+                                            <i class="fas fa-eye me-1"></i>Consulter le Bulletin
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucun bulletin disponible pour le moment.
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}

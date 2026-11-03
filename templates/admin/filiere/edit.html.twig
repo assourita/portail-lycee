@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+{% block title %}Modifier Filière{% endblock %}
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Modifier la filière</h1>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    {{ form_start(form) }}
+                        <div class="mb-3">
+                            {{ form_label(form.nom) }}
+                            {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.nom) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.classe) }}
+                            {{ form_widget(form.classe, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.classe) }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Associer cette filière à une classe (10ème, 11ème, Terminale)
+                            </div>
+                        </div>
+                        <button class="btn btn-success">
+                            <i class="fas fa-save me-1"></i>Enregistrer
+                        </button>
+                        <a href="{{ path('admin_filiere_show', {'id': filiere.id}) }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Annuler
+                        </a>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %} 

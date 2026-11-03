@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Emploi du Temps{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Mon Emploi du Temps</h1>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Jour</th>
+                        <th>Heure de début</th>
+                        <th>Heure de fin</th>
+                        <th>Classe</th>
+                        <th>Matière</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cours in emploiDuTemps %}
+                        <tr>
+                            <td>{{ cours.jour|date('l')|trans }}</td>
+                            <td>{{ cours.heureDebut|date('H:i') }}</td>
+                            <td>{{ cours.heureFin|date('H:i') }}</td>
+                            <td>{{ cours.classe.nom }}</td>
+                            <td>{{ cours.matiere }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">Aucun cours programmé</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %} 

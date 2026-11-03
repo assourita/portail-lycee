@@ -1,0 +1,147 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ cours.titre }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'etudiant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">{{ cours.titre }}</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('etudiant_cours_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour aux cours
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Description du cours -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Description du cours
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">{{ cours.description }}</p>
+                            
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <p><strong>Matière :</strong> {{ cours.matiere.nom }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Filière :</strong> {{ cours.matiere.filiere.nom }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chapitres du cours -->
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-list-ol me-2"></i>Chapitres du cours ({{ cours.chapitres|length }})
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if cours.chapitres|length > 0 %}
+                                <div class="list-group">
+                                    {% for chapitre in cours.chapitres|sort((a, b) => a.ordre <=> b.ordre) %}
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1">
+                                                        <i class="fas fa-file-alt me-2"></i>
+                                                        Chapitre {{ chapitre.ordre }}: {{ chapitre.titre }}
+                                                    </h6>
+                                                    <p class="mb-1 text-muted">{{ chapitre.contenu|slice(0, 150) }}...</p>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-paperclip me-1"></i>
+                                                        {{ chapitre.piecesJointes|length }} pièce(s) jointe(s)
+                                                    </small>
+                                                </div>
+                                                <div>
+                                                    <a href="{{ path('etudiant_chapitre_show', {'id': chapitre.id}) }}" class="btn btn-success btn-sm">
+                                                        <i class="fas fa-book-open"></i> Lire
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info text-center">
+                                    <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                    <h5>Aucun chapitre disponible</h5>
+                                    <p>Ce cours ne contient pas encore de chapitres.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Informations du cours -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Statistiques
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6>Nombre de chapitres</h6>
+                                <p class="h4 text-primary">{{ cours.chapitres|length }}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6>Total pièces jointes</h6>
+                                <p class="h4 text-success">
+                                    {% set totalPieces = 0 %}
+                                    {% for chapitre in cours.chapitres %}
+                                        {% set totalPieces = totalPieces + chapitre.piecesJointes|length %}
+                                    {% endfor %}
+                                    {{ totalPieces }}
+                                </p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6>Date de création</h6>
+                                <p>{{ cours.dateAjout|date('d/m/Y à H:i') }}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6>Enseignant</h6>
+                                <p>{{ cours.enseignant.nom }} {{ cours.enseignant.prenom }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions rapides -->
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-bolt me-2"></i>Actions rapides
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ path('etudiant_notes_index') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-graduation-cap me-1"></i> Voir mes notes
+                                </a>
+                                <a href="{{ path('etudiant_emploi_du_temps') }}" class="btn btn-outline-info">
+                                    <i class="fas fa-calendar-alt me-1"></i> Emploi du temps
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

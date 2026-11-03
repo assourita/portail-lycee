@@ -1,0 +1,627 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Étudiant - Mon Portail Lycée{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Dashboard Styles */
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin: -20px -20px 30px -20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,133.3C960,128,1056,96,1152,90.7C1248,85,1344,107,1392,117.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            opacity: 0.3;
+        }
+        
+        .dashboard-header-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .dashboard-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .dashboard-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .stat-card.primary::before { background: linear-gradient(45deg, #667eea, #764ba2); }
+        .stat-card.success::before { background: linear-gradient(45deg, #28a745, #20c997); }
+        .stat-card.info::before { background: linear-gradient(45deg, #17a2b8, #007bff); }
+        .stat-card.warning::before { background: linear-gradient(45deg, #ffc107, #fd7e14); }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .stat-icon.primary { background: linear-gradient(45deg, #667eea, #764ba2); }
+        .stat-icon.success { background: linear-gradient(45deg, #28a745, #20c997); }
+        .stat-icon.info { background: linear-gradient(45deg, #17a2b8, #007bff); }
+        .stat-icon.warning { background: linear-gradient(45deg, #ffc107, #fd7e14); }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .quick-access-card {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: none;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .quick-access-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .quick-access-header {
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quick-access-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,133.3C960,128,1056,96,1152,90.7C1248,85,1344,107,1392,117.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            opacity: 0.3;
+        }
+        
+        .quick-access-header.primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .quick-access-header.success { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+        .quick-access-header.info { background: linear-gradient(135deg, #17a2b8 0%, #007bff 100%); }
+        .quick-access-header.warning { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); }
+        .quick-access-header.secondary { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); }
+        
+        .quick-access-content {
+            padding: 20px;
+        }
+        
+        .quick-access-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .quick-access-description {
+            color: #6c757d;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .quick-access-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .quick-access-count {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .quick-access-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .quick-access-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .activity-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+            height: 100%;
+        }
+        
+        .activity-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+        
+        .activity-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: white;
+        }
+        
+        .activity-icon.primary { background: linear-gradient(45deg, #667eea, #764ba2); }
+        .activity-icon.success { background: linear-gradient(45deg, #28a745, #20c997); }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .activity-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .activity-item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: white;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .activity-item-content {
+            flex-grow: 1;
+        }
+        
+        .activity-item-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .activity-item-meta {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .activity-item-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .badge-success { background: linear-gradient(45deg, #28a745, #20c997); }
+        .badge-warning { background: linear-gradient(45deg, #ffc107, #fd7e14); }
+        .badge-danger { background: linear-gradient(45deg, #dc3545, #c82333); }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: #dee2e6;
+            margin-bottom: 15px;
+        }
+        
+        .alert {
+            border-radius: 15px;
+            border: none;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            animation: slideInUp 0.5s ease;
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+        
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-title {
+                font-size: 2rem;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .quick-access-card {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'etudiant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <div class="dashboard-header-content">
+                    <h1 class="dashboard-title">
+                        <i class="fas fa-tachometer-alt me-3"></i>
+                        Tableau de Bord
+                    </h1>
+                    {% if periodeActive %}
+                        <p class="dashboard-subtitle">
+                            <i class="fas fa-calendar-check me-2"></i>
+                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Cartes de statistiques -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="stat-card primary">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-value">{{ totalCours }}</div>
+                        <div class="stat-label">Total Cours</div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="stat-card success">
+                        <div class="stat-icon success">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="stat-value">{{ totalNotes }}</div>
+                        <div class="stat-label">Total Notes</div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="stat-card info">
+                        <div class="stat-icon info">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-value">{{ moyenneGenerale }}/20</div>
+                        <div class="stat-label">Moyenne Générale</div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="stat-card warning">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <div class="stat-value">{{ etudiant.filiere.nom }}</div>
+                        <div class="stat-label">Filière Actuelle</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accès rapides -->
+            <div class="row mb-4">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="quick-access-card">
+                        <div class="quick-access-header primary">
+                            <div class="quick-access-title">
+                                <i class="fas fa-book me-2"></i>
+                                Mes Cours
+                            </div>
+                        </div>
+                        <div class="quick-access-content">
+                            <p class="quick-access-description">Accédez à tous vos cours et ressources pédagogiques.</p>
+                            <div class="quick-access-footer">
+                                <span class="quick-access-count">{{ totalCours }} cours disponibles</span>
+                                <a href="{{ path('etudiant_cours_index') }}" class="quick-access-btn">
+                                    Voir <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="quick-access-card">
+                        <div class="quick-access-header success">
+                            <div class="quick-access-title">
+                                <i class="fas fa-graduation-cap me-2"></i>
+                                Mes Notes
+                            </div>
+                        </div>
+                        <div class="quick-access-content">
+                            <p class="quick-access-description">Consultez vos notes et appréciations par matière.</p>
+                            <div class="quick-access-footer">
+                                <span class="quick-access-count">{{ totalNotes }} notes enregistrées</span>
+                                <a href="{{ path('etudiant_notes_index') }}" class="quick-access-btn">
+                                    Voir <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="quick-access-card">
+                        <div class="quick-access-header info">
+                            <div class="quick-access-title">
+                                <i class="fas fa-clipboard-list me-2"></i>
+                                Évaluations
+                            </div>
+                        </div>
+                        <div class="quick-access-content">
+                            <p class="quick-access-description">Voir les évaluations programmées et vos résultats.</p>
+                            <div class="quick-access-footer">
+                                <span class="quick-access-count">À venir</span>
+                                <a href="{{ path('etudiant_evaluations_index') }}" class="quick-access-btn">
+                                    Voir <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="quick-access-card">
+                        <div class="quick-access-header warning">
+                            <div class="quick-access-title">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                Emploi du Temps
+                            </div>
+                        </div>
+                        <div class="quick-access-content">
+                            <p class="quick-access-description">Consultez votre emploi du temps hebdomadaire.</p>
+                            <div class="quick-access-footer">
+                                <span class="quick-access-count">Cette semaine</span>
+                                <a href="{{ path('etudiant_emploi_du_temps') }}" class="quick-access-btn">
+                                    Voir <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="quick-access-card">
+                        <div class="quick-access-header secondary">
+                            <div class="quick-access-title">
+                                <i class="fas fa-file-alt me-2"></i>
+                                Bulletins
+                            </div>
+                        </div>
+                        <div class="quick-access-content">
+                            <p class="quick-access-description">Téléchargez vos bulletins trimestriels.</p>
+                            <div class="quick-access-footer">
+                                <span class="quick-access-count">Disponibles</span>
+                                <a href="{{ path('etudiant_bulletins_index') }}" class="quick-access-btn">
+                                    Voir <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dernières activités -->
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="activity-card">
+                        <div class="activity-header">
+                            <h6 class="activity-title">
+                                <div class="activity-icon primary">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                Derniers Cours
+                            </h6>
+                        </div>
+                        <div class="activity-content">
+                            {% if derniersCours|length > 0 %}
+                                {% for cours in derniersCours|slice(0, 3) %}
+                                <div class="activity-item">
+                                    <div class="activity-item-icon primary">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                    <div class="activity-item-content">
+                                        <div class="activity-item-title">{{ cours.titre }}</div>
+                                        <div class="activity-item-meta">
+                                            {{ cours.matiere.nom }} • {{ cours.dateAjout|date('d/m/Y') }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">
+                                    <i class="fas fa-book-open"></i>
+                                    <p>Aucun cours récent</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 mb-4">
+                    <div class="activity-card">
+                        <div class="activity-header">
+                            <h6 class="activity-title">
+                                <div class="activity-icon success">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                Dernières Notes
+                            </h6>
+                        </div>
+                        <div class="activity-content">
+                            {% if dernieresNotes|length > 0 %}
+                                {% for note in dernieresNotes|slice(0, 3) %}
+                                <div class="activity-item">
+                                    <div class="activity-item-icon success">
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <div class="activity-item-content">
+                                        <div class="activity-item-title">{{ note.matiere.nom }}</div>
+                                        <div class="activity-item-meta">
+                                            {{ note.dateNote|date('d/m/Y') }}
+                                        </div>
+                                    </div>
+                                    <div class="activity-item-badge badge-{{ note.valeur >= 10 ? 'success' : (note.valeur >= 8 ? 'warning' : 'danger') }}">
+                                        {{ note.valeur }}/20
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">
+                                    <i class="fas fa-chart-bar"></i>
+                                    <p>Aucune note récente</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

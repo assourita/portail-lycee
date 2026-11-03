@@ -1,0 +1,212 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Emploi du Temps - Vue Semaine{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-calendar-week me-2 text-primary"></i>
+                        Emploi du Temps - Semaine
+                    </h1>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-calendar me-1"></i>
+                        Du {{ lundi|date('d/m/Y') }} au {{ dimanche|date('d/m/Y') }}
+                    </p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{{ path('app_enseignant_emploi_du_temps') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-list me-1"></i>Vue Liste
+                        </a>
+                        <a href="{{ path('enseignant_emploi_du_temps_export') }}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-download me-1"></i>Exporter
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                            <i class="fas fa-print me-1"></i>Imprimer
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grille hebdomadaire -->
+            {% if grille %}
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            Grille hebdomadaire
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th style="width: 10%">Heure</th>
+                                        {% for jour in jours %}
+                                            <th style="width: 12%">{{ jour.nom }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for heure in heures %}
+                                        <tr>
+                                            <td class="fw-bold bg-light text-center">
+                                                <i class="fas fa-clock me-1"></i>{{ heure }}
+                                            </td>
+                                            {% for jour in jours %}
+                                                <td class="text-center p-1">
+                                                    {% set emploi = grille[jour.nom][heure]|default(null) %}
+                                                    {% if emploi %}
+                                                        <div class="p-2 border rounded bg-info text-white h-100">
+                                                            <div class="fw-bold small">{{ emploi.matiere.nom }}</div>
+                                                            <small>{{ emploi.filiere ? emploi.filiere.nom : '' }}</small>
+                                                            {% if emploi.cours and emploi.cours.salle %}
+                                                                <br><small><i class="fas fa-door-open"></i> {{ emploi.cours.salle }}</small>
+                                                            {% endif %}
+                                                        </div>
+                                                    {% else %}
+                                                        <span class="text-muted small">-</span>
+                                                    {% endif %}
+                                                </td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistiques de la semaine -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-chart-bar me-2"></i>
+                                    Statistiques de la semaine
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-book text-primary me-2"></i>
+                                        <strong>Total cours :</strong> 
+                                        {% set total_cours = 0 %}
+                                        {% for jour_nom, heures in grille %}
+                                            {% for heure, emploi in heures %}
+                                                {% if emploi %}{% set total_cours = total_cours + 1 %}{% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                        {{ total_cours }}
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-clock text-success me-2"></i>
+                                        <strong>Heures totales :</strong> 
+                                        {% set total_heures = 0 %}
+                                        {% for jour_nom, heures in grille %}
+                                            {% for heure, emploi in heures %}
+                                                {% if emploi and emploi.heureDebut and emploi.heureFin %}
+                                                    {% set duree = emploi.heureFin|date('U') - emploi.heureDebut|date('U') %}
+                                                    {% set total_heures = total_heures + (duree / 3600) %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                        {{ total_heures|round(1) }}h
+                                    </li>
+                                    <li>
+                                        <i class="fas fa-university text-info me-2"></i>
+                                        <strong>Filières concernées :</strong> 
+                                        {% set filieres = [] %}
+                                        {% for jour_nom, heures in grille %}
+                                            {% for heure, emploi in heures %}
+                                                {% if emploi and emploi.filiere %}
+                                                    {% set filieres = filieres|merge([emploi.filiere.nom]) %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                        {{ filieres|unique|length }}
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Informations
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="bg-info text-white p-2 rounded me-3" style="width: 20px; height: 20px;"></div>
+                                    <span>Cours programmé</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="bg-light border p-2 rounded me-3" style="width: 20px; height: 20px;"></div>
+                                    <span>Créneau libre</span>
+                                </div>
+                                <p class="text-muted small mb-0">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Cette vue affiche votre emploi du temps sous forme de grille pour une meilleure visualisation.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">Aucun emploi du temps</h4>
+                    <p class="text-muted">Votre emploi du temps n'a pas encore été configuré.</p>
+                    <p class="text-muted">Contactez l'administration pour plus d'informations.</p>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn-toolbar, .card-header, .sidebar {
+        display: none !important;
+    }
+    
+    .table {
+        font-size: 10px;
+    }
+    
+    .container-fluid {
+        margin: 0;
+        padding: 0;
+    }
+    
+    main {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+}
+
+.table td {
+    vertical-align: middle;
+    min-height: 80px;
+}
+
+.bg-info {
+    background-color: #0dcaf0 !important;
+}
+
+.small {
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %}

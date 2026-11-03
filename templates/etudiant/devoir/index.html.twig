@@ -1,0 +1,158 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Devoirs{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'etudiant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-tasks me-2 text-primary"></i>
+                        Mes Devoirs
+                    </h1>
+                    {% if periodeActive %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Total Devoirs</h6>
+                            <h2 class="mb-0">{{ stats.total }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">À Faire</h6>
+                            <h2 class="mb-0">{{ stats.a_faire }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Soumis</h6>
+                            <h2 class="mb-0">{{ stats.soumis }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Corrigés</h6>
+                            <h2 class="mb-0">{{ stats.corriges }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerte devoirs en retard -->
+            {% if stats.en_retard > 0 %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Attention !</strong> Vous avez {{ stats.en_retard }} devoir(s) en retard.
+                </div>
+            {% endif %}
+
+            <!-- Liste des devoirs -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Liste des Devoirs
+                        <span class="badge bg-secondary ms-2">{{ devoirsAvecSoumission|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if devoirsAvecSoumission|length > 0 %}
+                        {% for item in devoirsAvecSoumission %}
+                            {% set devoir = item.devoir %}
+                            {% set soumission = item.soumission %}
+                            {% set enRetard = item.enRetard %}
+                            
+                            <div class="card mb-3 {% if enRetard %}border-danger{% elseif soumission and soumission.statut == 'corrige' %}border-success{% endif %}">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h5 class="card-title">
+                                                {{ devoir.titre }}
+                                                {% if enRetard %}
+                                                    <span class="badge bg-danger ms-2">EN RETARD</span>
+                                                {% elseif soumission %}
+                                                    {% if soumission.statut == 'corrige' %}
+                                                        <span class="badge bg-success ms-2">CORRIGÉ</span>
+                                                    {% else %}
+                                                        <span class="badge bg-info ms-2">SOUMIS</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="badge bg-warning ms-2">À FAIRE</span>
+                                                {% endif %}
+                                            </h5>
+                                            <p class="card-text text-muted">{{ devoir.description|slice(0, 100) }}...</p>
+                                            
+                                            <div class="d-flex gap-3 text-muted">
+                                                <span><i class="fas fa-book me-1"></i>{{ devoir.matiere.nom }}</span>
+                                                <span><i class="fas fa-calendar me-1"></i>{{ devoir.dateEcheance|date('d/m/Y H:i') }}</span>
+                                                <span><i class="fas fa-star me-1"></i>{{ devoir.noteMax }} pts</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            {% if soumission and soumission.note %}
+                                                <div class="mb-2">
+                                                    <h3 class="mb-0">{{ soumission.note }}/{{ devoir.noteMax }}</h3>
+                                                    <small class="text-muted">Votre note</small>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="d-grid gap-2">
+                                                <a href="{{ path('etudiant_devoir_show', {'id': devoir.id}) }}" 
+                                                   class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye me-1"></i>Voir les détails
+                                                </a>
+                                                {% if not soumission or soumission.statut == 'brouillon' %}
+                                                    <a href="{{ path('etudiant_devoir_soumettre', {'id': devoir.id}) }}" 
+                                                       class="btn btn-primary btn-sm">
+                                                        <i class="fas fa-upload me-1"></i>
+                                                        {% if soumission %}Continuer{% else %}Soumettre{% endif %}
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-success">Aucun devoir en cours</h5>
+                            <p class="text-muted">Vous n'avez aucun devoir à faire pour le moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

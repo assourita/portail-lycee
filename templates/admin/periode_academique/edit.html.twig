@@ -1,0 +1,173 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la Période Académique{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-edit me-2 text-primary"></i>
+                        Modifier la Période Académique
+                    </h1>
+                    <p class="text-muted mb-0">{{ periode.periode }} - {{ periode.anneeScolaire }}</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_periodes_academiques_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Formulaire -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Modifier les Informations
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="annee_scolaire" class="form-label">
+                                            <i class="fas fa-calendar me-1"></i>Année Scolaire *
+                                        </label>
+                                        <input type="text" class="form-control" id="annee_scolaire" name="annee_scolaire" 
+                                               value="{{ periode.anneeScolaire }}" required>
+                                        <div class="form-text">Format: YYYY-YYYY</div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="periode" class="form-label">
+                                            <i class="fas fa-clock me-1"></i>Période *
+                                        </label>
+                                        <select class="form-select" id="periode" name="periode" required>
+                                            <option value="">Sélectionner une période</option>
+                                            <option value="1er Trimestre" {% if periode.periode == '1er Trimestre' %}selected{% endif %}>1er Trimestre</option>
+                                            <option value="2ème Trimestre" {% if periode.periode == '2ème Trimestre' %}selected{% endif %}>2ème Trimestre</option>
+                                            <option value="3ème Trimestre" {% if periode.periode == '3ème Trimestre' %}selected{% endif %}>3ème Trimestre</option>
+                                            <option value="1er Semestre" {% if periode.periode == '1er Semestre' %}selected{% endif %}>1er Semestre</option>
+                                            <option value="2ème Semestre" {% if periode.periode == '2ème Semestre' %}selected{% endif %}>2ème Semestre</option>
+                                            <option value="Année Complète" {% if periode.periode == 'Année Complète' %}selected{% endif %}>Année Complète</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="date_debut" class="form-label">
+                                            <i class="fas fa-calendar-plus me-1"></i>Date de Début *
+                                        </label>
+                                        <input type="date" class="form-control" id="date_debut" name="date_debut" 
+                                               value="{{ periode.dateDebut|date('Y-m-d') }}" required>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="date_fin" class="form-label">
+                                            <i class="fas fa-calendar-minus me-1"></i>Date de Fin *
+                                        </label>
+                                        <input type="date" class="form-control" id="date_fin" name="date_fin" 
+                                               value="{{ periode.dateFin|date('Y-m-d') }}" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" 
+                                               {% if periode.isActive %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_active">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            Activer cette période
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Si coché, cette période deviendra la période active et toutes les autres seront désactivées.
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ path('admin_periodes_academiques_index') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times me-1"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>Enregistrer les Modifications
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Statistiques
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <h4 class="text-primary">{{ periode.notes|length }}</h4>
+                                    <small class="text-muted">Notes</small>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="text-info">{{ periode.cours|length }}</h4>
+                                    <small class="text-muted">Cours</small>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="text-success">{{ periode.evaluations|length }}</h4>
+                                    <small class="text-muted">Évaluations</small>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <h6>Informations :</h6>
+                            <ul class="list-unstyled text-muted">
+                                <li><i class="fas fa-calendar me-1"></i>Créée le {{ periode.dateCreation|date('d/m/Y à H:i') }}</li>
+                                {% if periode.dateModification %}
+                                    <li><i class="fas fa-edit me-1"></i>Modifiée le {{ periode.dateModification|date('d/m/Y à H:i') }}</li>
+                                {% endif %}
+                                <li><i class="fas fa-{% if periode.isActive %}check-circle text-success{% else %}times-circle text-danger{% endif %} me-1"></i>
+                                    Statut: {% if periode.isActive %}Actif{% else %}Inactif{% endif %}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateDebutInput = document.getElementById('date_debut');
+    const dateFinInput = document.getElementById('date_fin');
+    
+    // Validation des dates
+    function validateDates() {
+        const dateDebut = new Date(dateDebutInput.value);
+        const dateFin = new Date(dateFinInput.value);
+        
+        if (dateDebut && dateFin && dateDebut >= dateFin) {
+            dateFinInput.setCustomValidity('La date de fin doit être postérieure à la date de début');
+        } else {
+            dateFinInput.setCustomValidity('');
+        }
+    }
+    
+    dateDebutInput.addEventListener('change', validateDates);
+    dateFinInput.addEventListener('change', validateDates);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,272 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Absences{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-user-clock me-2 text-primary"></i>
+                        Gestion des Absences
+                    </h1>
+                    {% if periodeActive %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-white">Total Absences</h6>
+                                    <h2 class="mb-0">{{ stats.total }}</h2>
+                                </div>
+                                <i class="fas fa-calendar-times fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-white">Justifiées</h6>
+                                    <h2 class="mb-0">{{ stats.justifiees }}</h2>
+                                </div>
+                                <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-danger">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-white">Non Justifiées</h6>
+                                    <h2 class="mb-0">{{ stats.non_justifiees }}</h2>
+                                </div>
+                                <i class="fas fa-times-circle fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-white">En Attente</h6>
+                                    <h2 class="mb-0">{{ stats.en_attente }}</h2>
+                                </div>
+                                <i class="fas fa-clock fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtres -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>Filtres
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="filiere" class="form-label">Filière</label>
+                            <select class="form-select" id="filiere" name="filiere">
+                                <option value="">Toutes les filières</option>
+                                {% for filiere in filieres %}
+                                    <option value="{{ filiere.id }}" {% if filtreFiliere == filiere.id %}selected{% endif %}>
+                                        {{ filiere.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="statut" class="form-label">Statut</label>
+                            <select class="form-select" id="statut" name="statut">
+                                <option value="">Tous les statuts</option>
+                                <option value="justifiee" {% if filtreStatut == 'justifiee' %}selected{% endif %}>Justifiées</option>
+                                <option value="non_justifiee" {% if filtreStatut == 'non_justifiee' %}selected{% endif %}>Non justifiées</option>
+                                <option value="en_attente" {% if filtreStatut == 'en_attente' %}selected{% endif %}>En attente</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search me-1"></i>Filtrer
+                            </button>
+                            <a href="{{ path('admin_absences_index') }}" class="btn btn-secondary">
+                                <i class="fas fa-redo me-1"></i>Réinitialiser
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Liste des absences -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Liste des Absences
+                        <span class="badge bg-secondary ms-2">{{ absences|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if absences|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Étudiant</th>
+                                        <th>Filière</th>
+                                        <th>Type</th>
+                                        <th>Période</th>
+                                        <th>Matière</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for absence in absences %}
+                                        <tr>
+                                            <td>{{ absence.date|date('d/m/Y') }}</td>
+                                            <td>
+                                                <a href="{{ path('admin_absence_etudiant_stats', {'id': absence.etudiant.id}) }}">
+                                                    {{ absence.etudiant.nom }} {{ absence.etudiant.prenom }}
+                                                </a>
+                                            </td>
+                                            <td>{{ absence.etudiant.filiere.nom }}</td>
+                                            <td>
+                                                {% if absence.type == 'absence' %}
+                                                    <span class="badge bg-danger">Absence</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Retard</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ absence.periode|capitalize }}</td>
+                                            <td>
+                                                {% if absence.matiere %}
+                                                    {{ absence.matiere.nom }}
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if absence.justifiee %}
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check me-1"></i>Justifiée
+                                                    </span>
+                                                {% elseif absence.justification %}
+                                                    <span class="badge bg-warning">
+                                                        <i class="fas fa-clock me-1"></i>En attente
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">
+                                                        <i class="fas fa-times me-1"></i>Non justifiée
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ path('admin_absence_show', {'id': absence.id}) }}" 
+                                                       class="btn btn-sm btn-info" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    
+                                                    {% if absence.justification and not absence.justifiee %}
+                                                        <form method="post" action="{{ path('admin_absence_valider', {'id': absence.id}) }}" style="display: inline;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('valider' ~ absence.id) }}">
+                                                            <button type="submit" class="btn btn-sm btn-success" title="Valider">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                        </form>
+                                                        <form method="post" action="{{ path('admin_absence_rejeter', {'id': absence.id}) }}" style="display: inline;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('rejeter' ~ absence.id) }}">
+                                                            <button type="submit" class="btn btn-sm btn-warning" title="Rejeter">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                    
+                                                    <button type="button" class="btn btn-sm btn-danger" 
+                                                            onclick="deleteAbsence({{ absence.id }})" title="Supprimer">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-user-clock fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucune absence enregistrée</h5>
+                            <p class="text-muted">Les absences apparaîtront ici une fois enregistrées par les enseignants.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette absence ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="delete-form" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteAbsence(absenceId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const form = document.getElementById('delete-form');
+    form.action = '{{ path('admin_absence_delete', {'id': '__ID__'}) }}'.replace('__ID__', absenceId);
+    modal.show();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,353 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail Matière - {{ matiere.nom }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-book me-2 text-primary"></i>
+                        {{ matiere.nom }}
+                    </h1>
+                    <p class="text-muted mb-0">Détails de la matière et notes des étudiants</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_matiere_edit', {'id': matiere.id}) }}" class="btn btn-warning me-2">
+                        <i class="fas fa-edit me-1"></i>Modifier
+                    </a>
+                    <a href="{{ path('admin_matieres') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informations de base de la matière -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations de la matière
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th class="text-muted">ID :</th>
+                                            <td><span class="badge bg-secondary">{{ matiere.id }}</span></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">Nom :</th>
+                                            <td><strong>{{ matiere.nom }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">Coefficient :</th>
+                                            <td><span class="badge bg-info">{{ matiere.coeficient }}</span></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th class="text-muted">Filière :</th>
+                                            <td>
+                                                {% if matiere.filiere %}
+                                                    <i class="fas fa-graduation-cap me-1"></i>
+                                                    {{ matiere.filiere.nom }}
+                                                {% else %}
+                                                    <span class="text-muted">Non assignée</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-muted">Enseignant :</th>
+                                            <td>
+                                                {% if matiere.enseignant %}
+                                                    <i class="fas fa-user-tie me-1"></i>
+                                                    {{ matiere.enseignant.nom }} {{ matiere.enseignant.prenom }}
+                                                {% else %}
+                                                    <span class="text-muted">Non assigné</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h4 class="card-title">{{ etudiants|length }}</h4>
+                                    <p class="card-text">Étudiants</p>
+                                    <i class="fas fa-users fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h4 class="card-title">{{ total_notes }}</h4>
+                                    <p class="card-text">Notes attribuées</p>
+                                    <i class="fas fa-star fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglets pour les différentes sections -->
+            <ul class="nav nav-tabs" id="matiereTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab">
+                        <i class="fas fa-star me-1"></i>Notes des étudiants ({{ notes_par_etudiant|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="etudiants-tab" data-bs-toggle="tab" data-bs-target="#etudiants" type="button" role="tab">
+                        <i class="fas fa-users me-1"></i>Étudiants de la filière ({{ etudiants|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="cours-tab" data-bs-toggle="tab" data-bs-target="#cours" type="button" role="tab">
+                        <i class="fas fa-chalkboard-teacher me-1"></i>Cours ({{ cours|length }})
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="matiereTabsContent">
+                <!-- Onglet Notes -->
+                <div class="tab-pane fade show active" id="notes" role="tabpanel">
+                    <div class="card mt-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-star me-2"></i>Notes des étudiants pour cette matière
+                            </h5>
+                            <span class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>Les notes sont gérées par les enseignants
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            {% if notes_par_etudiant|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Étudiant</th>
+                                                <th>Notes</th>
+                                                <th>Moyenne</th>
+                                                <th>Total notes</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for etudiantId, data in notes_par_etudiant %}
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-user me-2"></i>
+                                                            <div>
+                                                                <strong>{{ data.etudiant.nom }} {{ data.etudiant.prenom }}</strong>
+                                                                <br>
+                                                                <small class="text-muted">{{ data.etudiant.email }}</small>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        {% for note in data.notes %}
+                                                            <span class="badge 
+                                                                {% if note.valeur >= 16 %}bg-success
+                                                                {% elseif note.valeur >= 14 %}bg-primary
+                                                                {% elseif note.valeur >= 12 %}bg-info
+                                                                {% elseif note.valeur >= 10 %}bg-warning
+                                                                {% else %}bg-danger
+                                                                {% endif %} me-1 mb-1">
+                                                                {{ note.valeur }}/20
+                                                            </span>
+                                                        {% endfor %}
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge 
+                                                            {% if data.moyenne >= 16 %}bg-success
+                                                            {% elseif data.moyenne >= 14 %}bg-primary
+                                                            {% elseif data.moyenne >= 12 %}bg-info
+                                                            {% elseif data.moyenne >= 10 %}bg-warning
+                                                            {% else %}bg-danger
+                                                            {% endif %} fs-6">
+                                                            {{ data.moyenne }}/20
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-secondary">{{ data.total_notes }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ path('admin_etudiant_edit', {'id': data.etudiant.id}) }}" class="btn btn-info btn-sm">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Aucune note attribuée</h5>
+                                    <p class="text-muted">Aucun étudiant n'a encore de notes pour cette matière.</p>
+                                    <span class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>Les notes sont attribuées par les enseignants
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Onglet Étudiants -->
+                <div class="tab-pane fade" id="etudiants" role="tabpanel">
+                    <div class="card mt-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-users me-2"></i>Étudiants de la filière {{ matiere.filiere ? matiere.filiere.nom : 'Non assignée' }}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if etudiants|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Nom</th>
+                                                <th>Prénom</th>
+                                                <th>Email</th>
+                                                <th>Date de naissance</th>
+                                                <th>Statut notes</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for etudiant in etudiants %}
+                                                <tr>
+                                                    <td>{{ etudiant.id }}</td>
+                                                    <td><strong>{{ etudiant.nom }}</strong></td>
+                                                    <td>{{ etudiant.prenom }}</td>
+                                                    <td>
+                                                        <i class="fas fa-envelope me-1"></i>
+                                                        {{ etudiant.email }}
+                                                    </td>
+                                                    <td>
+                                                        {% if etudiant.dateNaissance %}
+                                                            {{ etudiant.dateNaissance|date('d/m/Y') }}
+                                                        {% else %}
+                                                            <span class="text-muted">Non renseignée</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if notes_par_etudiant[etudiant.id] is defined %}
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-check me-1"></i>
+                                                                {{ notes_par_etudiant[etudiant.id].total_notes }} note(s)
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-warning">
+                                                                <i class="fas fa-exclamation me-1"></i>
+                                                                Aucune note
+                                                            </span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ path('admin_etudiant_edit', {'id': etudiant.id}) }}" class="btn btn-warning btn-sm">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Aucun étudiant dans cette filière</h5>
+                                    <p class="text-muted">Cette matière n'est associée à aucune filière ou la filière n'a pas d'étudiants.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Onglet Cours -->
+                <div class="tab-pane fade" id="cours" role="tabpanel">
+                    <div class="card mt-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chalkboard-teacher me-2"></i>Cours de cette matière
+                            </h5>
+                            <span class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>Les cours sont créés par les enseignants
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            {% if cours|length > 0 %}
+                                <div class="row">
+                                    {% for coursItem in cours %}
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card border-primary">
+                                                <div class="card-body">
+                                                    <h6 class="card-title">
+                                                        <i class="fas fa-book me-1"></i>
+                                                        {{ coursItem.titre }}
+                                                    </h6>
+                                                    <p class="card-text">
+                                                        {% if coursItem.contenu %}
+                                                            {{ coursItem.contenu|slice(0, 100) }}{% if coursItem.contenu|length > 100 %}...{% endif %}
+                                                        {% else %}
+                                                            <span class="text-muted">Aucun contenu</span>
+                                                        {% endif %}
+                                                    </p>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-calendar me-1"></i>
+                                                            {{ coursItem.dateAjout|date('d/m/Y') }}
+                                                        </small>
+                                                        <a href="{{ path('admin_cours_show', {'id': coursItem.id}) }}" class="btn btn-primary btn-sm">
+                                                            <i class="fas fa-eye me-1"></i>Voir le cours
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-chalkboard-teacher fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Aucun cours créé</h5>
+                                    <p class="text-muted">Cette matière n'a pas encore de cours associés.</p>
+                                    <span class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>Les cours sont créés par les enseignants
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,166 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Évaluations{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-clipboard-list me-2 text-primary"></i>
+                        Mes Évaluations
+                    </h1>
+                    {% if periodeActive %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                        </p>
+                    {% endif %}
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('enseignant_evaluation_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Nouvelle Évaluation
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Liste des évaluations -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Liste de mes Évaluations
+                        <span class="badge bg-secondary ms-2">{{ evaluations|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if evaluations|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Matière</th>
+                                        <th>Date</th>
+                                        <th>Coefficient</th>
+                                        <th>Note Max</th>
+                                        <th>Trimestre</th>
+                                        <th>Notes</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for evaluation in evaluations %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ evaluation.nom }}</strong>
+                                                {% if evaluation.description %}
+                                                    <br><small class="text-muted">{{ evaluation.description|slice(0, 40) }}...</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ evaluation.matiere.nom }}</span>
+                                            </td>
+                                            <td>{{ evaluation.dateEvaluation|date('d/m/Y') }}</td>
+                                            <td>
+                                                <span class="badge bg-info">x{{ evaluation.coefficient }}</span>
+                                            </td>
+                                            <td>{{ evaluation.noteMax }}</td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ evaluation.trimestre.nom }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success">{{ evaluation.notes|length }}</span>
+                                                <br><small class="text-muted">note(s)</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ path('enseignant_evaluation_show', {'id': evaluation.id}) }}" 
+                                                       class="btn btn-sm btn-info" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('enseignant_note_saisir_groupe', {'evaluation': evaluation.id, 'matiere': evaluation.matiere.id}) }}" 
+                                                       class="btn btn-sm btn-success" title="Saisir des notes">
+                                                        <i class="fas fa-pen"></i>
+                                                    </a>
+                                                    <a href="{{ path('enseignant_evaluation_edit', {'id': evaluation.id}) }}" 
+                                                       class="btn btn-sm btn-warning" title="Modifier">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-danger" 
+                                                            onclick="deleteEvaluation({{ evaluation.id }})" title="Supprimer">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucune évaluation créée</h5>
+                            <p class="text-muted">Commencez par créer votre première évaluation.</p>
+                            <a href="{{ path('enseignant_evaluation_new') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Créer une Évaluation
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette évaluation ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="delete-form" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteEvaluation(evaluationId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const form = document.getElementById('delete-form');
+    form.action = '{{ path('enseignant_evaluation_delete', {'id': '__ID__'}) }}'.replace('__ID__', evaluationId);
+    modal.show();
+}
+</script>
+{% endblock %}

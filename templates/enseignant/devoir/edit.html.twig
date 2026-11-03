@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier - {{ devoir.titre }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-edit me-2 text-warning"></i>
+                        Modifier le Devoir
+                    </h1>
+                    <p class="text-muted mb-0">{{ devoir.titre }}</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('enseignant_devoir_show', {'id': devoir.id}) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Formulaire -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Modifier les Informations
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <div class="mb-3">
+                                    <label for="titre" class="form-label">
+                                        <i class="fas fa-heading me-1"></i>Titre du devoir *
+                                    </label>
+                                    <input type="text" class="form-control" id="titre" name="titre" 
+                                           value="{{ devoir.titre }}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-align-left me-1"></i>Description *
+                                    </label>
+                                    <textarea class="form-control" id="description" name="description" rows="4" required>{{ devoir.description }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="consignes" class="form-label">
+                                        <i class="fas fa-list-ol me-1"></i>Consignes détaillées
+                                    </label>
+                                    <textarea class="form-control" id="consignes" name="consignes" rows="6">{{ devoir.consignes }}</textarea>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="date_echeance" class="form-label">
+                                            <i class="fas fa-calendar me-1"></i>Date limite *
+                                        </label>
+                                        <input type="datetime-local" class="form-control" id="date_echeance" 
+                                               name="date_echeance" value="{{ devoir.dateEcheance|date('Y-m-d\\TH:i') }}" required>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="note_max" class="form-label">
+                                            <i class="fas fa-star me-1"></i>Note maximale *
+                                        </label>
+                                        <input type="number" class="form-control" id="note_max" 
+                                               name="note_max" value="{{ devoir.noteMax }}" min="1" max="100" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="accepte_tardives" 
+                                               name="accepte_tardives" value="1" {% if devoir.accepteSoumissionsTardives %}checked{% endif %}>
+                                        <label class="form-check-label" for="accepte_tardives">
+                                            Accepter les soumissions tardives
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="statut" class="form-label">
+                                        <i class="fas fa-flag me-1"></i>Statut *
+                                    </label>
+                                    <select class="form-select" id="statut" name="statut" required>
+                                        <option value="brouillon" {% if devoir.statut == 'brouillon' %}selected{% endif %}>Brouillon</option>
+                                        <option value="publie" {% if devoir.statut == 'publie' %}selected{% endif %}>Publié</option>
+                                        <option value="cloture" {% if devoir.statut == 'cloture' %}selected{% endif %}>Clôturé</option>
+                                    </select>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ path('enseignant_devoir_show', {'id': devoir.id}) }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times me-1"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-save me-1"></i>Enregistrer les Modifications
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Statistiques -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Statistiques
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Soumissions :</strong> {{ devoir.soumissions|length }}</p>
+                            <p><strong>Taux :</strong> {{ devoir.tauxSoumission|number_format(0) }}%</p>
+                            <p><strong>Créé le :</strong><br>{{ devoir.dateCreation|date('d/m/Y') }}</p>
+                            
+                            <hr>
+                            
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Attention :</strong> Modifier un devoir publié peut affecter les étudiants.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

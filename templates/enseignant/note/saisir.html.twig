@@ -1,0 +1,204 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Saisir une Note{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-plus me-2 text-primary"></i>
+                        Saisir une Note
+                    </h1>
+                    {% if periodeActive %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                        </p>
+                    {% endif %}
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('enseignant_notes_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Formulaire -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Saisir une Note
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <div class="mb-3">
+                                    <label for="matiere" class="form-label">
+                                        <i class="fas fa-book me-1"></i>Matière *
+                                    </label>
+                                    <select class="form-select" id="matiere" name="matiere" required>
+                                        <option value="">Sélectionner une matière</option>
+                                        {% for matiere in matieres %}
+                                            <option value="{{ matiere.id }}">
+                                                {{ matiere.nom }} ({{ matiere.filiere.nom }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="evaluation" class="form-label">
+                                        <i class="fas fa-clipboard-list me-1"></i>Évaluation (optionnel)
+                                    </label>
+                                    <select class="form-select" id="evaluation" name="evaluation">
+                                        <option value="">Aucune évaluation spécifique</option>
+                                    </select>
+                                    <div class="form-text">Les évaluations se chargeront après la sélection de la matière</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="etudiant" class="form-label">
+                                        <i class="fas fa-user me-1"></i>Étudiant *
+                                    </label>
+                                    <select class="form-select" id="etudiant" name="etudiant" required>
+                                        <option value="">Sélectionner un étudiant</option>
+                                    </select>
+                                    <div class="form-text">Les étudiants se chargeront après la sélection de la matière</div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="valeur" class="form-label">
+                                            <i class="fas fa-star me-1"></i>Note * (sur 20)
+                                        </label>
+                                        <input type="number" class="form-control" id="valeur" name="valeur" 
+                                               min="0" max="20" step="0.5" required>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="type" class="form-label">
+                                            <i class="fas fa-tag me-1"></i>Type *
+                                        </label>
+                                        <select class="form-select" id="type" name="type" required>
+                                            <option value="devoir">Devoir</option>
+                                            <option value="examen">Examen</option>
+                                            <option value="controle">Contrôle</option>
+                                            <option value="participation">Participation</option>
+                                            <option value="projet">Projet</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="commentaire" class="form-label">
+                                        <i class="fas fa-comment me-1"></i>Commentaire
+                                    </label>
+                                    <textarea class="form-control" id="commentaire" name="commentaire" rows="3"
+                                              placeholder="Commentaire sur la note (optionnel)"></textarea>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ path('enseignant_notes_index') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times me-1"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save me-1"></i>Enregistrer la Note
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <h6>Types de notes :</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-pen me-1 text-primary"></i>Devoir</li>
+                                <li><i class="fas fa-file-alt me-1 text-danger"></i>Examen</li>
+                                <li><i class="fas fa-check me-1 text-info"></i>Contrôle</li>
+                                <li><i class="fas fa-comments me-1 text-success"></i>Participation</li>
+                                <li><i class="fas fa-project-diagram me-1 text-warning"></i>Projet</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Astuce :</strong> Pour saisir plusieurs notes en même temps, utilisez la 
+                                <a href="{{ path('enseignant_note_saisir_groupe') }}">saisie groupée</a>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const matiereSelect = document.getElementById('matiere');
+    const evaluationSelect = document.getElementById('evaluation');
+    const etudiantSelect = document.getElementById('etudiant');
+
+    // Charger les évaluations et étudiants quand la matière change
+    matiereSelect.addEventListener('change', function() {
+        const matiereId = this.value;
+        
+        if (matiereId) {
+            // Charger les évaluations
+            fetch(`/enseignant/notes/api/evaluations/${matiereId}`)
+                .then(response => response.json())
+                .then(data => {
+                    evaluationSelect.innerHTML = '<option value="">Aucune évaluation spécifique</option>';
+                    data.forEach(evaluation => {
+                        const option = document.createElement('option');
+                        option.value = evaluation.id;
+                        option.textContent = `${evaluation.nom} (${evaluation.dateEvaluation})`;
+                        evaluationSelect.appendChild(option);
+                    });
+                });
+
+            // Charger les étudiants
+            fetch(`/enseignant/notes/api/etudiants/${matiereId}`)
+                .then(response => response.json())
+                .then(data => {
+                    etudiantSelect.innerHTML = '<option value="">Sélectionner un étudiant</option>';
+                    data.forEach(etudiant => {
+                        const option = document.createElement('option');
+                        option.value = etudiant.id;
+                        option.textContent = `${etudiant.nom} ${etudiant.prenom}`;
+                        etudiantSelect.appendChild(option);
+                    });
+                });
+        } else {
+            evaluationSelect.innerHTML = '<option value="">Sélectionner d\'abord une matière</option>';
+            etudiantSelect.innerHTML = '<option value="">Sélectionner d\'abord une matière</option>';
+        }
+    });
+});
+</script>
+{% endblock %}

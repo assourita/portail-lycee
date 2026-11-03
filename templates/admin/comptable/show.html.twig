@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+{% block title %}Détail Comptable{% endblock %}
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Détail du comptable</h1>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr><th>ID</th><td>{{ comptable.id }}</td></tr>
+                        <tr><th>Nom</th><td>{{ comptable.nom }}</td></tr>
+                        <tr><th>Prénom</th><td>{{ comptable.prenom }}</td></tr>
+                        <tr><th>Email</th><td>{{ comptable.email }}</td></tr>
+                        <tr><th>Utilisateur lié</th><td>{{ comptable.user ? comptable.user.username : '' }}</td></tr>
+                    </table>
+                    <a href="{{ path('admin_comptable_edit', {'id': comptable.id}) }}" class="btn btn-warning">Modifier</a>
+                    <a href="{{ path('admin_comptables') }}" class="btn btn-secondary">Retour à la liste</a>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %} 

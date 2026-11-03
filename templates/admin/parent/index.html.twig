@@ -1,0 +1,204 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Parents{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-users me-2 text-primary"></i>
+                        Gestion des Parents
+                    </h1>
+                    <p class="text-muted mb-0">Gérer les comptes parents et leurs accès</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_parent_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Nouveau Parent
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('info') %}
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Total Parents</h6>
+                            <h2 class="mb-0">{{ parents|length }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-success">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Avec Compte</h6>
+                            <h2 class="mb-0">
+                                {% set avecCompte = 0 %}
+                                {% for parent in parents %}
+                                    {% if parent.user %}
+                                        {% set avecCompte = avecCompte + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ avecCompte }}
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Sans Compte</h6>
+                            <h2 class="mb-0">{{ parents|length - avecCompte }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des parents -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Liste des Parents
+                        <span class="badge bg-secondary ms-2">{{ parents|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if parents|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Email</th>
+                                        <th>Téléphone</th>
+                                        <th>Lien</th>
+                                        <th>Enfants</th>
+                                        <th>Compte</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for parent in parents %}
+                                        <tr>
+                                            <td>{{ parent.nom }} {{ parent.prenom }}</td>
+                                            <td>{{ parent.email }}</td>
+                                            <td>{{ parent.telephone ?? '-' }}</td>
+                                            <td>{{ parent.lienParente|capitalize }}</td>
+                                            <td>
+                                                <span class="badge bg-info">{{ parent.enfants|length }}</span>
+                                                {% for enfant in parent.enfants %}
+                                                    <br><small>{{ enfant.prenom }} {{ enfant.nom }}</small>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% if parent.user %}
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check me-1"></i>Actif
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">
+                                                        <i class="fas fa-times me-1"></i>Aucun
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ path('admin_parent_show', {'id': parent.id}) }}" 
+                                                       class="btn btn-sm btn-info" title="Voir">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('admin_parent_edit', {'id': parent.id}) }}" 
+                                                       class="btn btn-sm btn-warning" title="Modifier">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    {% if not parent.user %}
+                                                        <form method="post" action="{{ path('admin_parent_creer_compte', {'id': parent.id}) }}" style="display: inline;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('creer-compte' ~ parent.id) }}">
+                                                            <button type="submit" class="btn btn-sm btn-success" title="Créer un compte">
+                                                                <i class="fas fa-user-plus"></i>
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                    <button type="button" class="btn btn-sm btn-danger" 
+                                                            onclick="deleteParent({{ parent.id }})" title="Supprimer">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun parent enregistré</h5>
+                            <p class="text-muted">Commencez par créer le premier parent.</p>
+                            <a href="{{ path('admin_parent_new') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Créer un Parent
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce parent ?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Attention :</strong> Le compte utilisateur associé sera également supprimé.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="delete-form" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteParent(parentId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const form = document.getElementById('delete-form');
+    form.action = '{{ path('admin_parent_delete', {'id': '__ID__'}) }}'.replace('__ID__', parentId);
+    modal.show();
+}
+</script>
+{% endblock %}

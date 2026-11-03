@@ -1,0 +1,145 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Espace Parent{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'parent/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-home me-2 text-primary"></i>
+                        Espace Parent
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Bienvenue {{ parent.prenom }} {{ parent.nom }}
+                    </p>
+                    {% if periodeActive %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Informations du parent -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>Mes Informations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nom complet :</strong> {{ parent.nom }} {{ parent.prenom }}</p>
+                            <p><strong>Email :</strong> {{ parent.email }}</p>
+                            <p><strong>Téléphone :</strong> {{ parent.telephone ?? '-' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Lien de parenté :</strong> {{ parent.lienParente|capitalize }}</p>
+                            <p><strong>Profession :</strong> {{ parent.profession ?? '-' }}</p>
+                            <p><strong>Nombre d'enfants :</strong> {{ parent.enfants|length }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des enfants -->
+            <h3 class="mb-3">
+                <i class="fas fa-users me-2"></i>Mes Enfants
+            </h3>
+
+            {% if enfantsStats|length > 0 %}
+                <div class="row">
+                    {% for data in enfantsStats %}
+                        {% set enfant = data.enfant %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-user-graduate me-2"></i>
+                                        {{ enfant.nom }} {{ enfant.prenom }}
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Filière :</strong> {{ enfant.filiere.nom }}</p>
+                                    <p><strong>Email :</strong> {{ enfant.email }}</p>
+
+                                    <hr>
+
+                                    <!-- Statistiques -->
+                                    <div class="row text-center mb-3">
+                                        <div class="col-4">
+                                            <h4 class="{% if data.moyenneGenerale >= 12 %}text-success{% elseif data.moyenneGenerale >= 10 %}text-warning{% else %}text-danger{% endif %}">
+                                                {{ data.moyenneGenerale|number_format(2) }}
+                                            </h4>
+                                            <small class="text-muted">Moyenne</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <h4 class="text-primary">{{ data.totalNotes }}</h4>
+                                            <small class="text-muted">Notes</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <h4 class="{% if data.totalAbsences == 0 %}text-success{% elseif data.totalAbsences < 5 %}text-warning{% else %}text-danger{% endif %}">
+                                                {{ data.totalAbsences }}
+                                            </h4>
+                                            <small class="text-muted">Absences</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Taux d'assiduité -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Taux d'assiduité</span>
+                                            <span class="fw-bold">{{ data.tauxAssiduite|number_format(1) }}%</span>
+                                        </div>
+                                        <div class="progress" style="height: 25px;">
+                                            <div class="progress-bar {% if data.tauxAssiduite >= 90 %}bg-success{% elseif data.tauxAssiduite >= 75 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ data.tauxAssiduite }}%;">
+                                                {{ data.tauxAssiduite|number_format(1) }}%
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Alertes -->
+                                    {% if data.absencesNonJustifiees > 0 %}
+                                        <div class="alert alert-warning py-2">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                            <strong>{{ data.absencesNonJustifiees }}</strong> absence(s) non justifiée(s)
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- Boutons d'action -->
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ path('parent_enfant_notes', {'id': enfant.id}) }}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-chart-line me-1"></i>Voir les Notes
+                                        </a>
+                                        <a href="{{ path('parent_enfant_bulletins', {'id': enfant.id}) }}" class="btn btn-success btn-sm">
+                                            <i class="fas fa-file-alt me-1"></i>Voir les Bulletins
+                                        </a>
+                                        <a href="{{ path('parent_enfant_absences', {'id': enfant.id}) }}" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-user-clock me-1"></i>Voir les Absences
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucun enfant lié à votre compte. Veuillez contacter l'administration.
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}

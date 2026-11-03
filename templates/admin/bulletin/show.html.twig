@@ -1,0 +1,238 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bulletin - {{ etudiant.nom }} {{ etudiant.prenom }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-file-alt me-2 text-primary"></i>
+                        Bulletin de Notes
+                    </h1>
+                    <p class="text-muted mb-0">
+                        {{ etudiant.nom }} {{ etudiant.prenom }} - {{ bulletin.periode }} {{ bulletin.anneeScolaire }}
+                    </p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_bulletin_edit', {'id': bulletin.id}) }}" class="btn btn-warning me-2">
+                        <i class="fas fa-edit me-1"></i>Modifier
+                    </a>
+                    <a href="{{ path('admin_bulletins_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informations générales -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-user-graduate fa-2x mb-2"></i>
+                            <h6 class="card-title">Étudiant</h6>
+                            <p class="card-text">{{ etudiant.nom }} {{ etudiant.prenom }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+                            <h6 class="card-title">Filière</h6>
+                            <p class="card-text">{{ filiere.nom }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                            <h6 class="card-title">Période</h6>
+                            <p class="card-text">{{ bulletin.periode }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-star fa-2x mb-2"></i>
+                            <h6 class="card-title">Moyenne Générale</h6>
+                            <p class="card-text">{{ moyenneGenerale|number_format(2) }}/20</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Détails du bulletin -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list me-2"></i>Notes par Matière
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if notesParMatiere|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Matière</th>
+                                                <th>Coefficient</th>
+                                                <th>Notes</th>
+                                                <th>Moyenne</th>
+                                                <th>Points</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in notesParMatiere %}
+                                                <tr>
+                                                    <td>
+                                                        <strong>{{ item.matiere.nom }}</strong>
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-user me-1"></i>{{ item.matiere.enseignant.nom }} {{ item.matiere.enseignant.prenom }}
+                                                        </small>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-secondary">{{ item.coefficient }}</span>
+                                                    </td>
+                                                    <td>
+                                                        {% for note in item.notes %}
+                                                            <span class="badge 
+                                                                {% if note.valeur >= 16 %}bg-success
+                                                                {% elseif note.valeur >= 12 %}bg-primary
+                                                                {% elseif note.valeur >= 10 %}bg-warning
+                                                                {% else %}bg-danger{% endif %} me-1">
+                                                                {{ note.valeur }}/20
+                                                            </span>
+                                                        {% endfor %}
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge 
+                                                            {% if item.moyenne >= 16 %}bg-success
+                                                            {% elseif item.moyenne >= 12 %}bg-primary
+                                                            {% elseif item.moyenne >= 10 %}bg-warning
+                                                            {% else %}bg-danger{% endif %}">
+                                                            {{ item.moyenne|number_format(2) }}/20
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <strong>{{ (item.moyenne * item.coefficient)|number_format(2) }}</strong>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <th colspan="3">Total</th>
+                                                <th>
+                                                    <span class="badge 
+                                                        {% if moyenneGenerale >= 16 %}bg-success
+                                                        {% elseif moyenneGenerale >= 12 %}bg-primary
+                                                        {% elseif moyenneGenerale >= 10 %}bg-warning
+                                                        {% else %}bg-danger{% endif %}">
+                                                        {{ moyenneGenerale|number_format(2) }}/20
+                                                    </span>
+                                                </th>
+                                                <th><strong>{{ (moyenneGenerale * totalCoefficients)|number_format(2) }}</strong></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-exclamation-triangle fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Aucune note disponible</h5>
+                                    <p class="text-muted">Cet étudiant n'a pas encore de notes pour cette période.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Informations sur l'étudiant -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-user me-2"></i>Informations de l'étudiant
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-user fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ etudiant.nom }} {{ etudiant.prenom }}</h6>
+                                    <small class="text-muted">{{ etudiant.email }}</small>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <h6 class="text-muted mb-1">Date de naissance</h6>
+                                    <p class="mb-0">{{ etudiant.dateNaissance|date('d/m/Y') }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="text-muted mb-1">Inscription</h6>
+                                    <p class="mb-0">{{ etudiant.dateInscription|date('d/m/Y') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Commentaire du bulletin -->
+                    {% if bulletin.commentaire %}
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-comment me-2"></i>Commentaire
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-0">{{ bulletin.commentaire|nl2br }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Informations du bulletin -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations du bulletin
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-12 mb-2">
+                                    <h6 class="text-muted mb-1">Année scolaire</h6>
+                                    <p class="mb-0">{{ bulletin.anneeScolaire }}</p>
+                                </div>
+                                <div class="col-12 mb-2">
+                                    <h6 class="text-muted mb-1">Date de création</h6>
+                                    <p class="mb-0">{{ bulletin.dateCreation|date('d/m/Y H:i') }}</p>
+                                </div>
+                                {% if bulletin.dateModification %}
+                                    <div class="col-12">
+                                        <h6 class="text-muted mb-1">Dernière modification</h6>
+                                        <p class="mb-0">{{ bulletin.dateModification|date('d/m/Y H:i') }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

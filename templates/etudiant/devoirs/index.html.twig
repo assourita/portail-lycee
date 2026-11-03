@@ -1,0 +1,331 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Devoirs - Mon Portail Lycée{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .devoirs-container {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .devoirs-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin: -20px -20px 30px -20px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        
+        .devoirs-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .devoirs-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .devoirs-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-number.total { color: #667eea; }
+        .stat-number.pending { color: #ffc107; }
+        .stat-number.completed { color: #28a745; }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .devoirs-list {
+            margin-top: 40px;
+        }
+        
+        .devoirs-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .devoirs-list-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            background: white;
+            color: #6c757d;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .devoir-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #ffc107;
+            transition: all 0.3s ease;
+        }
+        
+        .devoir-card.completed {
+            border-left-color: #28a745;
+        }
+        
+        .devoir-card.late {
+            border-left-color: #dc3545;
+        }
+        
+        .devoir-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .devoir-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .devoir-info {
+            flex-grow: 1;
+        }
+        
+        .devoir-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .devoir-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .devoir-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-late {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .devoir-description {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .devoir-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            border-radius: 25px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn-view {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-view:hover {
+            background: #5a6fd8;
+            color: white;
+        }
+        
+        .btn-submit {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-submit:hover {
+            background: #218838;
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .devoirs-stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .devoir-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .devoir-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="devoirs-container">
+    <div class="devoirs-header">
+        <h1 class="devoirs-title">
+            <i class="fas fa-tasks me-3"></i>
+            Mes Devoirs
+        </h1>
+        <p class="devoirs-subtitle">
+            Filière : {{ etudiant.filiere.nom }} - Période : {{ periodeActive.periode }} {{ periodeActive.anneeScolaire }}
+        </p>
+    </div>
+
+    <div class="devoirs-stats">
+        <div class="stat-card">
+            <div class="stat-number total">{{ devoirs|length }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number pending">{{ devoirs|filter(devoir => devoir.rendu == false)|length }}</div>
+            <div class="stat-label">À faire</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number completed">{{ devoirs|filter(devoir => devoir.rendu == true)|length }}</div>
+            <div class="stat-label">Rendus</div>
+        </div>
+    </div>
+
+    <div class="devoirs-list">
+        <div class="devoirs-list-header">
+            <h2 class="devoirs-list-title">Liste des devoirs</h2>
+            <div class="filter-buttons">
+                <button class="filter-btn active">Tous</button>
+                <button class="filter-btn">À faire</button>
+                <button class="filter-btn">Rendus</button>
+            </div>
+        </div>
+
+        {% if devoirs|length > 0 %}
+            {% for devoir in devoirs %}
+                <div class="devoir-card {{ devoir.rendu ? 'completed' : (devoir.dateLimite < date() ? 'late' : '') }}">
+                    <div class="devoir-header">
+                        <div class="devoir-info">
+                            <h3 class="devoir-title">{{ devoir.titre }}</h3>
+                            <div class="devoir-meta">
+                                <span><i class="fas fa-book me-2"></i>{{ devoir.matiere }}</span>
+                                <span><i class="fas fa-calendar me-2"></i>{{ devoir.dateLimite|date('d/m/Y') }}</span>
+                            </div>
+                            <div class="devoir-status {{ devoir.rendu ? 'status-completed' : (devoir.dateLimite < date() ? 'status-late' : 'status-pending') }}">
+                                {{ devoir.rendu ? 'Rendu' : (devoir.dateLimite < date() ? 'En retard' : 'À faire') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="devoir-description">
+                    {{ devoir.description|default('Pas de description disponible pour ce devoir.') }}
+                </div>
+
+                <div class="devoir-actions">
+                    <a href="#" class="action-btn btn-view">
+                        <i class="fas fa-eye me-2"></i>Voir
+                    </a>
+                    {% if not devoir.rendu %}
+                        <a href="#" class="action-btn btn-submit">
+                            <i class="fas fa-upload me-2"></i>Rendre
+                        </a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-tasks"></i>
+                <h3>Aucun devoir trouvé</h3>
+                <p>Vous n'avez pas de devoirs assignés actuellement.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

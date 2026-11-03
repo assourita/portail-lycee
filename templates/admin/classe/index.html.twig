@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Classes{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-school me-2 text-primary"></i>
+                        Gestion des Classes
+                    </h1>
+                    <p class="text-muted mb-0">Gérer les classes (10ème, 11ème, Terminale)</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_classe_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Nouvelle Classe
+                    </a>
+                </div>
+            </div>
+
+            <!-- Liste des classes -->
+            <div class="row">
+                {% for classeData in classesWithStats %}
+                    {% set classe = classeData.classe %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-school me-2"></i>{{ classe.nom }}
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">{{ classe.description }}</p>
+                                
+                                <hr>
+                                
+                                <div class="row text-center mb-3">
+                                    <div class="col-4">
+                                        <h6 class="text-muted mb-1">Élèves</h6>
+                                        <h4 class="text-info">{{ classeData.nombreEtudiants }}</h4>
+                                    </div>
+                                    <div class="col-4">
+                                        <h6 class="text-muted mb-1">Filières</h6>
+                                        <h4 class="text-primary">{{ classeData.nombreFilieres }}</h4>
+                                    </div>
+                                    <div class="col-4">
+                                        <h6 class="text-muted mb-1">Trimestres</h6>
+                                        <h4 class="text-success">{{ classeData.nombreTrimestres }}</h4>
+                                    </div>
+                                </div>
+
+                                {% if classe.filieres|length > 0 %}
+                                    <div class="mb-3">
+                                        <h6 class="text-muted mb-2">Filières :</h6>
+                                        {% for filiere in classe.filieres %}
+                                            <span class="badge bg-info me-1 mb-1">{{ filiere.nom }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-light">
+                                <div class="btn-group w-100" role="group">
+                                    <a href="{{ path('admin_classe_show', {'id': classe.id}) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </a>
+                                    <a href="{{ path('admin_classe_edit', {'id': classe.id}) }}" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteClasse({{ classe.id }})">
+                                        <i class="fas fa-trash"></i> Supprimer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <i class="fas fa-school fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucune classe créée</h5>
+                            <p class="text-muted">Commencez par créer votre première classe.</p>
+                            <a href="{{ path('admin_classe_new') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Créer une Classe
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette classe ? Cette action supprimera également tous les trimestres associés.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="delete-form" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete') }}">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteClasse(classeId) {
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const form = document.getElementById('delete-form');
+    form.action = '{{ path('admin_classe_delete', {'id': '__ID__'}) }}'.replace('__ID__', classeId);
+    modal.show();
+}
+</script>
+{% endblock %}
+

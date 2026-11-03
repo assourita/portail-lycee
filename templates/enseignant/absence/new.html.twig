@@ -1,0 +1,193 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Enregistrer une Absence{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'enseignant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-plus me-2 text-primary"></i>
+                        Enregistrer une Absence
+                    </h1>
+                    {% if periodeActive %}
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
+                        </p>
+                    {% endif %}
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('enseignant_absences_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Formulaire -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Informations de l'Absence
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <div class="mb-3">
+                                    <label for="etudiant" class="form-label">
+                                        <i class="fas fa-user me-1"></i>Étudiant *
+                                    </label>
+                                    <select class="form-select" id="etudiant" name="etudiant" required>
+                                        <option value="">Sélectionner un étudiant</option>
+                                        {% for etudiant in etudiants %}
+                                            <option value="{{ etudiant.id }}">
+                                                {{ etudiant.nom }} {{ etudiant.prenom }} ({{ etudiant.filiere.nom }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="date" class="form-label">
+                                            <i class="fas fa-calendar me-1"></i>Date *
+                                        </label>
+                                        <input type="date" class="form-control" id="date" name="date" 
+                                               value="{{ 'now'|date('Y-m-d') }}" required>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="type" class="form-label">
+                                            <i class="fas fa-tag me-1"></i>Type *
+                                        </label>
+                                        <select class="form-select" id="type" name="type" required>
+                                            <option value="absence">Absence</option>
+                                            <option value="retard">Retard</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="periode" class="form-label">
+                                            <i class="fas fa-clock me-1"></i>Période *
+                                        </label>
+                                        <select class="form-select" id="periode" name="periode" required>
+                                            <option value="cours">Cours spécifique</option>
+                                            <option value="matin">Matin</option>
+                                            <option value="apres-midi">Après-midi</option>
+                                            <option value="journee">Journée complète</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="matiere" class="form-label">
+                                            <i class="fas fa-book me-1"></i>Matière
+                                        </label>
+                                        <select class="form-select" id="matiere" name="matiere">
+                                            <option value="">Aucune matière spécifique</option>
+                                            {% for matiere in matieres %}
+                                                <option value="{{ matiere.id }}">{{ matiere.nom }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div id="heures-container" class="row" style="display: none;">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="heure_debut" class="form-label">
+                                            <i class="fas fa-hourglass-start me-1"></i>Heure début
+                                        </label>
+                                        <input type="time" class="form-control" id="heure_debut" name="heure_debut">
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="heure_fin" class="form-label">
+                                            <i class="fas fa-hourglass-end me-1"></i>Heure fin
+                                        </label>
+                                        <input type="time" class="form-control" id="heure_fin" name="heure_fin">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="motif" class="form-label">
+                                        <i class="fas fa-comment me-1"></i>Motif / Remarque
+                                    </label>
+                                    <textarea class="form-control" id="motif" name="motif" rows="3"
+                                              placeholder="Motif ou remarque sur l'absence (optionnel)"></textarea>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ path('enseignant_absences_index') }}" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times me-1"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>Enregistrer l'Absence
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Informations
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <h6>Types d'absence :</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-circle text-danger me-1"></i><strong>Absence :</strong> L'étudiant est absent</li>
+                                <li><i class="fas fa-circle text-warning me-1"></i><strong>Retard :</strong> L'étudiant est en retard</li>
+                            </ul>
+                            
+                            <hr>
+                            
+                            <h6>Périodes :</h6>
+                            <ul class="list-unstyled text-muted">
+                                <li><i class="fas fa-book me-1"></i>Cours spécifique</li>
+                                <li><i class="fas fa-sun me-1"></i>Matin (4h)</li>
+                                <li><i class="fas fa-moon me-1"></i>Après-midi (4h)</li>
+                                <li><i class="fas fa-calendar-day me-1"></i>Journée complète (8h)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const periodeSelect = document.getElementById('periode');
+    const heuresContainer = document.getElementById('heures-container');
+    
+    periodeSelect.addEventListener('change', function() {
+        if (this.value === 'cours') {
+            heuresContainer.style.display = 'flex';
+        } else {
+            heuresContainer.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

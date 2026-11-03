@@ -1,0 +1,220 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ devoir.titre }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'etudiant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-tasks me-2 text-primary"></i>
+                        {{ devoir.titre }}
+                    </h1>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-book me-1"></i>{{ devoir.matiere.nom }} - 
+                        <i class="fas fa-user me-1"></i>{{ devoir.enseignant.nom }} {{ devoir.enseignant.prenom }}
+                    </p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('etudiant_devoirs_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Détails du devoir -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Détails du Devoir
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Description :</strong></p>
+                            <p class="bg-light p-3 rounded">{{ devoir.description }}</p>
+
+                            {% if devoir.consignes %}
+                                <p><strong>Consignes :</strong></p>
+                                <div class="bg-light p-3 rounded">
+                                    {{ devoir.consignes|nl2br }}
+                                </div>
+                            {% endif %}
+
+                            <hr>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong><i class="fas fa-calendar me-1"></i>Date limite :</strong></p>
+                                    <p class="{% if devoir.isEnRetard %}text-danger{% else %}text-success{% endif %}">
+                                        {{ devoir.dateEcheance|date('d/m/Y à H:i') }}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong><i class="fas fa-star me-1"></i>Note maximale :</strong></p>
+                                    <p>{{ devoir.noteMax }} points</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Votre soumission -->
+                    {% if soumission %}
+                        <div class="card">
+                            <div class="card-header {% if soumission.statut == 'corrige' %}bg-success{% else %}bg-info{% endif %} text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-file-upload me-2"></i>Votre Soumission
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Soumis le :</strong> {{ soumission.dateSoumission|date('d/m/Y à H:i') }}</p>
+                                
+                                {% if soumission.isEnRetard %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Soumission en retard de {{ soumission.delaiSoumission }} jour(s)
+                                    </div>
+                                {% endif %}
+
+                                {% if soumission.commentaire %}
+                                    <p><strong>Votre travail :</strong></p>
+                                    <div class="bg-light p-3 rounded">
+                                        {{ soumission.commentaire|nl2br }}
+                                    </div>
+                                {% endif %}
+
+                                {% if soumission.statut == 'corrige' %}
+                                    <hr>
+                                    <div class="alert alert-success">
+                                        <h4 class="alert-heading">
+                                            <i class="fas fa-check-circle me-2"></i>Devoir Corrigé
+                                        </h4>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h2 class="text-success">{{ soumission.note }}/{{ devoir.noteMax }}</h2>
+                                                <p class="mb-0">Votre note</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p class="mb-0"><strong>Corrigé le :</strong></p>
+                                                <p>{{ soumission.dateCorrection|date('d/m/Y à H:i') }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {% if soumission.commentaireEnseignant %}
+                                        <p><strong>Commentaire de l'enseignant :</strong></p>
+                                        <div class="alert alert-light">
+                                            {{ soumission.commentaireEnseignant|nl2br }}
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-clock me-2"></i>
+                                        <strong>En attente de correction</strong>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Formulaire de soumission -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-edit me-2"></i>Soumettre votre Travail
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="post">
+                                    <div class="mb-3">
+                                        <label for="commentaire" class="form-label">
+                                            <i class="fas fa-comment me-1"></i>Votre travail *
+                                        </label>
+                                        <textarea class="form-control" id="commentaire" name="commentaire" rows="10"
+                                                  placeholder="Rédigez votre réponse ici..." required></textarea>
+                                    </div>
+
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Attention :</strong> Une fois soumis, vous ne pourrez plus modifier votre travail.
+                                    </div>
+
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <a href="{{ path('etudiant_devoirs_index') }}" class="btn btn-secondary me-md-2">
+                                            <i class="fas fa-times me-1"></i>Annuler
+                                        </a>
+                                        <button type="submit" name="action" value="brouillon" class="btn btn-outline-primary me-md-2">
+                                            <i class="fas fa-save me-1"></i>Enregistrer en brouillon
+                                        </button>
+                                        <button type="submit" name="action" value="soumettre" class="btn btn-success">
+                                            <i class="fas fa-paper-plane me-1"></i>Soumettre Définitivement
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Échéance -->
+                    <div class="card mb-4">
+                        <div class="card-header {% if devoir.isEnRetard %}bg-danger{% else %}bg-success{% endif %} text-white">
+                            <h6 class="mb-0">
+                                <i class="fas fa-clock me-2"></i>Échéance
+                            </h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <h4>{{ devoir.dateEcheance|date('d/m/Y') }}</h4>
+                            <p class="mb-0">{{ devoir.dateEcheance|date('H:i') }}</p>
+                            <hr>
+                            {% if devoir.isEnRetard %}
+                                <p class="text-danger mb-0">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    Échéance dépassée
+                                </p>
+                            {% else %}
+                                <h2 class="text-success">{{ devoir.joursRestants }}</h2>
+                                <p class="text-muted mb-0">jour(s) restant(s)</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Statut -->
+                    {% if soumission %}
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>Statut
+                                </h6>
+                            </div>
+                            <div class="card-body text-center">
+                                {% if soumission.statut == 'corrige' %}
+                                    <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                                    <h5 class="text-success">Corrigé</h5>
+                                    {% if soumission.note %}
+                                        <h2 class="text-success">{{ soumission.note }}/{{ devoir.noteMax }}</h2>
+                                    {% endif %}
+                                {% elseif soumission.statut == 'soumis' %}
+                                    <i class="fas fa-clock fa-4x text-info mb-3"></i>
+                                    <h5 class="text-info">En attente de correction</h5>
+                                {% else %}
+                                    <i class="fas fa-save fa-4x text-secondary mb-3"></i>
+                                    <h5 class="text-secondary">Brouillon</h5>
+                                    <p class="text-muted">Non encore soumis</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

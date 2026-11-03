@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Factures{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('comptable_dashboard') }}">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('comptable_paiements') }}">
+                            <i class="fas fa-money-bill"></i> Paiements
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ path('comptable_factures') }}">
+                            <i class="fas fa-file-invoice"></i> Factures
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('comptable_rapports') }}">
+                            <i class="fas fa-chart-line"></i> Rapports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('comptable_etudiants') }}">
+                            <i class="fas fa-users"></i> Étudiants
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Gestion des Factures</h1>
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nouvelle Facture
+                </button>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Total Factures</h6>
+                            <h2 class="mb-0">{{ factures|length }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">En attente</h6>
+                            <h2 class="mb-0">{{ factures|filter(f => f.statut == 'en_attente')|length }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">Payées</h6>
+                            <h2 class="mb-0">{{ factures|filter(f => f.statut == 'paye')|length }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-danger">
+                        <div class="card-body text-center">
+                            <h6 class="text-white">En retard</h6>
+                            <h2 class="mb-0">{{ factures|filter(f => f.dateEcheance < date() and f.statut != 'paye')|length }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tableau des factures -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date création</th>
+                                    <th>Étudiant</th>
+                                    <th>Libellé</th>
+                                    <th>Montant</th>
+                                    <th>Échéance</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for facture in factures %}
+                                <tr class="{{ facture.dateEcheance < date() and facture.statut != 'paye' ? 'table-danger' : '' }}">
+                                    <td>{{ facture.id }}</td>
+                                    <td>{{ facture.dateCreation|date('d/m/Y') }}</td>
+                                    <td>{{ facture.etudiant.nom }} {{ facture.etudiant.prenom }}</td>
+                                    <td>{{ facture.libelle }}</td>
+                                    <td>{{ facture.montant|number_format(2, ',', ' ') }} €</td>
+                                    <td>{{ facture.dateEcheance|date('d/m/Y') }}</td>
+                                    <td>
+                                        {% if facture.statut == 'paye' %}
+                                            <span class="badge bg-success">Payée</span>
+                                        {% elseif facture.statut == 'en_attente' %}
+                                            {% if facture.dateEcheance < date() %}
+                                                <span class="badge bg-danger">En retard</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">En attente</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-secondary">Annulée</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-success">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center">Aucune facture trouvée</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

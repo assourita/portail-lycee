@@ -1,0 +1,326 @@
+la recuperation des {% extends 'base.html.twig' %}
+
+{% block title %}Nouvel Emploi du Temps{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-calendar-plus me-2"></i>Créer un Emploi du Temps
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('admin_emploi_du_temps_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sélection de la filière -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>Sélection de la filière
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="filiere-select" class="form-label">Choisir une filière :</label>
+                            <select id="filiere-select" class="form-select" onchange="loadEmploiDuTemps()">
+                                <option value="">Sélectionnez une filière</option>
+                                {% for filiere in filieres %}
+                                    <option value="{{ filiere.id }}" {% if selected_filiere and selected_filiere.id == filiere.id %}selected{% endif %}>
+                                        {{ filiere.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary" onclick="loadEmploiDuTemps()" id="load-btn" disabled>
+                                <i class="fas fa-calendar-alt me-1"></i>Charger l'emploi du temps
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tableau d'emploi du temps -->
+            <div id="emploi-container" style="display: none;">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-table me-2"></i>Emploi du temps - <span id="filiere-name"></span>
+                        </h5>
+                        <div>
+                            <button type="button" class="btn btn-success me-2" onclick="addCreneau()">
+                                <i class="fas fa-plus me-1"></i>Ajouter un créneau
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="clearAll()">
+                                <i class="fas fa-trash me-1"></i>Vider tout
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="emploi-form" method="POST">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover" id="emploi-table">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th style="width: 12%">Jour</th>
+                                            <th style="width: 12%">Heure début</th>
+                                            <th style="width: 12%">Heure fin</th>
+                                            <th style="width: 20%">Matière</th>
+                                            <th style="width: 20%">Enseignant</th>
+                                            <th style="width: 16%">Cours (optionnel)</th>
+                                            <th style="width: 8%">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="emploi-tbody">
+                                        <!-- Les lignes seront ajoutées dynamiquement -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                                <a href="{{ path('admin_emploi_du_temps_index') }}" class="btn btn-secondary me-md-2">
+                                    <i class="fas fa-times me-1"></i>Annuler
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>Enregistrer l'emploi du temps
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Instructions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Comment utiliser :</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Sélectionnez d'abord une filière
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Cliquez sur "Ajouter un créneau" pour ajouter des cours
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Remplissez les informations pour chaque créneau
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Utilisez "Vider tout" pour recommencer
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-warning">Horaires recommandés :</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-clock text-info me-2"></i>
+                                    <strong>Matin :</strong> 08:00 - 12:00
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-clock text-info me-2"></i>
+                                    <strong>Après-midi :</strong> 14:00 - 18:00
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-hourglass-half text-info me-2"></i>
+                                    <strong>Durée :</strong> 1h30 - 2h00 par cours
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+let creneauCount = 0;
+const jours = {{ jours_data|json_encode|raw }};
+const enseignants = {{ enseignants_data|json_encode|raw }};
+const matieres = {{ matieres_data|json_encode|raw }};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const filiereSelect = document.getElementById('filiere-select');
+    const loadBtn = document.getElementById('load-btn');
+    
+    filiereSelect.addEventListener('change', function() {
+        loadBtn.disabled = !this.value;
+    });
+    
+    // Si une filière est présélectionnée, charger automatiquement
+    {% if selected_filiere %}
+        loadEmploiDuTemps();
+    {% endif %}
+});
+
+function loadEmploiDuTemps() {
+    const filiereId = document.getElementById('filiere-select').value;
+    const filiereName = document.getElementById('filiere-select').selectedOptions[0].text;
+    
+    if (!filiereId) {
+        alert('Veuillez sélectionner une filière');
+        return;
+    }
+    
+    document.getElementById('filiere-name').textContent = filiereName;
+    document.getElementById('emploi-container').style.display = 'block';
+    
+    // Ajouter un créneau par défaut
+    addCreneau();
+}
+
+function addCreneau() {
+    const tbody = document.getElementById('emploi-tbody');
+    const row = document.createElement('tr');
+    row.id = 'creneau-' + creneauCount;
+    
+    row.innerHTML = `
+        <td>
+            <select name="emploi_du_temps[${creneauCount}][jour]" class="form-select form-select-sm" required>
+                <option value="">Choisir...</option>
+                ${jours.map(jour => `<option value="${jour.id}">${jour.nom}</option>`).join('')}
+            </select>
+        </td>
+        <td>
+            <input type="time" name="emploi_du_temps[${creneauCount}][heure_debut]" class="form-control form-control-sm" required>
+        </td>
+        <td>
+            <input type="time" name="emploi_du_temps[${creneauCount}][heure_fin]" class="form-control form-control-sm" required>
+        </td>
+        <td>
+            <select name="emploi_du_temps[${creneauCount}][matiere]" class="form-select form-select-sm matiere-select" required onchange="loadEnseignantsForCreneau(${creneauCount}, this.value)">
+                <option value="">Choisir une matière...</option>
+            </select>
+        </td>
+        <td>
+            <select name="emploi_du_temps[${creneauCount}][enseignant]" class="form-select form-select-sm enseignant-select" required>
+                <option value="">Choisir un enseignant...</option>
+            </select>
+        </td>
+        <td>
+            <input type="text" name="emploi_du_temps[${creneauCount}][cours]" class="form-control form-control-sm" placeholder="Cours optionnel">
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeCreneau(${creneauCount})">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    tbody.appendChild(row);
+    
+    // Charger les matières pour ce créneau
+    loadMatieresForCreneau(creneauCount);
+    
+    creneauCount++;
+}
+
+function removeCreneau(id) {
+    const row = document.getElementById('creneau-' + id);
+    if (row) {
+        row.remove();
+    }
+}
+
+function clearAll() {
+    if (confirm('Êtes-vous sûr de vouloir vider tout l\'emploi du temps ?')) {
+        document.getElementById('emploi-tbody').innerHTML = '';
+        creneauCount = 0;
+    }
+}
+
+// Fonction pour charger les matières d'une filière
+function loadMatieresForCreneau(creneauId) {
+    const filiereId = document.getElementById('filiere-select').value;
+    if (!filiereId) return;
+    
+    const matiereSelect = document.querySelector(`#creneau-${creneauId} .matiere-select`);
+    if (!matiereSelect) return;
+    
+    // Afficher un indicateur de chargement
+    matiereSelect.innerHTML = '<option value="">Chargement...</option>';
+    
+    fetch(`/admin/emploi-du-temps/api/matieres/${filiereId}`)
+        .then(response => response.json())
+        .then(data => {
+            matiereSelect.innerHTML = '<option value="">Choisir une matière...</option>';
+            data.forEach(matiere => {
+                const option = document.createElement('option');
+                option.value = matiere.id;
+                option.textContent = `${matiere.nom} (Coef: ${matiere.coefficient})`;
+                matiereSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement des matières:', error);
+            matiereSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+        });
+}
+
+// Fonction pour charger les enseignants d'une matière
+function loadEnseignantsForCreneau(creneauId, matiereId) {
+    const enseignantSelect = document.querySelector(`#creneau-${creneauId} .enseignant-select`);
+    if (!enseignantSelect) return;
+    
+    // Réinitialiser le sélecteur d'enseignant
+    enseignantSelect.innerHTML = '<option value="">Chargement...</option>';
+    
+    if (!matiereId) {
+        enseignantSelect.innerHTML = '<option value="">Choisir un enseignant...</option>';
+        return;
+    }
+    
+    fetch(`/admin/emploi-du-temps/api/enseignants/${matiereId}`)
+        .then(response => response.json())
+        .then(data => {
+            enseignantSelect.innerHTML = '<option value="">Choisir un enseignant...</option>';
+            data.forEach(enseignant => {
+                const option = document.createElement('option');
+                option.value = enseignant.id;
+                option.textContent = `${enseignant.nom} ${enseignant.prenom}`;
+                enseignantSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement des enseignants:', error);
+            enseignantSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+        });
+}
+
+// Validation du formulaire
+document.getElementById('emploi-form').addEventListener('submit', function(e) {
+    const filiereId = document.getElementById('filiere-select').value;
+    if (!filiereId) {
+        e.preventDefault();
+        alert('Veuillez sélectionner une filière');
+        return;
+    }
+    
+    // Ajouter la filière au formulaire
+    const filiereInput = document.createElement('input');
+    filiereInput.type = 'hidden';
+    filiereInput.name = 'filiere_id';
+    filiereInput.value = filiereId;
+    this.appendChild(filiereInput);
+});
+</script>
+{% endblock %}

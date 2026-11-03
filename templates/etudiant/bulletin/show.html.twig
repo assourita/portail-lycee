@@ -1,0 +1,194 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bulletin - {{ bulletin.periode }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'etudiant/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête de la page -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-file-alt me-2 text-primary"></i>
+                        Bulletin de Notes
+                    </h1>
+                    <p class="text-muted mb-0">{{ bulletin.periode }} - {{ bulletin.anneeScolaire }}</p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ path('etudiant_bulletins_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informations générales -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-user fa-2x mb-2"></i>
+                            <h5 class="mb-0">{{ etudiant.nom }} {{ etudiant.prenom }}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+                            <h5 class="mb-0">{{ filiere.nom }}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                            <h5 class="mb-0">{{ bulletin.periode }}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card {% if moyenneGenerale >= 16 %}bg-success{% elseif moyenneGenerale >= 12 %}bg-info{% elseif moyenneGenerale >= 10 %}bg-warning{% else %}bg-danger{% endif %} text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-star fa-2x mb-2"></i>
+                            <h3 class="mb-0">{{ moyenneGenerale|number_format(2) }}/20</h3>
+                            <small>Moyenne Générale</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rang dans la classe -->
+            {% if rang %}
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-trophy me-2"></i>
+                    <strong>Rang dans la classe :</strong> {{ rang }}{% if rang == 1 %}er{% else %}ème{% endif %} sur {{ filiere.etudiants|length }} élève(s)
+                </div>
+            {% endif %}
+
+            <!-- Notes par matière -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-book me-2"></i>Détail des Notes par Matière
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if notesParMatiere|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Matière</th>
+                                        <th>Enseignant</th>
+                                        <th>Coeff.</th>
+                                        <th>Notes</th>
+                                        <th>Moyenne</th>
+                                        <th>Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for noteData in notesParMatiere %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ noteData.matiere.nom }}</strong>
+                                            </td>
+                                            <td>
+                                                {% if noteData.matiere.enseignant %}
+                                                    {{ noteData.matiere.enseignant.nom }} {{ noteData.matiere.enseignant.prenom }}
+                                                {% else %}
+                                                    <span class="text-muted">Non assigné</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ noteData.coefficient }}</span>
+                                            </td>
+                                            <td>
+                                                {% for note in noteData.notes %}
+                                                    <span class="badge {% if note.valeur >= 16 %}bg-success{% elseif note.valeur >= 12 %}bg-info{% elseif note.valeur >= 10 %}bg-warning{% else %}bg-danger{% endif %} me-1">
+                                                        {{ note.valeur }}/20
+                                                    </span>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if noteData.moyenne >= 16 %}bg-success{% elseif noteData.moyenne >= 12 %}bg-info{% elseif noteData.moyenne >= 10 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                    {{ noteData.moyenne|number_format(2) }}/20
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong>{{ (noteData.moyenne * noteData.coefficient)|number_format(1) }}</strong>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th colspan="3">TOTAL</th>
+                                        <th colspan="2">
+                                            <span class="badge {% if moyenneGenerale >= 16 %}bg-success{% elseif moyenneGenerale >= 12 %}bg-info{% elseif moyenneGenerale >= 10 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ moyenneGenerale|number_format(2) }}/20
+                                            </span>
+                                        </th>
+                                        <th>
+                                            <strong>{{ totalPoints|number_format(1) }}</strong>
+                                            <br>
+                                            <small class="text-muted">/ {{ (totalCoefficients * 20)|number_format(1) }}</small>
+                                        </th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-triangle fa-2x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucune note disponible</h5>
+                            <p class="text-muted">Les notes pour cette période ne sont pas encore disponibles.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Commentaire du bulletin -->
+            {% if bulletin.commentaire %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-comment me-2"></i>Commentaire
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-quote-left me-2"></i>
+                            {{ bulletin.commentaire }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Informations du bulletin -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Informations du Bulletin
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Date de création :</strong> {{ bulletin.dateCreation|date('d/m/Y à H:i') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if bulletin.dateModification %}
+                                <p><strong>Dernière modification :</strong> {{ bulletin.dateModification|date('d/m/Y à H:i') }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,287 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Absences - Mon Portail Lycée{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .absences-container {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .absences-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin: -20px -20px 30px -20px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        
+        .absences-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .absences-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .absences-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-number.total { color: #667eea; }
+        .stat-number.justified { color: #28a745; }
+        .stat-number.unjustified { color: #dc3545; }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .absences-list {
+            margin-top: 40px;
+        }
+        
+        .absences-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .absences-list-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            background: white;
+            color: #6c757d;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .absence-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #dc3545;
+            transition: all 0.3s ease;
+        }
+        
+        .absence-card.justified {
+            border-left-color: #28a745;
+        }
+        
+        .absence-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .absence-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .absence-info {
+            flex-grow: 1;
+        }
+        
+        .absence-date {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .absence-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .absence-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-justified {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-unjustified {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .absence-reason {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 3px solid #ffc107;
+        }
+        
+        .absence-reason h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+        }
+        
+        .absence-reason p {
+            color: #6c757d;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .absences-stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .absence-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="absences-container">
+    <div class="absences-header">
+        <h1 class="absences-title">
+            <i class="fas fa-user-clock me-3"></i>
+            Mes Absences
+        </h1>
+        <p class="absences-subtitle">
+            Filière : {{ etudiant.filiere.nom }} - Période : {{ periodeActive.periode }} {{ periodeActive.anneeScolaire }}
+        </p>
+    </div>
+
+    <div class="absences-stats">
+        <div class="stat-card">
+            <div class="stat-number total">{{ absences|length }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number justified">{{ absences|filter(absence => absence.justifiee == true)|length }}</div>
+            <div class="stat-label">Justifiées</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number unjustified">{{ absences|filter(absence => absence.justifiee == false)|length }}</div>
+            <div class="stat-label">Non justifiées</div>
+        </div>
+    </div>
+
+    <div class="absences-list">
+        <div class="absences-list-header">
+            <h2 class="absences-list-title">Historique des absences</h2>
+            <div class="filter-buttons">
+                <button class="filter-btn active">Toutes</button>
+                <button class="filter-btn">Justifiées</button>
+                <button class="filter-btn">Non justifiées</button>
+            </div>
+        </div>
+
+        {% if absences|length > 0 %}
+            {% for absence in absences %}
+                <div class="absence-card {{ absence.justifiee ? 'justified' : '' }}">
+                    <div class="absence-header">
+                        <div class="absence-info">
+                            <div class="absence-date">{{ absence.date|date('d/m/Y') }}</div>
+                            <div class="absence-meta">
+                                <span><i class="fas fa-book me-2"></i>{{ absence.matiere }}</span>
+                                <span><i class="fas fa-clock me-2"></i>{{ absence.duree|default('Journée') }}</span>
+                            </div>
+                            <div class="absence-status {{ absence.justifiee ? 'status-justified' : 'status-unjustified' }}">
+                                {{ absence.justifiee ? 'Justifiée' : 'Non justifiée' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="absence-reason">
+                        <h4>Motif : {{ absence.motif }}</h4>
+                        <p>{{ absence.description|default('Aucune description fournie pour cette absence.') }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-user-clock"></i>
+                <h3>Aucune absence trouvée</h3>
+                <p>Vous n'avez pas d'absences enregistrées.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

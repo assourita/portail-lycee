@@ -1,0 +1,194 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Parcours Scolaire - {{ etudiant.nom }} {{ etudiant.prenom }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2">
+                        <i class="fas fa-road me-2 text-primary"></i>
+                        Parcours Scolaire
+                    </h1>
+                    <p class="text-muted mb-0">
+                        {{ etudiant.nom }} {{ etudiant.prenom }} - {{ etudiant.filiere.nom }}
+                    </p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <form method="post" action="{{ path('admin_parcours_generer', {'etudiantId': etudiant.id}) }}" style="display: inline;">
+                        <input type="hidden" name="annee_scolaire" value="{{ periodeActive ? periodeActive.anneeScolaire : '' }}">
+                        <button type="submit" class="btn btn-success me-2">
+                            <i class="fas fa-plus me-1"></i>Générer Parcours Année en Cours
+                        </button>
+                    </form>
+                    <a href="{{ path('admin_etudiants') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                </div>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Année en cours -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>Année en Cours
+                        {% if periodeActive %}
+                            - {{ periodeActive.anneeScolaire }}
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <h4 class="{% if statsAnneeEnCours.moyenne_generale >= 12 %}text-success{% elseif statsAnneeEnCours.moyenne_generale >= 10 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ statsAnneeEnCours.moyenne_generale|number_format(2) }}/20
+                            </h4>
+                            <p class="text-muted">Moyenne Générale</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h4 class="text-primary">{{ statsAnneeEnCours.total_notes }}</h4>
+                            <p class="text-muted">Notes</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h4 class="{% if statsAnneeEnCours.total_absences == 0 %}text-success{% elseif statsAnneeEnCours.total_absences < 5 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ statsAnneeEnCours.total_absences }}
+                            </h4>
+                            <p class="text-muted">Absences</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h4 class="{% if statsAnneeEnCours.taux_assiduite >= 90 %}text-success{% elseif statsAnneeEnCours.taux_assiduite >= 75 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ statsAnneeEnCours.taux_assiduite|number_format(1) }}%
+                            </h4>
+                            <p class="text-muted">Assiduité</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historique du parcours -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Historique du Parcours Scolaire
+                        <span class="badge bg-secondary ms-2">{{ parcours|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if parcours|length > 0 %}
+                        {% for annee in parcours %}
+                            <div class="card mb-3">
+                                <div class="card-header {% if annee.decision == 'admis' %}bg-success{% elseif annee.decision == 'redouble' %}bg-danger{% else %}bg-info{% endif %} text-white">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h5 class="mb-0">
+                                                <i class="fas fa-calendar me-2"></i>{{ annee.anneeScolaire }}
+                                            </h5>
+                                            <small>{{ annee.niveau }} - {{ annee.filiere.nom }}</small>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            {% if annee.decision == 'admis' %}
+                                                <span class="badge bg-light text-success">
+                                                    <i class="fas fa-check me-1"></i>ADMIS
+                                                </span>
+                                            {% elseif annee.decision == 'redouble' %}
+                                                <span class="badge bg-light text-danger">
+                                                    <i class="fas fa-redo me-1"></i>REDOUBLE
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-light text-info">
+                                                    <i class="fas fa-clock me-1"></i>EN COURS
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-3 text-center">
+                                            <h4 class="{% if annee.moyenneAnnuelle >= 12 %}text-success{% elseif annee.moyenneAnnuelle >= 10 %}text-warning{% else %}text-danger{% endif %}">
+                                                {{ annee.moyenneAnnuelle|number_format(2) }}/20
+                                            </h4>
+                                            <small class="text-muted">Moyenne Annuelle</small>
+                                        </div>
+                                        <div class="col-md-3 text-center">
+                                            <h4 class="text-info">
+                                                {{ annee.rangClasse ?? '-' }}
+                                                {% if annee.totalEtudiants %}
+                                                    / {{ annee.totalEtudiants }}
+                                                {% endif %}
+                                            </h4>
+                                            <small class="text-muted">Rang</small>
+                                        </div>
+                                        <div class="col-md-3 text-center">
+                                            <h4 class="{% if annee.totalAbsences == 0 %}text-success{% elseif annee.totalAbsences < 5 %}text-warning{% else %}text-danger{% endif %}">
+                                                {{ annee.totalAbsences ?? 0 }}
+                                            </h4>
+                                            <small class="text-muted">Absences</small>
+                                        </div>
+                                        <div class="col-md-3 text-center">
+                                            <h4 class="{% if annee.tauxAssiduite >= 90 %}text-success{% elseif annee.tauxAssiduite >= 75 %}text-warning{% else %}text-danger{% endif %}">
+                                                {{ annee.tauxAssiduite|number_format(1) }}%
+                                            </h4>
+                                            <small class="text-muted">Assiduité</small>
+                                        </div>
+                                    </div>
+
+                                    {% if annee.moyenneTrimestre1 or annee.moyenneTrimestre2 or annee.moyenneTrimestre3 %}
+                                        <hr>
+                                        <div class="row text-center">
+                                            <div class="col-md-4">
+                                                <p class="mb-0"><strong>1er Trimestre</strong></p>
+                                                <h5 class="text-primary">{{ annee.moyenneTrimestre1|number_format(2) ?? '-' }}</h5>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p class="mb-0"><strong>2ème Trimestre</strong></p>
+                                                <h5 class="text-primary">{{ annee.moyenneTrimestre2|number_format(2) ?? '-' }}</h5>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p class="mb-0"><strong>3ème Trimestre</strong></p>
+                                                <h5 class="text-primary">{{ annee.moyenneTrimestre3|number_format(2) ?? '-' }}</h5>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if annee.appreciationGenerale %}
+                                        <hr>
+                                        <p><strong>Appréciation générale :</strong></p>
+                                        <p class="bg-light p-3 rounded">{{ annee.appreciationGenerale }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-road fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucun parcours enregistré</h5>
+                            <p class="text-muted">Le parcours scolaire sera généré automatiquement à la fin de chaque année.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
