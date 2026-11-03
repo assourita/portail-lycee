@@ -1,139 +1,152 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Espace Parent{% endblock %}
+{% block title %}Tableau de bord{% endblock %}
 
 {% block body %}
-<div class="page">
-            <!-- En-tête -->
-            <div class="page-header">
-                <div>
-                    <h1 class="h2">
-                        <i class="fas fa-home me-2 text-primary"></i>
-                        Espace Parent
-                    </h1>
-                    <p class="text-muted mb-0">
-                        Bienvenue {{ parent.prenom }} {{ parent.nom }}
-                    </p>
-                    {% if periodeActive %}
-                        <p class="text-muted mb-0">
-                            <i class="fas fa-calendar-check me-1"></i>
-                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
-                        </p>
+<div class="page-header">
+    <div>
+        <h1>Suivi scolaire</h1>
+        <p>
+            Bonjour {{ parent.prenom }}, voici où en {{ enfantsStats|length > 1 ? 'sont vos enfants' : 'est votre enfant' }}
+            {% if periodeActive %} · {{ periodeActive.periode }} {{ periodeActive.anneeScolaire }}{% endif %}
+        </p>
+    </div>
+</div>
+
+{% if enfantsStats is empty %}
+    <section class="panel">
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="fas fa-user-graduate"></i></div>
+            <h3>Aucun enfant rattaché à votre compte</h3>
+            <p class="mb-0">Contactez le secrétariat du lycée pour associer votre compte au dossier de votre enfant.</p>
+        </div>
+    </section>
+{% else %}
+    {% if enfantsStats|length > 1 %}
+        <nav class="segmented nav" role="tablist">
+            {% for stats in enfantsStats %}
+                <button class="nav-link {{ loop.first ? 'active' }}" data-bs-toggle="pill" data-bs-target="#enfant-{{ stats.enfant.id }}" type="button" role="tab">
+                    <span class="avatar">{{ stats.enfant.prenom|first|upper }}{{ stats.enfant.nom|first|upper }}</span>
+                    {{ stats.enfant.prenom }}
+                </button>
+            {% endfor %}
+        </nav>
+    {% endif %}
+
+    <div class="tab-content">
+        {% for stats in enfantsStats %}
+            {% set enfant = stats.enfant %}
+            <div class="tab-pane fade {{ loop.first ? 'show active' }}" id="enfant-{{ enfant.id }}" role="tabpanel">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="avatar avatar-lg">{{ enfant.prenom|first|upper }}{{ enfant.nom|first|upper }}</span>
+                    <div>
+                        <div class="fw-semibold" style="font-size: 16px;">{{ enfant.prenom }} {{ enfant.nom }}</div>
+                        <div class="small text-muted">{{ enfant.filiere ? enfant.filiere.nom : 'Filière non attribuée' }}</div>
+                    </div>
+                    {% if stats.absencesNonJustifiees > 0 %}
+                        <span class="status status-warning ms-auto">{{ stats.absencesNonJustifiees }} absence{{ stats.absencesNonJustifiees > 1 ? 's' }} non justifiée{{ stats.absencesNonJustifiees > 1 ? 's' }}</span>
+                    {% else %}
+                        <span class="status status-success ms-auto">Aucune alerte</span>
                     {% endif %}
                 </div>
-            </div>
 
-            <!-- Informations du parent -->
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-user me-2"></i>Mes Informations
-                    </h5>
+                <div class="kpi-grid">
+                    <a href="{{ path('parent_enfant_notes', {'id': enfant.id}) }}" class="kpi">
+                        <span class="kpi-label"><i class="fas fa-chart-simple"></i>Moyenne générale</span>
+                        <span class="kpi-value">
+                            {% if stats.moyenneGenerale is not null %}{{ stats.moyenneGenerale|number_format(2, ',') }}<small> / 20</small>{% else %}—{% endif %}
+                        </span>
+                        <span class="kpi-meta">{{ stats.totalNotes }} note{{ stats.totalNotes > 1 ? 's' }} sur la période</span>
+                    </a>
+                    <a href="{{ path('parent_enfant_absences', {'id': enfant.id}) }}" class="kpi">
+                        <span class="kpi-label"><i class="fas fa-user-clock"></i>Absences</span>
+                        <span class="kpi-value">{{ stats.totalAbsences }}</span>
+                        <span class="kpi-meta">{{ stats.absencesNonJustifiees }} non justifiée{{ stats.absencesNonJustifiees > 1 ? 's' }}</span>
+                    </a>
+                    <div class="kpi">
+                        <span class="kpi-label"><i class="fas fa-calendar-check"></i>Assiduité</span>
+                        <span class="kpi-value">{{ stats.tauxAssiduite|round(1)|number_format(1, ',') }}<small> %</small></span>
+                        <span class="kpi-meta">sur la période en cours</span>
+                    </div>
+                    <a href="{{ path('parent_enfant_bulletins', {'id': enfant.id}) }}" class="kpi">
+                        <span class="kpi-label"><i class="fas fa-file-lines"></i>Dernier bulletin</span>
+                        <span class="kpi-value" style="font-size: 18px; padding: 3px 0;">{{ stats.dernierBulletin ? stats.dernierBulletin.periode : '—' }}</span>
+                        <span class="kpi-meta">{{ stats.dernierBulletin ? stats.dernierBulletin.anneeScolaire : 'pas encore publié' }}</span>
+                    </a>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Nom complet :</strong> {{ parent.nom }} {{ parent.prenom }}</p>
-                            <p><strong>Email :</strong> {{ parent.email }}</p>
-                            <p><strong>Téléphone :</strong> {{ parent.telephone ?? '-' }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Lien de parenté :</strong> {{ parent.lienParente|capitalize }}</p>
-                            <p><strong>Profession :</strong> {{ parent.profession ?? '-' }}</p>
-                            <p><strong>Nombre d'enfants :</strong> {{ parent.enfants|length }}</p>
-                        </div>
+
+                <div class="row g-3">
+                    <div class="col-lg-7">
+                        <section class="panel h-100">
+                            <div class="panel-header">
+                                <h2>Dernières notes</h2>
+                                <a href="{{ path('parent_enfant_notes', {'id': enfant.id}) }}" class="link-more">Toutes les notes <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                            {% if stats.dernieresNotes is empty %}
+                                <div class="empty-state">
+                                    <div class="empty-state-icon"><i class="fas fa-chart-simple"></i></div>
+                                    <h3>Aucune note sur la période</h3>
+                                    <p class="mb-0">Les notes apparaîtront ici dès leur saisie par les enseignants.</p>
+                                </div>
+                            {% else %}
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead><tr><th>Matière</th><th>Date</th><th class="text-end">Note</th></tr></thead>
+                                        <tbody>
+                                            {% for note in stats.dernieresNotes %}
+                                                <tr>
+                                                    <td class="fw-medium">{{ note.matiere ? note.matiere.nom : '—' }}</td>
+                                                    <td class="text-muted">{{ note.dateNote ? note.dateNote|date('d/m/Y') : '—' }}</td>
+                                                    <td class="text-end">
+                                                        <span class="grade {{ note.valeur < 10 ? 'is-low' : (note.valeur >= 16 ? 'is-high') }}">
+                                                            {{ note.valeur|number_format(2, ',')|replace({',00': ''}) }}<small> / 20</small>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
+                        </section>
+                    </div>
+
+                    <div class="col-lg-5">
+                        <section class="panel h-100">
+                            <div class="panel-header">
+                                <h2>Absences récentes</h2>
+                                <a href="{{ path('parent_enfant_absences', {'id': enfant.id}) }}" class="link-more">Historique <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                            {% if stats.absencesRecentes is empty %}
+                                <div class="empty-state">
+                                    <div class="empty-state-icon"><i class="far fa-circle-check"></i></div>
+                                    <h3>Aucune absence</h3>
+                                    <p class="mb-0">Votre enfant a été présent à tous ses cours sur la période.</p>
+                                </div>
+                            {% else %}
+                                <ul class="list-rows">
+                                    {% for absence in stats.absencesRecentes %}
+                                        <li class="list-row">
+                                            <span class="list-row-main">
+                                                <span class="list-row-title d-block">{{ absence.type == 'retard' ? 'Retard' : 'Absence' }} du {{ absence.date|date('d/m/Y') }}</span>
+                                                <span class="list-row-meta d-block">{{ absence.matiere ? absence.matiere.nom : (absence.periode|capitalize) }}</span>
+                                            </span>
+                                            {% if absence.justifiee %}
+                                                <span class="status status-success">Justifiée</span>
+                                            {% elseif absence.justification %}
+                                                <span class="status status-accent">En examen</span>
+                                            {% else %}
+                                                <span class="status status-danger">Non justifiée</span>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </section>
                     </div>
                 </div>
             </div>
-
-            <!-- Liste des enfants -->
-            <h3 class="mb-3">
-                <i class="fas fa-users me-2"></i>Mes Enfants
-            </h3>
-
-            {% if enfantsStats|length > 0 %}
-                <div class="row">
-                    {% for data in enfantsStats %}
-                        {% set enfant = data.enfant %}
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-header bg-info text-white">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-user-graduate me-2"></i>
-                                        {{ enfant.nom }} {{ enfant.prenom }}
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <p><strong>Filière :</strong> {{ enfant.filiere.nom }}</p>
-                                    <p><strong>Email :</strong> {{ enfant.email }}</p>
-
-                                    <hr>
-
-                                    <!-- Statistiques -->
-                                    <div class="row text-center mb-3">
-                                        <div class="col-4">
-                                            <h4 class="{% if data.moyenneGenerale >= 12 %}text-success{% elseif data.moyenneGenerale >= 10 %}text-warning{% else %}text-danger{% endif %}">
-                                                {{ data.moyenneGenerale|number_format(2) }}
-                                            </h4>
-                                            <small class="text-muted">Moyenne</small>
-                                        </div>
-                                        <div class="col-4">
-                                            <h4 class="text-primary">{{ data.totalNotes }}</h4>
-                                            <small class="text-muted">Notes</small>
-                                        </div>
-                                        <div class="col-4">
-                                            <h4 class="{% if data.totalAbsences == 0 %}text-success{% elseif data.totalAbsences < 5 %}text-warning{% else %}text-danger{% endif %}">
-                                                {{ data.totalAbsences }}
-                                            </h4>
-                                            <small class="text-muted">Absences</small>
-                                        </div>
-                                    </div>
-
-                                    <!-- Taux d'assiduité -->
-                                    <div class="mb-3">
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <span>Taux d'assiduité</span>
-                                            <span class="fw-bold">{{ data.tauxAssiduite|number_format(1) }}%</span>
-                                        </div>
-                                        <div class="progress" style="height: 25px;">
-                                            <div class="progress-bar {% if data.tauxAssiduite >= 90 %}bg-success{% elseif data.tauxAssiduite >= 75 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                                 role="progressbar" 
-                                                 style="width: {{ data.tauxAssiduite }}%;">
-                                                {{ data.tauxAssiduite|number_format(1) }}%
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Alertes -->
-                                    {% if data.absencesNonJustifiees > 0 %}
-                                        <div class="alert alert-warning py-2">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>
-                                            <strong>{{ data.absencesNonJustifiees }}</strong> absence(s) non justifiée(s)
-                                        </div>
-                                    {% endif %}
-
-                                    <!-- Boutons d'action -->
-                                    <div class="d-grid gap-2">
-                                        <a href="{{ path('parent_enfant_notes', {'id': enfant.id}) }}" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-chart-line me-1"></i>Voir les Notes
-                                        </a>
-                                        <a href="{{ path('parent_enfant_bulletins', {'id': enfant.id}) }}" class="btn btn-success btn-sm">
-                                            <i class="fas fa-file-alt me-1"></i>Voir les Bulletins
-                                        </a>
-                                        <a href="{{ path('parent_enfant_absences', {'id': enfant.id}) }}" class="btn btn-warning btn-sm">
-                                            <i class="fas fa-user-clock me-1"></i>Voir les Absences
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Aucun enfant lié à votre compte. Veuillez contacter l'administration.
-                </div>
-            {% endif %}
-        </div>
+        {% endfor %}
+    </div>
+{% endif %}
 {% endblock %}

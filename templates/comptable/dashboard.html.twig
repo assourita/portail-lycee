@@ -1,100 +1,185 @@
 {% extends 'base.html.twig' %}
 {% import 'comptable/_macros.html.twig' as c %}
 
-{% block title %}Dashboard Comptable{% endblock %}
+{% block title %}Tableau de bord{% endblock %}
 
 {% block body %}
-<div class="page">
-            <div class="page-header">
-                <h1 class="h2">Dashboard Comptable</h1>
-                <div class="btn-toolbar mb-2 mb-md-0 gap-2">
-                    <a href="{{ path('comptable_paiements_new') }}" class="btn btn-success">
-                        <i class="fas fa-plus me-1"></i>Enregistrer un paiement
-                    </a>
-                    <a href="{{ path('comptable_factures_new') }}" class="btn btn-primary">
-                        <i class="fas fa-file-invoice me-1"></i>Émettre une facture
-                    </a>
-                </div>
-            </div>
+<div class="page-header">
+    <div>
+        <h1>Tableau de bord financier</h1>
+        <p>Encaissements et factures au {{ 'now'|date('d/m/Y') }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ path('comptable_factures_new') }}" class="btn btn-secondary"><i class="fas fa-file-invoice"></i>Émettre une facture</a>
+        <a href="{{ path('comptable_paiements_new') }}" class="btn btn-primary"><i class="fas fa-plus"></i>Enregistrer un paiement</a>
+    </div>
+</div>
 
-            <div class="row">
-                {% for carte in [
-                    {'titre': 'Encaissé ce mois', 'valeur': c.montant(montantTotalMois), 'icone': 'fa-euro-sign', 'couleur': 'primary'},
-                    {'titre': 'Factures en attente', 'valeur': facturesEnAttente, 'icone': 'fa-file-invoice', 'couleur': 'success'},
-                    {'titre': 'Taux de paiement', 'valeur': tauxPaiement ~ ' %', 'icone': 'fa-percentage', 'couleur': 'info'},
-                    {'titre': 'Factures en retard', 'valeur': retardsPaiement, 'icone': 'fa-clock', 'couleur': 'warning'},
-                ] %}
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-start border-4 border-{{ carte.couleur }} shadow h-100 py-2">
-                            <div class="card-body d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="text-xs fw-bold text-{{ carte.couleur }} text-uppercase mb-1">{{ carte.titre }}</div>
-                                    <div class="h5 mb-0 fw-bold text-gray-800">{{ carte.valeur }}</div>
-                                </div>
-                                <i class="fas {{ carte.icone }} fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
+<div class="kpi-grid">
+    <a href="{{ path('comptable_paiements') }}" class="kpi">
+        <span class="kpi-label"><i class="fas fa-arrow-down"></i>Encaissé ce mois</span>
+        <span class="kpi-value">{{ c.montant(montantTotalMois) }}</span>
+        <span class="kpi-meta">
+            {% if montantMoisPrecedent > 0 %}
+                {% set evolution = ((montantTotalMois - montantMoisPrecedent) / montantMoisPrecedent * 100)|round %}
+                <span class="{{ evolution >= 0 ? 'up' : 'down' }}">{{ evolution >= 0 ? '+' }}{{ evolution }} %</span> par rapport au mois dernier
+            {% else %}
+                {{ c.montant(montantMoisPrecedent) }} le mois dernier
+            {% endif %}
+        </span>
+    </a>
+    <a href="{{ path('comptable_factures', {'statut': 'en_attente'}) }}" class="kpi">
+        <span class="kpi-label"><i class="fas fa-hourglass-half"></i>Reste à recouvrer</span>
+        <span class="kpi-value">{{ c.montant(resteARecouvrer) }}</span>
+        <span class="kpi-meta">{{ facturesEnAttente }} facture{{ facturesEnAttente > 1 ? 's' }} en attente</span>
+    </a>
+    <a href="{{ path('comptable_factures', {'statut': 'en_retard'}) }}" class="kpi">
+        <span class="kpi-label"><i class="fas fa-triangle-exclamation"></i>En retard</span>
+        <span class="kpi-value">{{ c.montant(montantEnRetard) }}</span>
+        <span class="kpi-meta">{% if retardsPaiement > 0 %}<span class="down">{{ retardsPaiement }} facture{{ retardsPaiement > 1 ? 's' }} échue{{ retardsPaiement > 1 ? 's' }}</span>{% else %}aucune facture échue{% endif %}</span>
+    </a>
+    <a href="{{ path('comptable_rapports') }}" class="kpi">
+        <span class="kpi-label"><i class="fas fa-percent"></i>Taux de règlement</span>
+        <span class="kpi-value">{{ tauxPaiement|number_format(1, ',') }}<small> %</small></span>
+        <span class="kpi-meta">des factures émises sont soldées</span>
+    </a>
+</div>
 
-            <div class="row">
-                <div class="col-lg-7 mb-4">
-                    <div class="card shadow h-100">
-                        <div class="card-header py-3 d-flex justify-content-between">
-                            <h6 class="m-0 fw-bold text-primary">Derniers paiements</h6>
-                            <a href="{{ path('comptable_paiements') }}" class="small">Tout voir</a>
-                        </div>
-                        <div class="card-body p-0">
-                            <table class="table mb-0">
-                                <thead class="table-light">
-                                    <tr><th>Date</th><th>Étudiant</th><th>Type</th><th class="text-end">Montant</th><th>Statut</th></tr>
-                                </thead>
-                                <tbody>
-                                    {% for paiement in derniersPaiements %}
-                                        <tr>
-                                            <td>{{ paiement.datePaiement|date('d/m/Y') }}</td>
-                                            <td>
-                                                <a href="{{ path('comptable_etudiants_show', {'id': paiement.etudiant.id}) }}">
-                                                    {{ paiement.etudiant.prenom }} {{ paiement.etudiant.nom }}
-                                                </a>
-                                            </td>
-                                            <td>{{ paiement.type }}</td>
-                                            <td class="text-end">{{ c.montant(paiement.montant) }}</td>
-                                            <td>{{ c.statut_paiement(paiement) }}</td>
-                                        </tr>
-                                    {% else %}
-                                        <tr><td colspan="5" class="text-center text-muted py-4">Aucun paiement enregistré.</td></tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+<div class="row g-3 mb-3">
+    <div class="col-lg-7">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <h2>Encaissements</h2>
+                    <p>Six derniers mois</p>
                 </div>
-
-                <div class="col-lg-5 mb-4">
-                    <div class="card shadow h-100">
-                        <div class="card-header py-3 d-flex justify-content-between">
-                            <h6 class="m-0 fw-bold text-danger">Factures en retard</h6>
-                            <a href="{{ path('comptable_factures', {'statut': 'en_retard'}) }}" class="small">Tout voir</a>
-                        </div>
-                        <ul class="list-group list-group-flush">
-                            {% for facture in facturesEnRetard %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <a href="{{ path('comptable_factures_show', {'id': facture.id}) }}">{{ facture.libelle }}</a><br>
-                                        <small class="text-muted">
-                                            {{ facture.etudiant.prenom }} {{ facture.etudiant.nom }} - échéance {{ facture.dateEcheance|date('d/m/Y') }}
-                                        </small>
-                                    </div>
-                                    <span class="fw-bold text-danger">{{ c.montant(facture.resteAPayer) }}</span>
-                                </li>
-                            {% else %}
-                                <li class="list-group-item text-center text-muted py-4">Aucune facture en retard.</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
+                <a href="{{ path('comptable_rapports') }}" class="link-more">Rapports <i class="fas fa-arrow-right"></i></a>
             </div>
+            {% if montantsParMois|reduce((total, v) => total + v, 0) > 0 %}
+                <div class="panel-body">
+                    <canvas id="graphiqueEncaissements" height="120"></canvas>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-chart-column"></i></div>
+                    <h3>Aucun encaissement sur les six derniers mois</h3>
+                    <p class="mb-0">Le graphique se remplira au fil des paiements enregistrés.</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <div class="col-lg-5">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <h2>Factures en retard</h2>
+                    <p>Les plus anciennes échéances en premier</p>
+                </div>
+                {% if retardsPaiement > facturesEnRetard|length %}
+                    <a href="{{ path('comptable_factures', {'statut': 'en_retard'}) }}" class="link-more">Toutes <i class="fas fa-arrow-right"></i></a>
+                {% endif %}
+            </div>
+            {% if facturesEnRetard is empty %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="far fa-circle-check"></i></div>
+                    <h3>Aucune facture échue</h3>
+                    <p class="mb-0">Toutes les échéances passées ont été réglées.</p>
+                </div>
+            {% else %}
+                <ul class="list-rows">
+                    {% for facture in facturesEnRetard %}
+                        <li>
+                            <a href="{{ path('comptable_factures_show', {'id': facture.id}) }}" class="list-row">
+                                <span class="list-row-main">
+                                    <span class="list-row-title d-block">{{ facture.etudiant.prenom }} {{ facture.etudiant.nom }}</span>
+                                    <span class="list-row-meta d-block">{{ facture.libelle }} · échue le {{ facture.dateEcheance|date('d/m/Y') }}</span>
+                                </span>
+                                <span class="grade">{{ c.montant(facture.resteAPayer) }}</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>Derniers paiements</h2>
+            <p>Transactions enregistrées récemment</p>
         </div>
+        <a href="{{ path('comptable_paiements') }}" class="link-more">Tous les paiements <i class="fas fa-arrow-right"></i></a>
+    </div>
+    {% if derniersPaiements is empty %}
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="fas fa-money-bill-wave"></i></div>
+            <h3>Aucun paiement enregistré</h3>
+            <a href="{{ path('comptable_paiements_new') }}" class="btn btn-sm btn-secondary">Enregistrer un paiement</a>
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr><th>Date</th><th>Élève</th><th>Type</th><th>Mode</th><th>Statut</th><th class="text-end">Montant</th></tr>
+                </thead>
+                <tbody>
+                    {% for paiement in derniersPaiements %}
+                        <tr>
+                            <td class="text-muted text-nowrap">{{ paiement.datePaiement|date('d/m/Y') }}</td>
+                            <td><a href="{{ path('comptable_etudiants_show', {'id': paiement.etudiant.id}) }}" class="text-reset fw-medium">{{ paiement.etudiant.prenom }} {{ paiement.etudiant.nom }}</a></td>
+                            <td class="text-muted">{{ paiement.type }}</td>
+                            <td class="text-muted">{{ modes[paiement.modePaiement] ?? '—' }}</td>
+                            <td>
+                                {% if paiement.statut == 'paye' %}<span class="status status-success">Encaissé</span>
+                                {% elseif paiement.statut == 'annule' %}<span class="status">Annulé</span>
+                                {% else %}<span class="status status-warning">{{ paiement.statut|capitalize }}</span>{% endif %}
+                            </td>
+                            <td class="text-end"><span class="grade">{{ c.montant(paiement.montant) }}</span></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (!document.getElementById('graphiqueEncaissements')) {
+        return;
+    }
+    const mois = {{ mois|json_encode|raw }}.map(function (m) {
+        const [annee, numero] = m.split('-');
+        return new Date(annee, numero - 1, 1).toLocaleDateString('fr-FR', {month: 'short'});
+    });
+    new Chart(document.getElementById('graphiqueEncaissements'), {
+        type: 'bar',
+        data: {
+            labels: mois,
+            datasets: [{
+                data: {{ montantsParMois|json_encode|raw }},
+                backgroundColor: '#243B53',
+                borderRadius: 6,
+                maxBarThickness: 36
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {display: false},
+                tooltip: {callbacks: {label: function (ctx) { return ctx.parsed.y.toLocaleString('fr-FR', {style: 'currency', currency: 'EUR'}); }}}
+            },
+            scales: {
+                x: {grid: {display: false}, border: {display: false}, ticks: {color: '#718096', font: {family: 'Inter', size: 12}}},
+                y: {beginAtZero: true, border: {display: false}, grid: {color: '#EEF1F5'}, ticks: {color: '#718096', font: {family: 'Inter', size: 12}, callback: function (v) { return v.toLocaleString('fr-FR') + ' €'; }}}
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

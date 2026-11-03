@@ -3,6 +3,9 @@
 namespace App\Controller;
 
 use App\Repository\CoursRepository;
+use App\Entity\Devoir;
+use App\Entity\Evaluation;
+use App\Service\EmploiDuTempsService;
 use App\Service\PeriodeAcademiqueService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,52 +28,77 @@ class EnseignantController extends AbstractController
     }
 
     #[Route('/dashboard', name: 'enseignant_dashboard')]
-    public function dashboard(CoursRepository $coursRepository, PeriodeAcademiqueService $periodeService): Response
+    public function dashboard(CoursRepository $coursRepository, PeriodeAcademiqueService $periodeService, EmploiDuTempsService $emploiDuTempsService): Response
     {
-        $user = $this->getUser();
-        $enseignant = $user->getEnseignant();
-        $periodeActive = $periodeService->getPeriodeActive();
-        
+        $enseignant = $this->getUser()?->getEnseignant();
         if (!$enseignant) {
-            throw $this->createNotFoundException('Enseignant non trouvé');
+            throw $this->createAccessDeniedException('Aucun profil enseignant n\'est associé à ce compte.');
         }
-        
-        // Récupérer les cours de l'enseignant pour la période active
-        $coursCriteria = ['enseignant' => $enseignant];
-        if ($periodeActive) {
-            $coursCriteria['periodeAcademique'] = $periodeActive;
-        }
-        $cours = $coursRepository->findBy($coursCriteria, ['dateAjout' => 'DESC']);
 
-        // Calculer les statistiques
-        $totalEtudiants = 0;
-        $matieres = $enseignant->getMatieres();
-        foreach ($matieres as $matiere) {
+        $filieres = [];
+        foreach ($enseignant->getMatieres() as $matiere) {
             if ($matiere->getFiliere()) {
-                $totalEtudiants += $matiere->getFiliere()->getEtudiants()->count();
+                $filieres[$matiere->getFiliere()->getId()] = $matiere->getFiliere();
             }
         }
+        $totalEleves = array_sum(array_map(fn (Filiere $f) => $f->getEtudiants()->count(), $filieres));
 
-        $coursCetteSemaine = $this->entityManager->getRepository(EmploiDuTemps::class)
-            ->count(['enseignant' => $enseignant]);
-
-        $devoirsACorriger = (int) $this->entityManager->getRepository(Soumission::class)
-            ->createQueryBuilder('s')
-            ->select('COUNT(s.id)')
+        $copies = $this->entityManager->getRepository(Soumission::class)->createQueryBuilder('s')
             ->join('s.devoir', 'd')
-            ->andWhere('d.enseignant = :enseignant')
+            ->addSelect('d')
+            ->join('s.etudiant', 'e')
+            ->addSelect('e')
+            ->where('d.enseignant = :enseignant')
             ->andWhere('s.statut = :statut')
             ->setParameter('enseignant', $enseignant)
             ->setParameter('statut', 'soumis')
+            ->orderBy('s.dateSoumission', 'ASC')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getResult();
+
+        $devoirsEnCours = $this->entityManager->getRepository(Devoir::class)->createQueryBuilder('d')
+            ->join('d.matiere', 'm')
+            ->addSelect('m')
+            ->where('d.enseignant = :enseignant')
+            ->andWhere('d.statut = :publie')
+            ->andWhere('d.dateEcheance >= :maintenant')
+            ->setParameter('enseignant', $enseignant)
+            ->setParameter('publie', 'publie')
+            ->setParameter('maintenant', new \DateTime())
+            ->orderBy('d.dateEcheance', 'ASC')
+            ->setMaxResults(4)
+            ->getQuery()
+            ->getResult();
+
+        $evaluations = $this->entityManager->getRepository(Evaluation::class)->createQueryBuilder('ev')
+            ->join('ev.matiere', 'm')
+            ->addSelect('m')
+            ->where('ev.enseignant = :enseignant')
+            ->andWhere('ev.dateEvaluation >= :aujourdhui')
+            ->setParameter('enseignant', $enseignant)
+            ->setParameter('aujourdhui', new \DateTime('today'))
+            ->orderBy('ev.dateEvaluation', 'ASC')
+            ->setMaxResults(4)
+            ->getQuery()
+            ->getResult();
+
+        $emploi = $emploiDuTempsService->prochainsCreneaux('enseignant', $enseignant);
 
         return $this->render('enseignant/dashboard.html.twig', [
-            'cours' => $cours,
-            'totalEtudiants' => $totalEtudiants,
-            'coursCetteSemaine' => $coursCetteSemaine,
-            'devoirsACorriger' => $devoirsACorriger,
-            'periodeActive' => $periodeActive,
+            'enseignant' => $enseignant,
+            'periodeActive' => $periodeService->getPeriodeActive(),
+            'emploi' => $emploi,
+            'copies' => array_slice($copies, 0, 5),
+            'totalCopies' => count($copies),
+            'devoirsEnCours' => $devoirsEnCours,
+            'evaluations' => $evaluations,
+            'coursRecents' => $coursRepository->findBy(['enseignant' => $enseignant], ['dateAjout' => 'DESC'], 4),
+            'stats' => [
+                'cours' => $coursRepository->count(['enseignant' => $enseignant]),
+                'eleves' => $totalEleves,
+                'filieres' => count($filieres),
+                'creneaux' => $emploi['parSemaine'],
+            ],
         ]);
     }
 

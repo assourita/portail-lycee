@@ -4,6 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Chapitre;
 use App\Entity\Cours;
+use App\Entity\Devoir;
+use App\Entity\Soumission;
+use App\Repository\AbsenceRepository;
+use App\Service\EmploiDuTempsService;
 use App\Entity\EmploiDuTemps;
 use App\Entity\Etudiant;
 use App\Entity\Evaluation;
@@ -30,27 +34,69 @@ class EtudiantController extends AbstractController
     ) {}
 
     #[Route('/dashboard', name: 'etudiant_dashboard', methods: ['GET'])]
-    public function dashboard(CoursRepository $coursRepository, NoteRepository $noteRepository): Response
+    public function dashboard(CoursRepository $coursRepository, AbsenceRepository $absenceRepository, EmploiDuTempsService $emploiDuTempsService): Response
     {
         $etudiant = $this->getEtudiant();
         $periodeActive = $this->periodeService->getPeriodeActive();
+        $filiere = $etudiant->getFiliere();
 
-        $cours = $coursRepository->findByFiliereAndPeriode($etudiant->getFiliere(), $periodeActive);
         $notes = $this->findNotes($etudiant);
+        $moyenneGenerale = $notes
+            ? round(array_sum(array_map(fn (Note $note) => (float) $note->getValeur(), $notes)) / count($notes), 2)
+            : null;
 
-        $totalNotes = count($notes);
-        $moyenneGenerale = $totalNotes > 0
-            ? round(array_sum(array_map(fn (Note $note) => $note->getValeur(), $notes)) / $totalNotes, 2)
-            : 0;
+        $devoirs = $filiere
+            ? $this->entityManager->getRepository(Devoir::class)->createQueryBuilder('d')
+                ->join('d.matiere', 'm')
+                ->addSelect('m')
+                ->where('m.filiere = :filiere')
+                ->andWhere('d.statut = :publie')
+                ->andWhere('d.dateEcheance >= :maintenant')
+                ->setParameter('filiere', $filiere)
+                ->setParameter('publie', 'publie')
+                ->setParameter('maintenant', new \DateTime())
+                ->orderBy('d.dateEcheance', 'ASC')
+                ->getQuery()
+                ->getResult()
+            : [];
+
+        $aRendre = [];
+        foreach ($devoirs as $devoir) {
+            $soumission = $this->entityManager->getRepository(Soumission::class)->findOneBy(['devoir' => $devoir, 'etudiant' => $etudiant]);
+            if (!$soumission || $soumission->getStatut() === 'brouillon') {
+                $aRendre[] = ['devoir' => $devoir, 'brouillon' => $soumission !== null];
+            }
+        }
+
+        $evaluations = $filiere
+            ? $this->entityManager->getRepository(Evaluation::class)->createQueryBuilder('e')
+                ->join('e.matiere', 'm')
+                ->addSelect('m')
+                ->where('m.filiere = :filiere')
+                ->andWhere('e.dateEvaluation >= :aujourdhui')
+                ->setParameter('filiere', $filiere)
+                ->setParameter('aujourdhui', new \DateTime('today'))
+                ->orderBy('e.dateEvaluation', 'ASC')
+                ->setMaxResults(4)
+                ->getQuery()
+                ->getResult()
+            : [];
 
         return $this->render('etudiant/dashboard.html.twig', [
             'etudiant' => $etudiant,
             'periodeActive' => $periodeActive,
-            'totalCours' => count($cours),
-            'totalNotes' => $totalNotes,
+            'emploi' => $emploiDuTempsService->prochainsCreneaux('filiere', $filiere),
             'moyenneGenerale' => $moyenneGenerale,
-            'derniersCours' => array_slice($cours, 0, 5),
+            'totalNotes' => count($notes),
             'dernieresNotes' => array_slice($notes, 0, 5),
+            'aRendre' => array_slice($aRendre, 0, 5),
+            'totalARendre' => count($aRendre),
+            'evaluations' => $evaluations,
+            'totalCours' => count($coursRepository->findByFiliereAndPeriode($filiere, $periodeActive)),
+            'absences' => [
+                'total' => $absenceRepository->countByEtudiant($etudiant, $periodeActive),
+                'aJustifier' => $absenceRepository->count(['etudiant' => $etudiant, 'justifiee' => false, 'justification' => null]),
+            ],
         ]);
     }
 

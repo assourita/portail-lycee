@@ -779,6 +779,39 @@ a.list-row:hover { background: var(--surface-muted); color: var(--text); }
 .list-row-meta { font-size: 12.5px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-row-end { font-size: 13px; color: var(--text-secondary); white-space: nowrap; text-align: right; }
 
+.min-w-0 { min-width: 0; }
+
+/* Créneaux d'emploi du temps */
+.slot-list { list-style: none; margin: 0; padding: .25rem 0; }
+.slot { display: flex; align-items: stretch; gap: .875rem; padding: .625rem 1.25rem; }
+.slot-time { width: 88px; flex-shrink: 0; font-size: 13px; color: var(--text-secondary); font-variant-numeric: tabular-nums; padding-top: 1px; }
+.slot-time strong { display: block; color: var(--text); font-weight: 600; font-size: 13.5px; }
+.slot-bar { width: 3px; border-radius: 2px; background: var(--border-strong); flex-shrink: 0; }
+.slot.is-now .slot-bar { background: var(--accent); }
+.slot.is-past { opacity: .55; }
+.slot-title { font-size: 14px; font-weight: 500; }
+.slot-meta { font-size: 12.5px; color: var(--text-secondary); }
+.panel-tag { font-size: 12px; font-weight: 500; color: var(--text-secondary); background: var(--hover); border-radius: 999px; padding: .125rem .5rem; }
+
+/* Échéance compacte */
+.due { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--border); flex-shrink: 0; line-height: 1.1; }
+.due strong { font-size: 15px; font-weight: 600; }
+.due span { font-size: 10.5px; text-transform: uppercase; color: var(--text-secondary); letter-spacing: .04em; }
+.due.is-soon { border-color: #F2E0BF; background: #FDF8EF; }
+
+/* Note chiffrée */
+.grade { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 14px; white-space: nowrap; }
+.grade small { font-weight: 400; color: var(--text-secondary); font-size: 12px; }
+.grade.is-low { color: var(--danger); }
+.grade.is-high { color: var(--success); }
+
+/* Sélecteur segmenté */
+.segmented { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: #EDF1F5; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.segmented .nav-link { border-radius: 8px; padding: .375rem .875rem; font-size: 13.5px; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: .5rem; border: 0; background: transparent; }
+.segmented .nav-link:hover { color: var(--text); }
+.segmented .nav-link.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-xs); }
+.segmented .avatar { width: 22px; height: 22px; font-size: 10px; }
+
 /* Statuts */
 .status { display: inline-flex; align-items: center; gap: .375rem; font-size: 12.5px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; }
 .status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--text-tertiary); }

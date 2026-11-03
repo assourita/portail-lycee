@@ -23,6 +23,7 @@ class AppExtension extends AbstractExtension
     {
         return [
             new TwigFunction('notifications', [$this, 'getNotifications']),
+            new TwigFunction('mois_court', [$this, 'moisCourt']),
             new TwigFunction('profil_utilisateur', [$this, 'getProfilUtilisateur']),
             new TwigFunction('periode_active', [$this, 'getPeriodeActive']),
             new TwigFunction('annees_scolaires', [$this, 'getAnneesScolaires']),
@@ -54,6 +55,13 @@ class AppExtension extends AbstractExtension
             $secondes < 604800 => sprintf('il y a %d jours', intdiv($secondes, 86400)),
             default => 'le '.$date->format('d/m/Y'),
         };
+    }
+
+    public function moisCourt(?\DateTimeInterface $date): string
+    {
+        $mois = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+
+        return $date ? $mois[(int) $date->format('n') - 1] : '';
     }
 
     public function getNotifications(): array

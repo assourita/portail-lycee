@@ -1,0 +1,23 @@
+{# Attend : emploi ({libelle, creneaux}), detail ('filiere' ou 'enseignant') #}
+{% set maintenant = 'now'|date('H:i') %}
+{% set est_aujourdhui = emploi.libelle == 'Aujourd\'hui' %}
+<ul class="slot-list">
+    {% for creneau in emploi.creneaux %}
+        {% set debut = creneau.heureDebut|date('H:i') %}
+        {% set fin = creneau.heureFin ? creneau.heureFin|date('H:i') : debut %}
+        <li class="slot {{ est_aujourdhui and debut <= maintenant and maintenant < fin ? 'is-now' }} {{ est_aujourdhui and fin <= maintenant ? 'is-past' }}">
+            <div class="slot-time"><strong>{{ debut }}</strong>{{ fin }}</div>
+            <span class="slot-bar"></span>
+            <div class="min-w-0">
+                <div class="slot-title">{{ creneau.matiere ? creneau.matiere.nom : 'Matière à définir' }}</div>
+                <div class="slot-meta">
+                    {% if detail == 'filiere' %}
+                        {{ creneau.filiere ? creneau.filiere.nom : '—' }}
+                    {% else %}
+                        {{ creneau.enseignant ? creneau.enseignant.prenom ~ ' ' ~ creneau.enseignant.nom : 'Enseignant à définir' }}
+                    {% endif %}
+                </div>
+            </div>
+        </li>
+    {% endfor %}
+</ul>

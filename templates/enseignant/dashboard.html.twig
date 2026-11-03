@@ -1,183 +1,202 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard Enseignant{% endblock %}
+{% block title %}Tableau de bord{% endblock %}
 
 {% block body %}
-<div class="page">
-            <div class="page-header">
+<div class="page-header">
+    <div>
+        <h1>Bonjour, {{ enseignant.prenom }}</h1>
+        <p>
+            {{ 'now'|date('d/m/Y') }}
+            {% if periodeActive %} · {{ periodeActive.periode }} {{ periodeActive.anneeScolaire }}{% endif %}
+        </p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ path('enseignant_note_saisir_groupe') }}" class="btn btn-secondary"><i class="fas fa-pen"></i>Saisir des notes</a>
+        <a href="{{ path('enseignant_devoir_new') }}" class="btn btn-secondary"><i class="fas fa-list-check"></i>Nouveau devoir</a>
+        <a href="{{ path('enseignant_cours_new') }}" class="btn btn-primary"><i class="fas fa-plus"></i>Nouveau cours</a>
+    </div>
+</div>
+
+<div class="kpi-grid">
+    <a href="{{ path('enseignant_devoirs_index') }}" class="kpi">
+        <span class="kpi-label"><i class="fas fa-pen-to-square"></i>Copies à corriger</span>
+        <span class="kpi-value">{{ totalCopies }}</span>
+        <span class="kpi-meta">{{ totalCopies > 0 ? 'rendues par vos élèves' : 'tout est corrigé' }}</span>
+    </a>
+    <a href="{{ path('app_enseignant_mes_filieres') }}" class="kpi">
+        <span class="kpi-label"><i class="fas fa-user-graduate"></i>Élèves suivis</span>
+        <span class="kpi-value">{{ stats.eleves }}</span>
+        <span class="kpi-meta">dans {{ stats.filieres }} filière{{ stats.filieres > 1 ? 's' }}</span>
+    </a>
+    <a href="{{ path('app_enseignant_emploi_du_temps') }}" class="kpi">
+        <span class="kpi-label"><i class="fas fa-calendar-days"></i>Créneaux par semaine</span>
+        <span class="kpi-value">{{ stats.creneaux }}</span>
+        <span class="kpi-meta">dans votre emploi du temps</span>
+    </a>
+    <a href="{{ path('enseignant_cours_index') }}" class="kpi">
+        <span class="kpi-label"><i class="fas fa-book-open"></i>Cours publiés</span>
+        <span class="kpi-value">{{ stats.cours }}</span>
+        <span class="kpi-meta">accessibles aux élèves</span>
+    </a>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-5">
+        <section class="panel h-100">
+            <div class="panel-header">
                 <div>
-                    <h1 class="h2">Dashboard Enseignant</h1>
-                    {% if periodeActive %}
-                        <p class="text-muted mb-0">
-                            <i class="fas fa-calendar-check me-1"></i>
-                            Période : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
-                        </p>
-                    {% endif %}
+                    <h2>{{ emploi.libelle }}</h2>
+                    <p>{{ emploi.creneaux is empty ? 'Aucun cours prévu' : emploi.creneaux|length ~ ' créneau' ~ (emploi.creneaux|length > 1 ? 'x') ~ ' de cours' }}</p>
                 </div>
+                <a href="{{ path('app_enseignant_emploi_du_temps') }}" class="link-more">Semaine <i class="fas fa-arrow-right"></i></a>
             </div>
-
-            <!-- Statistiques Cards -->
-            <div class="row mb-4">
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-primary shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                        MES COURS</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ cours|length }}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-book fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            {% if emploi.creneaux is empty %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="far fa-calendar"></i></div>
+                    <h3>Aucun cours planifié</h3>
+                    <p class="mb-0">Votre emploi du temps n'a pas encore été configuré par l'administration.</p>
                 </div>
+            {% else %}
+                {% include '_partials/creneaux.html.twig' with {'detail': 'filiere'} %}
+            {% endif %}
+        </section>
+    </div>
 
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-success shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                        ÉTUDIANTS</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ totalEtudiants ?? 150 }}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <div class="col-lg-7">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <h2>Copies à corriger</h2>
+                    <p>Les plus anciennes en premier</p>
                 </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-info shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                        COURS CETTE SEMAINE</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ coursCetteSemaine ?? 12 }}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-warning shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        DEVOIRS À CORRIGER</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ devoirsACorriger ?? 18 }}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-tasks fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {% if totalCopies > copies|length %}
+                    <a href="{{ path('enseignant_devoirs_index') }}" class="link-more">Toutes ({{ totalCopies }}) <i class="fas fa-arrow-right"></i></a>
+                {% endif %}
             </div>
+            {% if copies is empty %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="far fa-circle-check"></i></div>
+                    <h3>Aucune copie en attente</h3>
+                    <p class="mb-0">Les rendus de vos élèves apparaîtront ici.</p>
+                </div>
+            {% else %}
+                <ul class="list-rows">
+                    {% for copie in copies %}
+                        <li>
+                            <a href="{{ path('enseignant_devoir_corriger', {'id': copie.devoir.id, 'soumissionId': copie.id}) }}" class="list-row">
+                                <span class="avatar">{{ copie.etudiant.prenom|first|upper }}{{ copie.etudiant.nom|first|upper }}</span>
+                                <span class="list-row-main">
+                                    <span class="list-row-title d-block">{{ copie.etudiant.prenom }} {{ copie.etudiant.nom }}</span>
+                                    <span class="list-row-meta d-block">{{ copie.devoir.titre }}</span>
+                                </span>
+                                <span class="list-row-end">{{ copie.dateSoumission|depuis }}</span>
+                                <span class="btn btn-sm btn-secondary">Corriger</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+    </div>
+</div>
 
-            <!-- Mes cours récents -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Mes cours récents</h6>
-                    <a href="{{ path('enseignant_cours_new') }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> Nouveau cours
-                    </a>
+<div class="row g-3">
+    <div class="col-lg-7">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <h2>Devoirs en cours</h2>
+                    <p>Suivi des rendus avant l'échéance</p>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Titre</th>
-                                    <th>Matière</th>
-                                    <th>Date de création</th>
-                                    <th>Nombre de chapitres</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for cours in cours|slice(0, 5) %}
-                                <tr>
-                                    <td>{{ cours.titre }}</td>
-                                    <td>{{ cours.matiere.nom }}</td>
-                                    <td>{{ cours.dateAjout|date('d/m/Y') }}</td>
-                                    <td>{{ cours.chapitres|length }}</td>
-                                    <td>
-                                        <a href="{{ path('enseignant_cours_show', {'id': cours.id}) }}" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ path('enseignant_cours_edit', {'id': cours.id}) }}" class="btn btn-secondary btn-sm">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{{ path('enseignant_chapitre_new', {'id': cours.id}) }}" class="btn btn-success btn-sm">
-                                            <i class="fas fa-plus"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="5" class="text-center">
-                                        <div class="alert alert-info">
-                                            Vous n'avez pas encore créé de cours. 
-                                            <a href="{{ path('enseignant_cours_new') }}" class="alert-link">Créez votre premier cours</a>.
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <a href="{{ path('enseignant_devoirs_index') }}" class="link-more">Devoirs <i class="fas fa-arrow-right"></i></a>
             </div>
+            {% if devoirsEnCours is empty %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-list-check"></i></div>
+                    <h3>Aucun devoir en cours</h3>
+                    <p>Publiez un devoir pour que vos élèves puissent rendre leur travail en ligne.</p>
+                    <a href="{{ path('enseignant_devoir_new') }}" class="btn btn-sm btn-secondary">Créer un devoir</a>
+                </div>
+            {% else %}
+                <ul class="list-rows">
+                    {% for devoir in devoirsEnCours %}
+                        {% set rendus = devoir.soumissions|filter(s => s.statut != 'brouillon')|length %}
+                        {% set effectif = devoir.matiere.filiere ? devoir.matiere.filiere.etudiants|length : 0 %}
+                        {% set jours = devoir.joursRestants %}
+                        <li>
+                            <a href="{{ path('enseignant_devoir_show', {'id': devoir.id}) }}" class="list-row">
+                                <span class="due {{ jours <= 2 ? 'is-soon' }}">
+                                    <strong>{{ devoir.dateEcheance|date('d') }}</strong>
+                                    <span>{{ mois_court(devoir.dateEcheance) }}</span>
+                                </span>
+                                <span class="list-row-main">
+                                    <span class="list-row-title d-block">{{ devoir.titre }}</span>
+                                    <span class="list-row-meta d-block">{{ devoir.matiere.nom }} · {{ jours <= 0 ? 'échéance aujourd\'hui' : 'dans ' ~ jours ~ ' jour' ~ (jours > 1 ? 's') }}</span>
+                                </span>
+                                <span class="list-row-end">{{ rendus }}{% if effectif %} / {{ effectif }}{% endif %} rendus</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+    </div>
 
-            <!-- Prochains cours -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Prochains cours</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Heure</th>
-                                    <th>Classe</th>
-                                    <th>Matière</th>
-                                    <th>Salle</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>05/04/2024</td>
-                                    <td>8h-10h</td>
-                                    <td>Terminale S1</td>
-                                    <td>Mathématiques</td>
-                                    <td>Salle 101</td>
-                                </tr>
-                                <tr>
-                                    <td>05/04/2024</td>
-                                    <td>10h-12h</td>
-                                    <td>Première S2</td>
-                                    <td>Physique</td>
-                                    <td>Salle 205</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <div class="col-lg-5 d-flex flex-column gap-3">
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Prochaines évaluations</h2>
+                <a href="{{ path('enseignant_evaluations_index') }}" class="link-more">Toutes <i class="fas fa-arrow-right"></i></a>
             </div>
-        </div>
-{% endblock %} 
+            {% if evaluations is empty %}
+                <div class="empty-state py-4">
+                    <p class="mb-2">Aucune évaluation programmée.</p>
+                    <a href="{{ path('enseignant_evaluation_new') }}" class="btn btn-sm btn-secondary">Programmer une évaluation</a>
+                </div>
+            {% else %}
+                <ul class="list-rows">
+                    {% for evaluation in evaluations %}
+                        <li>
+                            <a href="{{ path('enseignant_evaluation_show', {'id': evaluation.id}) }}" class="list-row">
+                                <span class="list-row-main">
+                                    <span class="list-row-title d-block">{{ evaluation.nom }}</span>
+                                    <span class="list-row-meta d-block">{{ evaluation.matiere.nom }}</span>
+                                </span>
+                                <span class="list-row-end">{{ evaluation.dateEvaluation|date('d/m/Y') }}</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+
+        <section class="panel flex-grow-1">
+            <div class="panel-header">
+                <h2>Cours récents</h2>
+                <a href="{{ path('enseignant_cours_index') }}" class="link-more">Mes cours <i class="fas fa-arrow-right"></i></a>
+            </div>
+            {% if coursRecents is empty %}
+                <div class="empty-state py-4">
+                    <p class="mb-2">Vous n'avez pas encore publié de cours.</p>
+                    <a href="{{ path('enseignant_cours_new') }}" class="btn btn-sm btn-secondary">Créer un cours</a>
+                </div>
+            {% else %}
+                <ul class="list-rows">
+                    {% for c in coursRecents %}
+                        <li>
+                            <a href="{{ path('enseignant_cours_show', {'id': c.id}) }}" class="list-row">
+                                <span class="list-row-main">
+                                    <span class="list-row-title d-block">{{ c.titre }}</span>
+                                    <span class="list-row-meta d-block">{{ c.matiere ? c.matiere.nom }} · {{ c.chapitres|length }} chapitre{{ c.chapitres|length > 1 ? 's' }}</span>
+                                </span>
+                                <i class="fas fa-chevron-right text-muted" style="font-size: 11px;"></i>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

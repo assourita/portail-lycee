@@ -42,28 +42,26 @@ class ParentController extends AbstractController
         // Statistiques par enfant
         $enfantsStats = [];
         foreach ($enfants as $enfant) {
-            $notes = $this->noteRepository->findBy([
-                'etudiant' => $enfant,
-                'periodeAcademique' => $periodeActive
-            ]);
-
-            $moyenneGenerale = 0;
-            if (count($notes) > 0) {
-                $somme = array_sum(array_map(fn($note) => $note->getValeur(), $notes));
-                $moyenneGenerale = round($somme / count($notes), 2);
+            $criteres = ['etudiant' => $enfant];
+            if ($periodeActive) {
+                $criteres['periodeAcademique'] = $periodeActive;
             }
+            $notes = $this->noteRepository->findBy($criteres, ['dateNote' => 'DESC']);
 
-            $absences = $this->absenceRepository->countByEtudiant($enfant, $periodeActive);
-            $absencesNonJustifiees = $this->absenceRepository->countByEtudiant($enfant, $periodeActive, false);
-            $tauxAssiduite = $this->absenceRepository->calculateTauxAssiduite($enfant, $periodeActive);
+            $moyenneGenerale = $notes
+                ? round(array_sum(array_map(fn ($note) => (float) $note->getValeur(), $notes)) / count($notes), 2)
+                : null;
 
             $enfantsStats[] = [
                 'enfant' => $enfant,
                 'moyenneGenerale' => $moyenneGenerale,
                 'totalNotes' => count($notes),
-                'totalAbsences' => $absences,
-                'absencesNonJustifiees' => $absencesNonJustifiees,
-                'tauxAssiduite' => $tauxAssiduite,
+                'dernieresNotes' => array_slice($notes, 0, 5),
+                'totalAbsences' => $this->absenceRepository->countByEtudiant($enfant, $periodeActive),
+                'absencesNonJustifiees' => $this->absenceRepository->countByEtudiant($enfant, $periodeActive, false),
+                'absencesRecentes' => array_slice($this->absenceRepository->findByEtudiant($enfant, $periodeActive), 0, 4),
+                'tauxAssiduite' => $this->absenceRepository->calculateTauxAssiduite($enfant, $periodeActive),
+                'dernierBulletin' => $this->bulletinRepository->findOneBy(['etudiant' => $enfant], ['dateCreation' => 'DESC']),
             ];
         }
 

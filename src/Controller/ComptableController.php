@@ -50,16 +50,26 @@ class ComptableController extends AbstractController
     public function dashboard(): Response
     {
         $payees = $this->factureRepository->countByStatut(Facture::STATUT_PAYE);
-        $enAttente = $this->factureRepository->countByStatut(Facture::STATUT_EN_ATTENTE);
-        $totalFactures = $payees + $enAttente;
+        $ouvertes = $this->factureRepository->findByStatut(Facture::STATUT_EN_ATTENTE);
+        $enRetard = $this->factureRepository->findFacturesEnRetard();
+        $totalFactures = $payees + count($ouvertes);
+
+        $debut = new \DateTime('first day of -5 months midnight');
+        $parMois = $this->paiementRepository->getTotauxParMois($debut, new \DateTime('today 23:59:59'));
 
         return $this->render('comptable/dashboard.html.twig', [
             'montantTotalMois' => $this->paiementRepository->getMontantTotalDuMois(),
-            'facturesEnAttente' => $enAttente,
+            'montantMoisPrecedent' => $this->paiementRepository->getTotalEncaisse(new \DateTime('first day of last month midnight'), new \DateTime('last day of last month 23:59:59')),
+            'resteARecouvrer' => array_sum(array_map(fn (Facture $f) => $f->getResteAPayer(), $ouvertes)),
+            'facturesEnAttente' => count($ouvertes),
+            'montantEnRetard' => array_sum(array_map(fn (Facture $f) => $f->getResteAPayer(), $enRetard)),
+            'retardsPaiement' => count($enRetard),
             'tauxPaiement' => $totalFactures > 0 ? round($payees / $totalFactures * 100, 1) : 0,
-            'retardsPaiement' => count($this->factureRepository->findFacturesEnRetard()),
-            'derniersPaiements' => $this->paiementRepository->findDerniersPaiements(8),
-            'facturesEnRetard' => array_slice($this->factureRepository->findFacturesEnRetard(), 0, 5),
+            'derniersPaiements' => $this->paiementRepository->findDerniersPaiements(6),
+            'facturesEnRetard' => array_slice($enRetard, 0, 5),
+            'mois' => array_keys($parMois),
+            'montantsParMois' => array_values($parMois),
+            'modes' => self::MODES_PAIEMENT,
         ]);
     }
 
