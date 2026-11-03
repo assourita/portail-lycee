@@ -1,178 +1,161 @@
 {% extends 'base.html.twig' %}
+{% import 'comptable/_macros.html.twig' as c %}
 
-{% block title %}Rapports Comptables{% endblock %}
+{% block title %}Rapports comptables{% endblock %}
 
 {% block body %}
+{% set periode = {'debut': debut|date('Y-m-d'), 'fin': fin|date('Y-m-d')} %}
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-            <div class="position-sticky pt-3">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('comptable_dashboard') }}">
-                            <i class="fas fa-home"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('comptable_paiements') }}">
-                            <i class="fas fa-money-bill"></i> Paiements
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('comptable_factures') }}">
-                            <i class="fas fa-file-invoice"></i> Factures
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ path('comptable_rapports') }}">
-                            <i class="fas fa-chart-line"></i> Rapports
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('comptable_etudiants') }}">
-                            <i class="fas fa-users"></i> Étudiants
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+        {% include 'comptable/_sidebar.html.twig' %}
 
-        <!-- Main content -->
-        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Rapports Comptables</h1>
+                <h1 class="h2">Rapports comptables</h1>
             </div>
 
-            <!-- Filtres de période -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Période du rapport</h5>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label for="dateDebut" class="form-label">Date début</label>
-                            <input type="date" class="form-control" id="dateDebut">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="dateFin" class="form-label">Date fin</label>
-                            <input type="date" class="form-control" id="dateFin">
-                        </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button class="btn btn-primary w-100">
-                                <i class="fas fa-sync"></i> Générer le rapport
-                            </button>
-                        </div>
+            <form method="get" class="card mb-4">
+                <div class="card-body row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="debut" class="form-label">Du</label>
+                        <input type="date" class="form-control" id="debut" name="debut" value="{{ periode.debut }}">
                     </div>
+                    <div class="col-md-4">
+                        <label for="fin" class="form-label">Au</label>
+                        <input type="date" class="form-control" id="fin" name="fin" value="{{ periode.fin }}">
+                    </div>
+                    <div class="col-md-4 d-grid">
+                        <button class="btn btn-primary"><i class="fas fa-sync me-1"></i>Actualiser</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow border-start border-4 border-success"><div class="card-body">
+                        <div class="text-xs fw-bold text-success text-uppercase">Encaissé sur la période</div>
+                        <div class="h4 mb-0">{{ c.montant(encaisse) }}</div>
+                    </div></div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow border-start border-4 border-primary"><div class="card-body">
+                        <div class="text-xs fw-bold text-primary text-uppercase">Facturé sur la période</div>
+                        <div class="h4 mb-0">{{ c.montant(facture) }}</div>
+                    </div></div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow border-start border-4 border-info"><div class="card-body">
+                        <div class="text-xs fw-bold text-info text-uppercase">Taux de recouvrement</div>
+                        <div class="h4 mb-0">{{ tauxRecouvrement is not null ? tauxRecouvrement ~ ' %' : '-' }}</div>
+                    </div></div>
                 </div>
             </div>
 
-            <!-- Types de rapports -->
-            <div class="row">
-                <div class="col-md-6 mb-4">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <i class="fas fa-money-bill-wave fa-3x text-primary mb-3"></i>
-                            <h5 class="card-title">Rapport des Paiements</h5>
-                            <p class="card-text">Détail de tous les paiements reçus sur la période sélectionnée</p>
-                            <button class="btn btn-primary">
-                                <i class="fas fa-download"></i> Exporter PDF
-                            </button>
-                        </div>
+            <div class="row mb-4">
+                <div class="col-lg-7 mb-3">
+                    <div class="card shadow h-100">
+                        <div class="card-header"><h6 class="m-0 fw-bold text-primary">Encaissements mensuels</h6></div>
+                        <div class="card-body"><canvas id="graphiquePaiementsMois" height="140"></canvas></div>
                     </div>
                 </div>
-                
-                <div class="col-md-6 mb-4">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <i class="fas fa-file-invoice-dollar fa-3x text-success mb-3"></i>
-                            <h5 class="card-title">Rapport des Factures</h5>
-                            <p class="card-text">État des factures émises et leur statut de paiement</p>
-                            <button class="btn btn-success">
-                                <i class="fas fa-download"></i> Exporter PDF
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-6 mb-4">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <i class="fas fa-chart-pie fa-3x text-info mb-3"></i>
-                            <h5 class="card-title">Analyse par Type</h5>
-                            <p class="card-text">Répartition des paiements par type (scolarité, inscription, etc.)</p>
-                            <button class="btn btn-info">
-                                <i class="fas fa-download"></i> Exporter PDF
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-6 mb-4">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                            <h5 class="card-title">Rapport des Retards</h5>
-                            <p class="card-text">Liste des paiements en retard et actions recommandées</p>
-                            <button class="btn btn-warning">
-                                <i class="fas fa-download"></i> Exporter PDF
-                            </button>
+                <div class="col-lg-5 mb-3">
+                    <div class="card shadow h-100">
+                        <div class="card-header"><h6 class="m-0 fw-bold text-primary">Répartition par type</h6></div>
+                        <div class="card-body">
+                            {% if parType is empty %}
+                                <p class="text-muted text-center py-5 mb-0">Aucun encaissement sur la période.</p>
+                            {% else %}
+                                <canvas id="graphiqueRepartition" height="200"></canvas>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Graphiques -->
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Vue d'ensemble</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <canvas id="graphiquePaiementsMois"></canvas>
-                        </div>
-                        <div class="col-md-6">
-                            <canvas id="graphiqueRepartition"></canvas>
-                        </div>
-                    </div>
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold text-primary">Exports CSV (compatibles Excel)</h6>
+                </div>
+                <div class="card-body d-flex flex-wrap gap-2">
+                    <a href="{{ path('comptable_export', {'rapport': 'paiements'}|merge(periode)) }}" class="btn btn-outline-primary">
+                        <i class="fas fa-money-bill-wave me-1"></i>Paiements de la période
+                    </a>
+                    <a href="{{ path('comptable_export', {'rapport': 'factures'}|merge(periode)) }}" class="btn btn-outline-success">
+                        <i class="fas fa-file-invoice-dollar me-1"></i>Factures de la période
+                    </a>
+                    <a href="{{ path('comptable_export', {'rapport': 'retards'}) }}" class="btn btn-outline-warning">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Factures en retard
+                    </a>
+                    <a href="{{ path('comptable_export', {'rapport': 'soldes'}) }}" class="btn btn-outline-info">
+                        <i class="fas fa-users me-1"></i>Soldes des étudiants
+                    </a>
                 </div>
             </div>
-        </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header"><h6 class="m-0 fw-bold text-danger">Factures en retard ({{ retards|length }})</h6></div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <thead class="table-light">
+                            <tr><th>N°</th><th>Étudiant</th><th>Libellé</th><th>Échéance</th><th class="text-end">Reste dû</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for f in retards %}
+                                <tr>
+                                    <td><a href="{{ path('comptable_factures_show', {'id': f.id}) }}">F-{{ f.id }}</a></td>
+                                    <td>{{ f.etudiant.nom }} {{ f.etudiant.prenom }}</td>
+                                    <td>{{ f.libelle }}</td>
+                                    <td class="text-danger">{{ f.dateEcheance|date('d/m/Y') }}</td>
+                                    <td class="text-end fw-bold">{{ c.montant(f.resteAPayer) }}</td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="5" class="text-center text-muted py-3">Aucune facture en retard.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
     </div>
 </div>
+{% endblock %}
 
 {% block javascripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-// Graphique des paiements mensuels
-const ctxPaiements = document.getElementById('graphiquePaiementsMois').getContext('2d');
-new Chart(ctxPaiements, {
-    type: 'line',
-    data: {
-        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
-        datasets: [{
-            label: 'Paiements mensuels (€)',
-            data: [12000, 19000, 15000, 25000, 22000, 30000],
-            borderColor: 'rgb(75, 192, 192)',
-            tension: 0.1
-        }]
-    }
-});
+document.addEventListener('DOMContentLoaded', function () {
+    const mois = {{ mois|json_encode|raw }};
+    const libellesMois = mois.map(m => {
+        const [annee, numero] = m.split('-');
+        return new Date(annee, numero - 1, 1).toLocaleDateString('fr-FR', {month: 'short', year: '2-digit'});
+    });
 
-// Graphique de répartition
-const ctxRepartition = document.getElementById('graphiqueRepartition').getContext('2d');
-new Chart(ctxRepartition, {
-    type: 'pie',
-    data: {
-        labels: ['Frais de scolarité', 'Frais d\'inscription', 'Autres'],
-        datasets: [{
-            data: [65, 25, 10],
-            backgroundColor: [
-                'rgb(255, 99, 132)',
-                'rgb(54, 162, 235)',
-                'rgb(255, 205, 86)'
-            ]
-        }]
+    new Chart(document.getElementById('graphiquePaiementsMois'), {
+        type: 'bar',
+        data: {
+            labels: libellesMois,
+            datasets: [{
+                label: 'Encaissements (€)',
+                data: {{ montantsParMois|json_encode|raw }},
+                backgroundColor: 'rgba(52, 152, 219, 0.7)'
+            }]
+        },
+        options: {plugins: {legend: {display: false}}, scales: {y: {beginAtZero: true}}}
+    });
+
+    const repartition = document.getElementById('graphiqueRepartition');
+    if (repartition) {
+        new Chart(repartition, {
+            type: 'doughnut',
+            data: {
+                labels: {{ types|json_encode|raw }},
+                datasets: [{
+                    data: {{ montantsParType|json_encode|raw }},
+                    backgroundColor: ['#3498db', '#2ecc71', '#f1c40f', '#e74c3c', '#9b59b6', '#1abc9c', '#95a5a6']
+                }]
+            }
+        });
     }
 });
 </script>
-{% endblock %}
 {% endblock %}

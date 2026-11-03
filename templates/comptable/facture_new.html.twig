@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle facture{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'comptable/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-file-invoice me-2 text-primary"></i>Émettre une facture</h1>
+                <a href="{{ path('comptable_factures') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Retour
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <form method="post" class="card shadow">
+                        <div class="card-body">
+                            <input type="hidden" name="_token" value="{{ csrf_token('facture') }}">
+
+                            <div class="mb-3">
+                                <label class="form-label d-block">Destinataire *</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="cible" id="cible_etudiant" value="etudiant" checked>
+                                    <label class="form-check-label" for="cible_etudiant">Un étudiant</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="cible" id="cible_filiere" value="filiere">
+                                    <label class="form-check-label" for="cible_filiere">Tous les étudiants d'une filière</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3" id="bloc_etudiant">
+                                <label for="etudiant" class="form-label">Étudiant</label>
+                                <select class="form-select" id="etudiant" name="etudiant">
+                                    <option value="">Choisir...</option>
+                                    {% for etudiant in etudiants %}
+                                        <option value="{{ etudiant.id }}" {{ etudiantSelectionne == etudiant.id ? 'selected' }}>
+                                            {{ etudiant.nom }} {{ etudiant.prenom }}{% if etudiant.filiere %} - {{ etudiant.filiere.nom }}{% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3 d-none" id="bloc_filiere">
+                                <label for="filiere" class="form-label">Filière</label>
+                                <select class="form-select" id="filiere" name="filiere">
+                                    {% for filiere in filieres %}
+                                        <option value="{{ filiere.id }}">{{ filiere.nom }} ({{ filiere.etudiants|length }} étudiant(s))</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="libelle" class="form-label">Libellé *</label>
+                                <input type="text" class="form-control" id="libelle" name="libelle" list="types-facture" required maxlength="255">
+                                <datalist id="types-facture">
+                                    {% for type in types %}<option value="{{ type }}">{% endfor %}
+                                </datalist>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="montant" class="form-label">Montant (€) *</label>
+                                    <input type="number" step="0.01" min="0.01" class="form-control" id="montant" name="montant" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="date_echeance" class="form-label">Échéance *</label>
+                                    <input type="date" class="form-control" id="date_echeance" name="date_echeance" required
+                                           value="{{ '+30 days'|date('Y-m-d') }}">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i>Émettre
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const basculer = function () {
+        const filiere = document.getElementById('cible_filiere').checked;
+        document.getElementById('bloc_filiere').classList.toggle('d-none', !filiere);
+        document.getElementById('bloc_etudiant').classList.toggle('d-none', filiere);
+    };
+    document.querySelectorAll('input[name="cible"]').forEach(el => el.addEventListener('change', basculer));
+});
+</script>
+{% endblock %}

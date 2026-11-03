@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+{% import 'comptable/_macros.html.twig' as c %}
+
+{% block title %}Compte de {{ etudiant.prenom }} {{ etudiant.nom }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'comptable/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2 mb-0">{{ etudiant.prenom }} {{ etudiant.nom }}</h1>
+                    <p class="text-muted mb-0">
+                        {{ etudiant.filiere ? etudiant.filiere.nom : 'Sans filière' }}
+                        {% if etudiant.email %} - {{ etudiant.email }}{% endif %}
+                        {% if etudiant.telephone %} - {{ etudiant.telephone }}{% endif %}
+                    </p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0 gap-2">
+                    <a href="{{ path('comptable_etudiants') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Retour
+                    </a>
+                    <a href="{{ path('comptable_factures_new', {'etudiant': etudiant.id}) }}" class="btn btn-primary">
+                        <i class="fas fa-file-invoice me-1"></i>Facturer
+                    </a>
+                    <a href="{{ path('comptable_paiements_new', {'etudiant': etudiant.id}) }}" class="btn btn-success">
+                        <i class="fas fa-money-bill me-1"></i>Paiement
+                    </a>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow border-start border-4 border-primary"><div class="card-body">
+                        <div class="text-xs fw-bold text-primary text-uppercase">Total facturé</div>
+                        <div class="h4 mb-0">{{ c.montant(compte.du) }}</div>
+                    </div></div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow border-start border-4 border-success"><div class="card-body">
+                        <div class="text-xs fw-bold text-success text-uppercase">Total payé</div>
+                        <div class="h4 mb-0">{{ c.montant(compte.paye) }}</div>
+                    </div></div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow border-start border-4 border-{{ compte.solde > 0 ? 'danger' : 'success' }}"><div class="card-body">
+                        <div class="text-xs fw-bold text-uppercase {{ compte.solde > 0 ? 'text-danger' : 'text-success' }}">Solde</div>
+                        <div class="h4 mb-0">{{ c.montant(compte.solde) }}</div>
+                    </div></div>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header"><h6 class="m-0 fw-bold text-primary">Factures</h6></div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th>N°</th><th>Libellé</th><th>Échéance</th><th class="text-end">Montant</th><th class="text-end">Reste</th><th>Statut</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                            {% for facture in factures %}
+                                <tr>
+                                    <td><a href="{{ path('comptable_factures_show', {'id': facture.id}) }}">F-{{ facture.id }}</a></td>
+                                    <td>{{ facture.libelle }}</td>
+                                    <td>{{ facture.dateEcheance|date('d/m/Y') }}</td>
+                                    <td class="text-end">{{ c.montant(facture.montant) }}</td>
+                                    <td class="text-end">{{ facture.statut == 'annule' ? '-' : c.montant(facture.resteAPayer) }}</td>
+                                    <td>{{ c.statut_facture(facture) }}</td>
+                                    <td class="text-end">
+                                        {% if facture.statut == 'en_attente' %}
+                                            <a href="{{ path('comptable_paiements_new', {'facture': facture.id}) }}" class="btn btn-sm btn-success" title="Régler">
+                                                <i class="fas fa-money-bill"></i>
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="7" class="text-center text-muted py-3">Aucune facture.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header"><h6 class="m-0 fw-bold text-primary">Paiements</h6></div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <thead class="table-light">
+                            <tr><th>Date</th><th>Type</th><th>Mode</th><th>Facture</th><th class="text-end">Montant</th><th>Statut</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                            {% for paiement in paiements %}
+                                <tr>
+                                    <td>{{ paiement.datePaiement|date('d/m/Y') }}</td>
+                                    <td>{{ paiement.type }}</td>
+                                    <td>
+                                        {{ modes[paiement.modePaiement] ?? '-' }}
+                                        {% if paiement.reference %}<br><small class="text-muted">{{ paiement.reference }}</small>{% endif %}
+                                    </td>
+                                    <td>
+                                        {% if paiement.facture %}
+                                            <a href="{{ path('comptable_factures_show', {'id': paiement.facture.id}) }}">F-{{ paiement.facture.id }}</a>
+                                        {% else %}-{% endif %}
+                                    </td>
+                                    <td class="text-end">{{ c.montant(paiement.montant) }}</td>
+                                    <td>{{ c.statut_paiement(paiement) }}</td>
+                                    <td class="text-end">
+                                        {% if paiement.statut == 'paye' %}
+                                            <form method="post" action="{{ path('comptable_paiements_annuler', {'id': paiement.id}) }}"
+                                                  onsubmit="return confirm('Annuler ce paiement ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('annuler-paiement' ~ paiement.id) }}">
+                                                <button class="btn btn-sm btn-outline-danger" title="Annuler"><i class="fas fa-undo"></i></button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="7" class="text-center text-muted py-3">Aucun paiement.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

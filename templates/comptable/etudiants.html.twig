@@ -1,201 +1,112 @@
 {% extends 'base.html.twig' %}
+{% import 'comptable/_macros.html.twig' as c %}
 
-{% block title %}Gestion des Étudiants{% endblock %}
+{% block title %}Comptes étudiants{% endblock %}
 
 {% block body %}
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-            <div class="position-sticky pt-3">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('comptable_dashboard') }}">
-                            <i class="fas fa-home"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('comptable_paiements') }}">
-                            <i class="fas fa-money-bill"></i> Paiements
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('comptable_factures') }}">
-                            <i class="fas fa-file-invoice"></i> Factures
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('comptable_rapports') }}">
-                            <i class="fas fa-chart-line"></i> Rapports
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ path('comptable_etudiants') }}">
-                            <i class="fas fa-users"></i> Étudiants
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+        {% include 'comptable/_sidebar.html.twig' %}
 
-        <!-- Main content -->
-        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Gestion des Étudiants</h1>
-                <div>
-                    <button class="btn btn-success me-2">
-                        <i class="fas fa-file-excel"></i> Exporter Excel
-                    </button>
-                    <button class="btn btn-primary">
-                        <i class="fas fa-envelope"></i> Envoyer Rappels
-                    </button>
-                </div>
+                <h1 class="h2">Comptes étudiants</h1>
+                <a href="{{ path('comptable_export', {'rapport': 'soldes'}) }}" class="btn btn-outline-success">
+                    <i class="fas fa-file-csv me-1"></i>Exporter les soldes
+                </a>
             </div>
 
-            <!-- Filtres -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <label for="statutPaiement" class="form-label">Statut paiement</label>
-                            <select class="form-select" id="statutPaiement">
-                                <option value="">Tous</option>
-                                <option value="a_jour">À jour</option>
-                                <option value="en_retard">En retard</option>
-                                <option value="paiement_partiel">Paiement partiel</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="classe" class="form-label">Classe</label>
-                            <select class="form-select" id="classe">
-                                <option value="">Toutes</option>
-                                <option value="1ere">1ère année</option>
-                                <option value="2eme">2ème année</option>
-                                <option value="3eme">3ème année</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="recherche" class="form-label">Recherche</label>
-                            <input type="text" class="form-control" id="recherche" placeholder="Nom, prénom, email...">
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button class="btn btn-secondary w-100">
-                                <i class="fas fa-search"></i> Filtrer
-                            </button>
-                        </div>
+            <form method="get" class="card mb-4">
+                <div class="card-body row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="recherche" class="form-label">Recherche</label>
+                        <input type="text" class="form-control" id="recherche" name="recherche" value="{{ filtres.recherche }}" placeholder="Nom, prénom, email...">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filiere" class="form-label">Filière</label>
+                        <select class="form-select" id="filiere" name="filiere">
+                            <option value="">Toutes</option>
+                            {% for filiere in filieres %}
+                                <option value="{{ filiere.id }}" {{ filtres.filiere == filiere.id ? 'selected' }}>{{ filiere.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="statut" class="form-label">Situation</label>
+                        <select class="form-select" id="statut" name="statut">
+                            {% for valeur, libelle in {'': 'Toutes', 'a_jour': 'À jour', 'solde_du': 'Solde à régler', 'en_retard': 'En retard'} %}
+                                <option value="{{ valeur }}" {{ filtres.statut == valeur ? 'selected' }}>{{ libelle }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-grid">
+                        <button class="btn btn-secondary"><i class="fas fa-search me-1"></i>Filtrer</button>
                     </div>
                 </div>
-            </div>
+            </form>
 
-            <!-- Tableau des étudiants -->
-            <div class="card">
-                <div class="card-body">
+            <div class="card shadow">
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
+                        <table class="table table-striped mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Photo</th>
-                                    <th>Nom & Prénom</th>
-                                    <th>Email</th>
-                                    <th>Classe</th>
-                                    <th>Total dû</th>
-                                    <th>Total payé</th>
-                                    <th>Solde</th>
-                                    <th>Statut</th>
-                                    <th>Actions</th>
+                                    <th>Étudiant</th>
+                                    <th>Filière</th>
+                                    <th class="text-end">Total facturé</th>
+                                    <th class="text-end">Total payé</th>
+                                    <th class="text-end">Solde</th>
+                                    <th>Situation</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>
-                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Photo">
-                                    </td>
-                                    <td><strong>Jean Dupont</strong></td>
-                                    <td>jean.dupont@email.com</td>
-                                    <td>2ème année</td>
-                                    <td>1 500 €</td>
-                                    <td>1 500 €</td>
-                                    <td class="text-success">0 €</td>
-                                    <td><span class="badge bg-success">À jour</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-info" title="Voir détails">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-primary" title="Voir compte">
-                                            <i class="fas fa-euro-sign"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-success" title="Envoyer email">
-                                            <i class="fas fa-envelope"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr class="table-warning">
-                                    <td>
-                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Photo">
-                                    </td>
-                                    <td><strong>Marie Martin</strong></td>
-                                    <td>marie.martin@email.com</td>
-                                    <td>1ère année</td>
-                                    <td>2 000 €</td>
-                                    <td>800 €</td>
-                                    <td class="text-danger">-1 200 €</td>
-                                    <td><span class="badge bg-warning">En retard</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-info" title="Voir détails">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-primary" title="Voir compte">
-                                            <i class="fas fa-euro-sign"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-danger" title="Envoyer rappel">
-                                            <i class="fas fa-exclamation"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Photo">
-                                    </td>
-                                    <td><strong>Pierre Durand</strong></td>
-                                    <td>pierre.durand@email.com</td>
-                                    <td>3ème année</td>
-                                    <td>1 800 €</td>
-                                    <td>900 €</td>
-                                    <td class="text-warning">-900 €</td>
-                                    <td><span class="badge bg-info">Paiement partiel</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-info" title="Voir détails">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-primary" title="Voir compte">
-                                            <i class="fas fa-euro-sign"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-success" title="Envoyer email">
-                                            <i class="fas fa-envelope"></i>
-                                        </button>
-                                    </td>
-                                </tr>
+                                {% for compte in comptes %}
+                                    <tr class="{{ compte.statut == 'en_retard' ? 'table-warning' }}">
+                                        <td>
+                                            <strong>{{ compte.etudiant.nom }} {{ compte.etudiant.prenom }}</strong><br>
+                                            <small class="text-muted">{{ compte.etudiant.email }}</small>
+                                        </td>
+                                        <td>{{ compte.etudiant.filiere ? compte.etudiant.filiere.nom : '-' }}</td>
+                                        <td class="text-end">{{ c.montant(compte.du) }}</td>
+                                        <td class="text-end">{{ c.montant(compte.paye) }}</td>
+                                        <td class="text-end fw-bold {{ compte.solde > 0 ? 'text-danger' : 'text-success' }}">{{ c.montant(compte.solde) }}</td>
+                                        <td>{{ c.statut_compte(compte.statut, compte.statut_libelle) }}</td>
+                                        <td class="text-end text-nowrap">
+                                            <a href="{{ path('comptable_etudiants_show', {'id': compte.etudiant.id}) }}" class="btn btn-sm btn-outline-primary" title="Voir le compte">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ path('comptable_paiements_new', {'etudiant': compte.etudiant.id}) }}" class="btn btn-sm btn-success" title="Enregistrer un paiement">
+                                                <i class="fas fa-money-bill"></i>
+                                            </a>
+                                            {% if compte.etudiant.email and compte.solde > 0 %}
+                                                <a href="mailto:{{ compte.etudiant.email }}?subject={{ ('Rappel de paiement - solde de ' ~ c.montant(compte.solde))|url_encode }}"
+                                                   class="btn btn-sm btn-outline-danger" title="Envoyer un rappel">
+                                                    <i class="fas fa-envelope"></i>
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr><td colspan="7" class="text-center text-muted py-4">Aucun étudiant ne correspond à ces critères.</td></tr>
+                                {% endfor %}
                             </tbody>
+                            {% if comptes|length > 0 %}
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th colspan="2">{{ comptes|length }} étudiant(s)</th>
+                                        <th class="text-end">{{ c.montant(totaux.du) }}</th>
+                                        <th class="text-end">{{ c.montant(totaux.paye) }}</th>
+                                        <th class="text-end">{{ c.montant(totaux.solde) }}</th>
+                                        <th colspan="2"></th>
+                                    </tr>
+                                </tfoot>
+                            {% endif %}
                         </table>
                     </div>
                 </div>
             </div>
-
-            <!-- Pagination -->
-            <nav aria-label="Pagination">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1">Précédent</a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">Suivant</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+        </main>
     </div>
 </div>
 {% endblock %}

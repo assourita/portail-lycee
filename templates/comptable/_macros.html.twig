@@ -1,0 +1,28 @@
+{% macro montant(valeur) %}{{ valeur|default(0)|number_format(2, ',', ' ') }} €{% endmacro %}
+
+{% macro statut_facture(facture) %}
+    {% if facture.statut == 'paye' %}
+        <span class="badge bg-success">Payée</span>
+    {% elseif facture.statut == 'annule' %}
+        <span class="badge bg-secondary">Annulée</span>
+    {% elseif facture.enRetard %}
+        <span class="badge bg-danger">En retard</span>
+    {% else %}
+        <span class="badge bg-warning text-dark">En attente</span>
+    {% endif %}
+{% endmacro %}
+
+{% macro statut_paiement(paiement) %}
+    {% if paiement.statut == 'paye' %}
+        <span class="badge bg-success">Encaissé</span>
+    {% elseif paiement.statut == 'annule' %}
+        <span class="badge bg-secondary">Annulé</span>
+    {% else %}
+        <span class="badge bg-warning text-dark">{{ paiement.statut|capitalize }}</span>
+    {% endif %}
+{% endmacro %}
+
+{% macro statut_compte(statut, libelle) %}
+    {% set classes = {'a_jour': 'bg-success', 'solde_du': 'bg-warning text-dark', 'en_retard': 'bg-danger'} %}
+    <span class="badge {{ classes[statut] ?? 'bg-secondary' }}">{{ libelle }}</span>
+{% endmacro %}

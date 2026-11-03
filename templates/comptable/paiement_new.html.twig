@@ -1,0 +1,123 @@
+{% extends 'base.html.twig' %}
+{% import 'comptable/_macros.html.twig' as c %}
+
+{% block title %}Nouveau paiement{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'comptable/_sidebar.html.twig' %}
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="fas fa-money-bill me-2 text-success"></i>Enregistrer un paiement</h1>
+                <a href="{{ path('comptable_paiements') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Retour
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    {# Le choix de l'étudiant recharge la page pour proposer ses factures ouvertes. #}
+                    <form method="get" class="card shadow mb-3">
+                        <div class="card-body">
+                            <label for="etudiant_choix" class="form-label">Étudiant *</label>
+                            <select class="form-select" id="etudiant_choix" name="etudiant" onchange="this.form.submit()">
+                                <option value="">Choisir un étudiant...</option>
+                                {% for etudiant in etudiants %}
+                                    <option value="{{ etudiant.id }}" {{ etudiantSelectionne and etudiantSelectionne.id == etudiant.id ? 'selected' }}>
+                                        {{ etudiant.nom }} {{ etudiant.prenom }}{% if etudiant.filiere %} - {{ etudiant.filiere.nom }}{% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+
+                    {% if etudiantSelectionne %}
+                        <form method="post" class="card shadow">
+                            <div class="card-body">
+                                <input type="hidden" name="_token" value="{{ csrf_token('paiement') }}">
+                                <input type="hidden" name="etudiant" value="{{ etudiantSelectionne.id }}">
+
+                                <div class="mb-3">
+                                    <label for="facture" class="form-label">Facture réglée</label>
+                                    <select class="form-select" id="facture" name="facture">
+                                        <option value="">Aucune (paiement libre)</option>
+                                        {% for facture in facturesOuvertes %}
+                                            <option value="{{ facture.id }}" data-reste="{{ facture.resteAPayer }}" data-libelle="{{ facture.libelle }}"
+                                                    {{ factureSelectionnee and factureSelectionnee.id == facture.id ? 'selected' }}>
+                                                F-{{ facture.id }} - {{ facture.libelle }} (reste {{ c.montant(facture.resteAPayer) }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    {% if facturesOuvertes is empty %}
+                                        <div class="form-text">Cet étudiant n'a aucune facture en attente.</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="montant" class="form-label">Montant (€) *</label>
+                                        <input type="number" step="0.01" min="0.01" class="form-control" id="montant" name="montant" required
+                                               value="{{ factureSelectionnee ? factureSelectionnee.resteAPayer }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="date_paiement" class="form-label">Date *</label>
+                                        <input type="date" class="form-control" id="date_paiement" name="date_paiement" value="{{ 'now'|date('Y-m-d') }}" required>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="type" class="form-label">Type *</label>
+                                        <input type="text" class="form-control" id="type" name="type" list="types-paiement" required
+                                               value="{{ factureSelectionnee ? factureSelectionnee.libelle }}">
+                                        <datalist id="types-paiement">
+                                            {% for type in types %}<option value="{{ type }}">{% endfor %}
+                                        </datalist>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="mode_paiement" class="form-label">Mode de paiement</label>
+                                        <select class="form-select" id="mode_paiement" name="mode_paiement">
+                                            {% for valeur, libelle in modes %}
+                                                <option value="{{ valeur }}">{{ libelle }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="reference" class="form-label">Référence (n° de chèque, de transaction...)</label>
+                                    <input type="text" class="form-control" id="reference" name="reference" maxlength="100">
+                                </div>
+
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check me-1"></i>Enregistrer le paiement
+                                </button>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const facture = document.getElementById('facture');
+    if (!facture) {
+        return;
+    }
+    facture.addEventListener('change', function () {
+        const option = facture.selectedOptions[0];
+        if (option && option.dataset.reste) {
+            document.getElementById('montant').value = option.dataset.reste;
+            document.getElementById('type').value = option.dataset.libelle;
+        }
+    });
+});
+</script>
+{% endblock %}

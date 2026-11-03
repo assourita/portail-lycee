@@ -29,6 +29,16 @@ class Paiement
     #[ORM\JoinColumn(nullable: false)]
     private ?Etudiant $etudiant = null;
 
+    #[ORM\ManyToOne(targetEntity: Facture::class, inversedBy: 'paiements')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Facture $facture = null;
+
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $modePaiement = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $reference = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -86,6 +96,39 @@ class Paiement
     public function setEtudiant(?Etudiant $etudiant): static
     {
         $this->etudiant = $etudiant;
+        return $this;
+    }
+
+    public function getFacture(): ?Facture
+    {
+        return $this->facture;
+    }
+
+    public function setFacture(?Facture $facture): static
+    {
+        $this->facture = $facture;
+        return $this;
+    }
+
+    public function getModePaiement(): ?string
+    {
+        return $this->modePaiement;
+    }
+
+    public function setModePaiement(?string $modePaiement): static
+    {
+        $this->modePaiement = $modePaiement;
+        return $this;
+    }
+
+    public function getReference(): ?string
+    {
+        return $this->reference;
+    }
+
+    public function setReference(?string $reference): static
+    {
+        $this->reference = $reference;
         return $this;
     }
 }
