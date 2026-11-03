@@ -2,6 +2,10 @@
 // src/Controller/AdminController.php
 namespace App\Controller;
 
+use App\Entity\Absence;
+use App\Entity\Classe;
+use App\Entity\Evaluation;
+use App\Entity\ParentEleve;
 use App\Entity\User;
 use App\Entity\Etudiant;
 use App\Entity\Enseignant;
@@ -56,28 +60,64 @@ class AdminController extends AbstractController
     #[Route('/dashboard', name: 'admin_dashboard')]
     public function dashboard(EntityManagerInterface $entityManager, PeriodeAcademiqueService $periodeService): Response
     {
-        $periodeActive = $periodeService->getPeriodeActive();
-        
-        // Récupération des statistiques
         $stats = [
             'etudiants' => $entityManager->getRepository(Etudiant::class)->count([]),
             'enseignants' => $entityManager->getRepository(Enseignant::class)->count([]),
-            'matieres' => $entityManager->getRepository(Matiere::class)->count([]),
+            'classes' => $entityManager->getRepository(Classe::class)->count([]),
             'filieres' => $entityManager->getRepository(Filiere::class)->count([]),
+            'matieres' => $entityManager->getRepository(Matiere::class)->count([]),
+            'parents' => $entityManager->getRepository(ParentEleve::class)->count([]),
         ];
 
-        // Récupération des dernières activités
-        $recentActivities = $entityManager->getRepository(User::class)
-            ->createQueryBuilder('u')
-            ->orderBy('u.lastLogin', 'DESC')
+        $effectifs = $entityManager->createQueryBuilder()
+            ->select('f.nom AS filiere, c.nom AS classe, COUNT(e.id) AS total')
+            ->from(Filiere::class, 'f')
+            ->leftJoin('f.classe', 'c')
+            ->leftJoin('f.etudiants', 'e')
+            ->groupBy('f.id, f.nom, c.nom')
+            ->orderBy('total', 'DESC')
+            ->addOrderBy('f.nom', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        $justificatifs = $entityManager->getRepository(Absence::class)->createQueryBuilder('a')
+            ->join('a.etudiant', 'e')
+            ->addSelect('e')
+            ->where('a.justification IS NOT NULL')
+            ->andWhere('a.justifiee = false')
+            ->andWhere('a.dateValidation IS NULL')
+            ->orderBy('a.date', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $evaluations = $entityManager->getRepository(Evaluation::class)->createQueryBuilder('ev')
+            ->join('ev.matiere', 'm')
+            ->addSelect('m')
+            ->leftJoin('m.filiere', 'f')
+            ->addSelect('f')
+            ->where('ev.dateEvaluation >= :aujourdhui')
+            ->setParameter('aujourdhui', new \DateTime('today'))
+            ->orderBy('ev.dateEvaluation', 'ASC')
             ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+
+        $connexions = $entityManager->getRepository(User::class)->createQueryBuilder('u')
+            ->where('u.lastLogin IS NOT NULL')
+            ->orderBy('u.lastLogin', 'DESC')
+            ->setMaxResults(6)
             ->getQuery()
             ->getResult();
 
         return $this->render('admin/dashboard.html.twig', [
             'stats' => $stats,
-            'recentActivities' => $recentActivities,
-            'periodeActive' => $periodeActive,
+            'effectifs' => $effectifs,
+            'maxEffectif' => max(1, ...array_map(fn (array $e) => (int) $e['total'], $effectifs ?: [['total' => 1]])),
+            'justificatifs' => array_slice($justificatifs, 0, 5),
+            'totalJustificatifs' => count($justificatifs),
+            'evaluations' => $evaluations,
+            'connexions' => $connexions,
+            'periodeActive' => $periodeService->getPeriodeActive(),
         ]);
     }
 

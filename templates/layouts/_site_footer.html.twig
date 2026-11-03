@@ -1,0 +1,41 @@
+<footer class="site-footer" id="contact">
+    <div class="site-container">
+        <div class="footer-grid">
+            <div class="footer-about">
+                <a href="{{ path('app_home') }}" class="site-logo">
+                    <span class="brand-mark"><i class="fas fa-graduation-cap"></i></span>
+                    Mon Portail Lycée
+                </a>
+                <p>L'espace numérique du lycée : cours, notes, emploi du temps, vie scolaire et suivi des familles.</p>
+            </div>
+            <div>
+                <h4>Le lycée</h4>
+                <ul>
+                    <li><a href="{{ path('app_home') }}#formations">Formations</a></li>
+                    <li><a href="{{ path('app_home') }}#actualites">Calendrier scolaire</a></li>
+                    <li><a href="{{ path('app_home') }}#espaces">Espaces numériques</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Accès</h4>
+                <ul>
+                    <li><a href="{{ path('app_login') }}">Connexion</a></li>
+                    <li><a href="{{ path('app_reset_password') }}">Mot de passe oublié</a></li>
+                    <li><a href="{{ path('app_register') }}">Créer un compte</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Contact</h4>
+                <ul>
+                    <li><i class="fas fa-location-dot me-2 text-muted"></i>Secrétariat du lycée</li>
+                    <li><a href="mailto:contact@monportaillycee.fr"><i class="far fa-envelope me-2"></i>contact@monportaillycee.fr</a></li>
+                    <li><i class="far fa-clock me-2 text-muted"></i>Lundi au vendredi, 8 h – 17 h</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© {{ 'now'|date('Y') }} Mon Portail Lycée. Tous droits réservés.</span>
+            <span>Données scolaires protégées et accessibles uniquement aux personnes autorisées.</span>
+        </div>
+    </div>
+</footer>

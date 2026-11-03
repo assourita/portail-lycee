@@ -4,12 +4,8 @@
 {% block title %}Compte de {{ etudiant.prenom }} {{ etudiant.nom }}{% endblock %}
 
 {% block body %}
-<div class="container-fluid">
-    <div class="row">
-        {% include 'comptable/_sidebar.html.twig' %}
-
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+<div class="page">
+            <div class="page-header">
                 <div>
                     <h1 class="h2 mb-0">{{ etudiant.prenom }} {{ etudiant.nom }}</h1>
                     <p class="text-muted mb-0">
@@ -124,7 +120,5 @@
                     </table>
                 </div>
             </div>
-        </main>
-    </div>
-</div>
+        </div>
 {% endblock %}

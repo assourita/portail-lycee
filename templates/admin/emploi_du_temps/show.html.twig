@@ -3,12 +3,8 @@
 {% block title %}Emploi du Temps - {{ emploi_du_temps.jour ? emploi_du_temps.jour.nom : 'Non défini' }}{% endblock %}
 
 {% block body %}
-<div class="container-fluid">
-    <div class="row">
-        {% include 'admin/_sidebar.html.twig' %}
-
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+<div class="page">
+            <div class="page-header">
                 <h1 class="h2">
                     <i class="fas fa-calendar-day me-2"></i>Détails de l'emploi du temps
                 </h1>
@@ -255,9 +251,7 @@
                     </div>
                 </div>
             </div>
-        </main>
-    </div>
-</div>
+        </div>
 
 <!-- Modal de confirmation de suppression -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">

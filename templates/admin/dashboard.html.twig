@@ -1,173 +1,218 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard Administrateur{% endblock %}
+{% block title %}Tableau de bord{% endblock %}
 
 {% block body %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        {% include 'admin/_sidebar.html.twig' %}
-
-        <!-- Main content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <div>
-                    <h1 class="h2">Dashboard Administrateur</h1>
-                    {% if periodeActive %}
-                        <p class="text-muted mb-0">
-                            <i class="fas fa-calendar-check me-1"></i>
-                            Période active : <strong>{{ periodeActive.periode }}</strong> - {{ periodeActive.anneeScolaire }}
-                        </p>
-                    {% else %}
-                        <p class="text-danger mb-0">
-                            <i class="fas fa-exclamation-triangle me-1"></i>
-                            Aucune période active
-                        </p>
-                    {% endif %}
-                </div>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <div class="btn-group me-2">
-                        <a href="{{ path('admin_periodes_academiques_index') }}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-calendar-alt me-1"></i>Gérer les périodes
-                        </a>
-                        <button type="button" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-download me-1"></i>Exporter
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Stats Cards -->
-            <div class="row">
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-primary shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                        Étudiants</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.etudiants }}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-success shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                        Enseignants</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.enseignants }}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-info shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                        Matières</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.matieres }}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-book fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-warning shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        Filières</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.filieres }}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-graduation-cap fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Activity -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Activité récente</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>Utilisateur</th>
-                                    <th>Rôle</th>
-                                    <th>Dernière connexion</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% if recentActivities is not empty %}
-                                {% for activity in recentActivities %}
-                                <tr>
-                                    <td>{{ activity.username }}</td>
-                                    <td>
-                                        {% for role in activity.roles %}
-                                            {% if role == 'ROLE_ADMIN' %}
-                                                <span class="badge bg-danger">Admin</span>
-                                            {% elseif role == 'ROLE_ETUDIANT' %}
-                                                <span class="badge bg-primary">Étudiant</span>
-                                            {% elseif role == 'ROLE_ENSEIGNANT' %}
-                                                <span class="badge bg-success">Enseignant</span>
-                                            {% elseif role == 'ROLE_COMPTABLE' %}
-                                                <span class="badge bg-warning text-dark">Comptable</span>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </td>
-                                    <td>{{ activity.lastLogin ? activity.lastLogin|date('Y-m-d H:i:s') : 'Jamais' }}</td>
-                                    <td>
-                                        <a href="{{ path('admin_user_show', {'id': activity.id}) }}" class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ path('admin_user_edit', {'id': activity.id}) }}" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form method="post" action="{{ path('admin_user_delete', {'id': activity.id}) }}" style="display:inline-block" onsubmit="return confirm('Voulez-vous vraiment supprimer cet utilisateur ?');">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('delete-user-' ~ activity.id) }}">
-                                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                                {% else %}
-                                <tr>
-                                    <td colspan="4" class="text-center">Aucune activité récente</td>
-                                </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </main>
+{% set libelles_roles = {'ROLE_ADMIN': 'Administration', 'ROLE_ENSEIGNANT': 'Enseignant', 'ROLE_ETUDIANT': 'Élève', 'ROLE_COMPTABLE': 'Comptabilité', 'ROLE_PARENT': 'Parent'} %}
+<div class="page-header">
+    <div>
+        <h1>Tableau de bord</h1>
+        <p>
+            {% if periodeActive %}
+                {{ periodeActive.periode }} {{ periodeActive.anneeScolaire }} · vue d'ensemble de l'établissement
+            {% else %}
+                Vue d'ensemble de l'établissement
+            {% endif %}
+        </p>
+    </div>
+    <div class="page-actions">
+        <div class="dropdown">
+            <button class="btn btn-secondary" data-bs-toggle="dropdown" aria-expanded="false">
+                Créer <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{{ path('admin_enseignant_new') }}"><i class="fas fa-chalkboard-user"></i>Enseignant</a></li>
+                <li><a class="dropdown-item" href="{{ path('admin_parent_new') }}"><i class="fas fa-user-group"></i>Parent</a></li>
+                <li><a class="dropdown-item" href="{{ path('admin_comptable_new') }}"><i class="fas fa-briefcase"></i>Comptable</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ path('admin_filiere_new') }}"><i class="fas fa-layer-group"></i>Filière</a></li>
+                <li><a class="dropdown-item" href="{{ path('admin_matiere_new') }}"><i class="fas fa-book"></i>Matière</a></li>
+                <li><a class="dropdown-item" href="{{ path('admin_evaluation_new') }}"><i class="fas fa-clipboard-check"></i>Évaluation</a></li>
+                <li><a class="dropdown-item" href="{{ path('admin_bulletin_generer') }}"><i class="fas fa-file-lines"></i>Bulletins</a></li>
+            </ul>
+        </div>
+        <a href="{{ path('admin_etudiant_new') }}" class="btn btn-primary"><i class="fas fa-plus"></i>Inscrire un élève</a>
     </div>
 </div>
-{% endblock %} 
+
+{% if not periodeActive %}
+    <div class="notice notice-warning">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span>Aucune période académique n'est active : les cours, notes et devoirs ne peuvent pas être rattachés à une période.</span>
+        <a href="{{ path('admin_periodes_academiques_index') }}" class="btn btn-sm btn-secondary notice-action">Activer une période</a>
+    </div>
+{% endif %}
+
+<div class="kpi-grid">
+    <a href="{{ path('admin_etudiants') }}" class="kpi">
+        <span class="kpi-label"><i class="fas fa-user-graduate"></i>Élèves inscrits</span>
+        <span class="kpi-value">{{ stats.etudiants }}</span>
+        <span class="kpi-meta">{{ stats.parents }} parent{{ stats.parents > 1 ? 's' }} rattaché{{ stats.parents > 1 ? 's' }}</span>
+    </a>
+    <a href="{{ path('admin_enseignants') }}" class="kpi">
+        <span class="kpi-label"><i class="fas fa-chalkboard-user"></i>Enseignants</span>
+        <span class="kpi-value">{{ stats.enseignants }}</span>
+        <span class="kpi-meta">{{ stats.matieres }} matières enseignées</span>
+    </a>
+    <a href="{{ path('admin_filieres') }}" class="kpi">
+        <span class="kpi-label"><i class="fas fa-layer-group"></i>Filières</span>
+        <span class="kpi-value">{{ stats.filieres }}</span>
+        <span class="kpi-meta">réparties sur {{ stats.classes }} niveau{{ stats.classes > 1 ? 'x' }}</span>
+    </a>
+    <a href="{{ path('admin_absences_index') }}" class="kpi">
+        <span class="kpi-label"><i class="fas fa-file-medical"></i>Justificatifs à examiner</span>
+        <span class="kpi-value">{{ totalJustificatifs }}</span>
+        <span class="kpi-meta">{{ totalJustificatifs > 0 ? 'en attente de validation' : 'aucun en attente' }}</span>
+    </a>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-7">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <h2>Effectifs par filière</h2>
+                    <p>Nombre d'élèves inscrits dans chaque filière</p>
+                </div>
+                <a href="{{ path('admin_filieres') }}" class="link-more">Filières <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="panel-body">
+                {% set avec_eleves = effectifs|filter(e => e.total > 0) %}
+                {% if avec_eleves is empty %}
+                    <div class="empty-state py-4">
+                        <div class="empty-state-icon"><i class="fas fa-user-graduate"></i></div>
+                        <h3>Aucun élève inscrit</h3>
+                        <p>Les effectifs apparaîtront ici dès les premières inscriptions.</p>
+                        <a href="{{ path('admin_etudiant_new') }}" class="btn btn-sm btn-secondary">Inscrire un élève</a>
+                    </div>
+                {% else %}
+                    <div class="bar-list">
+                        {% for e in avec_eleves|slice(0, 8) %}
+                            <div>
+                                <div class="bar-item-head">
+                                    <span>{{ e.filiere }}{% if e.classe %} <span class="text-muted">· {{ e.classe }}</span>{% endif %}</span>
+                                    <span>{{ e.total }} élève{{ e.total > 1 ? 's' }}</span>
+                                </div>
+                                <div class="bar-track"><div class="bar-fill" style="width: {{ (e.total / maxEffectif * 100)|round }}%"></div></div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% set sans_eleves = effectifs|length - avec_eleves|length %}
+                    {% if sans_eleves > 0 %}
+                        <p class="small text-muted mt-3 mb-0">{{ sans_eleves }} filière{{ sans_eleves > 1 ? 's' }} sans élève inscrit.</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-5">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <h2>À traiter</h2>
+                    <p>Justificatifs d'absence envoyés par les élèves</p>
+                </div>
+                {% if totalJustificatifs > 0 %}
+                    <a href="{{ path('admin_absences_index') }}" class="link-more">Tout voir <i class="fas fa-arrow-right"></i></a>
+                {% endif %}
+            </div>
+            {% if justificatifs is empty %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="far fa-circle-check"></i></div>
+                    <h3>Tout est à jour</h3>
+                    <p class="mb-0">Aucun justificatif en attente de validation.</p>
+                </div>
+            {% else %}
+                <ul class="list-rows">
+                    {% for absence in justificatifs %}
+                        <li>
+                            <a href="{{ path('admin_absence_show', {'id': absence.id}) }}" class="list-row">
+                                <span class="avatar">{{ absence.etudiant.prenom|first|upper }}{{ absence.etudiant.nom|first|upper }}</span>
+                                <span class="list-row-main">
+                                    <span class="list-row-title d-block">{{ absence.etudiant.prenom }} {{ absence.etudiant.nom }}</span>
+                                    <span class="list-row-meta d-block">{{ absence.type == 'retard' ? 'Retard' : 'Absence' }} du {{ absence.date|date('d/m/Y') }}{% if absence.matiere %} · {{ absence.matiere.nom }}{% endif %}</span>
+                                </span>
+                                <span class="status status-warning">À valider</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <h2>Prochaines évaluations</h2>
+                    <p>Évaluations programmées par les enseignants</p>
+                </div>
+                <a href="{{ path('admin_evaluations_index') }}" class="link-more">Toutes <i class="fas fa-arrow-right"></i></a>
+            </div>
+            {% if evaluations is empty %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="far fa-calendar"></i></div>
+                    <h3>Aucune évaluation à venir</h3>
+                    <p class="mb-0">Les évaluations programmées s'afficheront ici.</p>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr><th>Évaluation</th><th>Matière</th><th>Filière</th><th class="text-end">Date</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for evaluation in evaluations %}
+                                <tr>
+                                    <td><a href="{{ path('admin_evaluation_show', {'id': evaluation.id}) }}" class="text-reset fw-medium">{{ evaluation.nom }}</a></td>
+                                    <td class="text-muted">{{ evaluation.matiere.nom }}</td>
+                                    <td class="text-muted">{{ evaluation.matiere.filiere ? evaluation.matiere.filiere.nom : '—' }}</td>
+                                    <td class="text-end text-nowrap">{{ evaluation.dateEvaluation|date('d/m/Y') }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <div class="col-lg-5">
+        <section class="panel h-100">
+            <div class="panel-header">
+                <div>
+                    <h2>Dernières connexions</h2>
+                    <p>Activité récente sur le portail</p>
+                </div>
+                <a href="{{ path('admin_users') }}" class="link-more">Comptes <i class="fas fa-arrow-right"></i></a>
+            </div>
+            {% if connexions is empty %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-clock-rotate-left"></i></div>
+                    <h3>Aucune connexion enregistrée</h3>
+                </div>
+            {% else %}
+                <ul class="list-rows">
+                    {% for user in connexions %}
+                        {% set role = user.roles|filter(r => r != 'ROLE_USER')|first %}
+                        <li>
+                            <a href="{{ path('admin_user_show', {'id': user.id}) }}" class="list-row">
+                                <span class="avatar">{{ user.username|slice(0, 2)|upper }}</span>
+                                <span class="list-row-main">
+                                    <span class="list-row-title d-block">{{ user.username }}</span>
+                                    <span class="list-row-meta d-block">{{ libelles_roles[role] ?? 'Utilisateur' }}</span>
+                                </span>
+                                <span class="list-row-end">{{ user.lastLogin|depuis }}</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

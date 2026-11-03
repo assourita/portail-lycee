@@ -1,0 +1,140 @@
+{#
+    Navigation de chaque espace. Une entrée est active quand la route courante
+    commence par l'un des préfixes de « actif ».
+#}
+{% set menus = {
+    'admin': [
+        {'items': [
+            {'label': 'Tableau de bord', 'icone': 'fa-gauge', 'route': 'admin_dashboard', 'actif': ['admin_dashboard']},
+        ]},
+        {'titre': 'Communauté', 'items': [
+            {'label': 'Élèves', 'icone': 'fa-user-graduate', 'route': 'admin_etudiants', 'actif': ['admin_etudiant', 'admin_parcours']},
+            {'label': 'Enseignants', 'icone': 'fa-chalkboard-user', 'route': 'admin_enseignants', 'actif': ['admin_enseignant']},
+            {'label': 'Parents', 'icone': 'fa-user-group', 'route': 'admin_parents_index', 'actif': ['admin_parent']},
+            {'label': 'Comptables', 'icone': 'fa-briefcase', 'route': 'admin_comptables', 'actif': ['admin_comptable']},
+            {'label': 'Comptes utilisateurs', 'icone': 'fa-id-badge', 'route': 'admin_users', 'actif': ['admin_user']},
+        ]},
+        {'titre': 'Scolarité', 'items': [
+            {'label': 'Classes', 'icone': 'fa-school', 'route': 'admin_classes_index', 'actif': ['admin_classe']},
+            {'label': 'Filières', 'icone': 'fa-layer-group', 'route': 'admin_filieres', 'actif': ['admin_filiere']},
+            {'label': 'Matières', 'icone': 'fa-book', 'route': 'admin_matieres', 'actif': ['admin_matiere', 'admin_cours']},
+            {'label': 'Périodes', 'icone': 'fa-calendar-check', 'route': 'admin_periodes_academiques_index', 'actif': ['admin_periode']},
+            {'label': 'Trimestres', 'icone': 'fa-calendar-week', 'route': 'admin_trimestres_index', 'actif': ['admin_trimestre']},
+        ]},
+        {'titre': 'Pédagogie', 'items': [
+            {'label': 'Emplois du temps', 'icone': 'fa-calendar-days', 'route': 'admin_emploi_du_temps_index', 'actif': ['admin_emploi_du_temps']},
+            {'label': 'Évaluations', 'icone': 'fa-clipboard-check', 'route': 'admin_evaluations_index', 'actif': ['admin_evaluation']},
+            {'label': 'Bulletins', 'icone': 'fa-file-lines', 'route': 'admin_bulletins_index', 'actif': ['admin_bulletin']},
+            {'label': 'Absences', 'icone': 'fa-user-clock', 'route': 'admin_absences_index', 'actif': ['admin_absence']},
+        ]},
+    ],
+    'enseignant': [
+        {'items': [
+            {'label': 'Tableau de bord', 'icone': 'fa-gauge', 'route': 'enseignant_dashboard', 'actif': ['enseignant_dashboard']},
+            {'label': 'Emploi du temps', 'icone': 'fa-calendar-days', 'route': 'app_enseignant_emploi_du_temps', 'actif': ['app_enseignant_emploi_du_temps', 'enseignant_emploi_du_temps']},
+        ]},
+        {'titre': 'Enseignement', 'items': [
+            {'label': 'Mes cours', 'icone': 'fa-book-open', 'route': 'enseignant_cours_index', 'actif': ['enseignant_cours', 'enseignant_chapitre', 'enseignant_piece']},
+            {'label': 'Devoirs', 'icone': 'fa-list-check', 'route': 'enseignant_devoirs_index', 'actif': ['enseignant_devoir']},
+            {'label': 'Évaluations', 'icone': 'fa-clipboard-check', 'route': 'enseignant_evaluations_index', 'actif': ['enseignant_evaluation']},
+            {'label': 'Notes', 'icone': 'fa-pen', 'route': 'enseignant_notes_index', 'actif': ['enseignant_note']},
+        ]},
+        {'titre': 'Mes classes', 'items': [
+            {'label': 'Matières', 'icone': 'fa-book', 'route': 'enseignant_mes_matieres', 'actif': ['enseignant_mes_matieres', 'enseignant_matiere']},
+            {'label': 'Filières et élèves', 'icone': 'fa-layer-group', 'route': 'app_enseignant_mes_filieres', 'actif': ['app_enseignant_mes_filieres', 'enseignant_filiere']},
+            {'label': 'Absences', 'icone': 'fa-user-clock', 'route': 'enseignant_absences_index', 'actif': ['enseignant_absence']},
+        ]},
+    ],
+    'etudiant': [
+        {'items': [
+            {'label': 'Tableau de bord', 'icone': 'fa-gauge', 'route': 'etudiant_dashboard', 'actif': ['etudiant_dashboard']},
+            {'label': 'Emploi du temps', 'icone': 'fa-calendar-days', 'route': 'etudiant_emploi_du_temps', 'actif': ['etudiant_emploi_du_temps']},
+        ]},
+        {'titre': 'Apprentissage', 'items': [
+            {'label': 'Mes cours', 'icone': 'fa-book-open', 'route': 'etudiant_cours_index', 'actif': ['etudiant_cours', 'etudiant_chapitre', 'etudiant_piece']},
+            {'label': 'Devoirs', 'icone': 'fa-list-check', 'route': 'etudiant_devoirs_index', 'actif': ['etudiant_devoir']},
+            {'label': 'Évaluations', 'icone': 'fa-clipboard-check', 'route': 'etudiant_evaluations_index', 'actif': ['etudiant_evaluations']},
+            {'label': 'Matières', 'icone': 'fa-book', 'route': 'etudiant_matieres_index', 'actif': ['etudiant_matieres']},
+        ]},
+        {'titre': 'Résultats', 'items': [
+            {'label': 'Notes', 'icone': 'fa-chart-simple', 'route': 'etudiant_notes_index', 'actif': ['etudiant_notes']},
+            {'label': 'Bulletins', 'icone': 'fa-file-lines', 'route': 'etudiant_bulletins_index', 'actif': ['etudiant_bulletin']},
+            {'label': 'Parcours', 'icone': 'fa-route', 'route': 'etudiant_parcours_index', 'actif': ['etudiant_parcours']},
+        ]},
+        {'titre': 'Vie scolaire', 'items': [
+            {'label': 'Absences', 'icone': 'fa-user-clock', 'route': 'etudiant_absences_index', 'actif': ['etudiant_absence']},
+        ]},
+    ],
+    'comptable': [
+        {'items': [
+            {'label': 'Tableau de bord', 'icone': 'fa-gauge', 'route': 'comptable_dashboard', 'actif': ['comptable_dashboard']},
+        ]},
+        {'titre': 'Opérations', 'items': [
+            {'label': 'Factures', 'icone': 'fa-file-invoice', 'route': 'comptable_factures', 'actif': ['comptable_factures']},
+            {'label': 'Paiements', 'icone': 'fa-money-bill-wave', 'route': 'comptable_paiements', 'actif': ['comptable_paiements']},
+        ]},
+        {'titre': 'Suivi', 'items': [
+            {'label': 'Comptes élèves', 'icone': 'fa-users', 'route': 'comptable_etudiants', 'actif': ['comptable_etudiants']},
+            {'label': 'Rapports', 'icone': 'fa-chart-line', 'route': 'comptable_rapports', 'actif': ['comptable_rapports', 'comptable_export']},
+        ]},
+    ],
+    'parent': [
+        {'items': [
+            {'label': 'Tableau de bord', 'icone': 'fa-gauge', 'route': 'parent_dashboard', 'actif': ['parent_dashboard']},
+        ]},
+    ],
+} %}
+
+{% set sections = menus[profil.espace] ?? [] %}
+
+{% if profil.espace == 'parent' and app.user.parentEleve %}
+    {% for enfant in app.user.parentEleve.enfants %}
+        {% set sections = sections|merge([{'titre': enfant.prenom ~ ' ' ~ enfant.nom, 'enfant': enfant.id, 'items': [
+            {'label': 'Notes', 'icone': 'fa-chart-simple', 'route': 'parent_enfant_notes', 'parametres': {'id': enfant.id}, 'actif': ['parent_enfant_notes']},
+            {'label': 'Bulletins', 'icone': 'fa-file-lines', 'route': 'parent_enfant_bulletins', 'parametres': {'id': enfant.id}, 'actif': ['parent_enfant_bulletins']},
+            {'label': 'Absences', 'icone': 'fa-user-clock', 'route': 'parent_enfant_absences', 'parametres': {'id': enfant.id}, 'actif': ['parent_enfant_absences']},
+        ]}]) %}
+    {% endfor %}
+{% endif %}
+
+{% set id_courant = app.request.attributes.get('id') %}
+
+<aside class="app-sidebar" aria-label="Navigation principale">
+    <a href="{{ path('app_dashboard') }}" class="sidebar-brand">
+        <span class="brand-mark"><i class="fas fa-graduation-cap"></i></span>
+        <span class="brand-name">
+            Mon Portail Lycée
+            <span class="brand-space">{{ profil.role }}</span>
+        </span>
+    </a>
+
+    <nav class="sidebar-nav">
+        {% for section in sections %}
+            <div class="nav-section">
+                {% if section.titre is defined %}
+                    <div class="nav-section-title" title="{{ section.titre }}">{{ section.titre }}</div>
+                {% endif %}
+                {% for item in section.items %}
+                    {% set actif = item.actif|filter(prefixe => route_courante starts with prefixe)|length > 0 %}
+                    {% if section.enfant is defined %}
+                        {% set actif = actif and id_courant == section.enfant %}
+                    {% endif %}
+                    <a href="{{ path(item.route, item.parametres ?? {}) }}"
+                       class="nav-link-item {{ actif ? 'active' }}"
+                       {% if actif %}aria-current="page"{% endif %}
+                       title="{{ item.label }}">
+                        <i class="fas {{ item.icone }}"></i>
+                        <span class="nav-label">{{ item.label }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="{{ path('app_parametres_aide') }}" class="sidebar-help" title="Aide">
+            <i class="fas fa-circle-question"></i>
+            <span>Besoin d'aide ?<small>Questions fréquentes</small></span>
+        </a>
+    </div>
+</aside>

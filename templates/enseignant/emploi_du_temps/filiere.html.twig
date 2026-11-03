@@ -3,12 +3,8 @@
 {% block title %}Emploi du Temps - {{ filiere.nom }}{% endblock %}
 
 {% block body %}
-<div class="container-fluid">
-    <div class="row">
-        {% include 'enseignant/_sidebar.html.twig' %}
-
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+<div class="page">
+            <div class="page-header">
                 <div>
                     <h1 class="h2">
                         <i class="fas fa-calendar-alt me-2 text-primary"></i>
@@ -186,9 +182,7 @@
                     <p class="text-muted">Vous n'avez aucun cours programmé pour la filière {{ filiere.nom }}.</p>
                 </div>
             {% endif %}
-        </main>
-    </div>
-</div>
+        </div>
 
 <style>
 @media print {

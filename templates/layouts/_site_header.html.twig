@@ -1,0 +1,29 @@
+<header class="site-header">
+    <div class="site-container">
+        <a href="{{ path('app_home') }}" class="site-logo">
+            <span class="brand-mark"><i class="fas fa-graduation-cap"></i></span>
+            Mon Portail Lycée
+        </a>
+
+        <nav class="site-nav" id="site-nav" aria-label="Navigation du site">
+            <a href="{{ path('app_home') }}" class="{{ route_courante == 'app_home' ? 'active' }}">Accueil</a>
+            <a href="{{ path('app_home') }}#formations">Formations</a>
+            <a href="{{ path('app_home') }}#actualites">Actualités</a>
+            <a href="{{ path('app_home') }}#contact">Contact</a>
+        </nav>
+
+        <div class="site-header-actions">
+            {% if profil %}
+                <a href="{{ path('app_dashboard') }}" class="btn btn-primary btn-sm">
+                    Mon espace <i class="fas fa-arrow-right"></i>
+                </a>
+            {% elseif route_courante != 'app_login' %}
+                <a href="{{ path('app_login') }}" class="btn btn-primary btn-sm">Connexion</a>
+            {% endif %}
+        </div>
+
+        <button type="button" class="topbar-icon site-menu-toggle" data-site-menu="site-nav" aria-label="Menu">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+</header>

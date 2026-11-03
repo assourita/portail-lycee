@@ -3,13 +3,9 @@
 {% block title %}Gestion des Trimestres{% endblock %}
 
 {% block body %}
-<div class="container-fluid">
-    <div class="row">
-        {% include 'admin/_sidebar.html.twig' %}
-
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+<div class="page">
             <!-- En-tête de la page -->
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <div class="page-header">
                 <div>
                     <h1 class="h2">
                         <i class="fas fa-calendar-week me-2 text-primary"></i>
@@ -113,9 +109,7 @@
                     </a>
                 </div>
             {% endif %}
-        </main>
-    </div>
-</div>
+        </div>
 
 <!-- Modal de confirmation de suppression -->
 <div class="modal fade" id="deleteModal" tabindex="-1">

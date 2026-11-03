@@ -1,0 +1,15 @@
+{% set icones = {'success': 'fa-circle-check', 'error': 'fa-circle-exclamation', 'danger': 'fa-circle-exclamation', 'warning': 'fa-triangle-exclamation', 'info': 'fa-circle-info'} %}
+{% set messages = app.flashes %}
+{% if messages is not empty %}
+    <div class="app-flashes">
+        {% for type, liste in messages %}
+            {% for message in liste %}
+                <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show mb-0" role="alert">
+                    <i class="fas {{ icones[type] ?? 'fa-circle-info' }}"></i>
+                    <div>{{ message }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endif %}

@@ -1,0 +1,71 @@
+{% set notifs = notifications() %}
+<header class="app-topbar">
+    <button type="button" class="topbar-icon" data-sidebar-toggle aria-label="Afficher ou réduire le menu">
+        <i class="fas fa-bars-staggered"></i>
+    </button>
+
+    <nav class="topbar-breadcrumb" aria-label="Fil d'Ariane">
+        <ol class="breadcrumb">
+            {% if fil_ariane|trim is not empty %}
+                {{ fil_ariane|raw }}
+            {% else %}
+                {% set accueil_espace = path('app_dashboard') %}
+                {% if route_courante ends with '_dashboard' %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ profil.role }}</li>
+                {% else %}
+                    <li class="breadcrumb-item"><a href="{{ accueil_espace }}">{{ profil.role }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ titre_page|trim }}</li>
+                {% endif %}
+            {% endif %}
+        </ol>
+    </nav>
+
+    <div class="topbar-actions">
+        <div class="dropdown">
+            <button type="button" class="topbar-icon" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+                <i class="far fa-bell"></i>
+                {% if notifs is not empty %}<span class="dot"></span>{% endif %}
+            </button>
+            <div class="dropdown-menu dropdown-menu-end notif-menu">
+                <div class="notif-header">Notifications</div>
+                {% for notif in notifs %}
+                    <a href="{{ notif.url }}" class="notif-item">
+                        <span class="notif-icon tone-{{ notif.ton }}"><i class="fas {{ notif.icone }}"></i></span>
+                        <span>{{ notif.texte }}</span>
+                    </a>
+                {% else %}
+                    <div class="notif-empty">
+                        <i class="far fa-circle-check"></i>
+                        Rien à traiter pour le moment.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <span class="topbar-divider"></span>
+
+        <div class="dropdown">
+            <button type="button" class="user-menu" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="avatar">{{ profil.initiales }}</span>
+                <span class="user-menu-text">
+                    <span class="user-menu-name d-block">{{ profil.nom }}</span>
+                    <span class="user-menu-role d-block">{{ profil.role }}</span>
+                </span>
+                <i class="fas fa-chevron-down text-muted ms-1 user-menu-text" style="font-size: 10px;"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 220px;">
+                <li class="px-3 py-2">
+                    <div class="fw-semibold">{{ profil.nom }}</div>
+                    <div class="small text-muted">{{ app.user.email ?: app.user.username }}</div>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ path('app_profil') }}"><i class="far fa-user"></i>Mon profil</a></li>
+                <li><a class="dropdown-item" href="{{ path('app_parametres') }}"><i class="fas fa-gear"></i>Paramètres</a></li>
+                <li><a class="dropdown-item" href="{{ path('app_parametres_aide') }}"><i class="far fa-circle-question"></i>Aide</a></li>
+                <li><a class="dropdown-item" href="{{ path('app_home') }}"><i class="fas fa-arrow-up-right-from-square"></i>Site du lycée</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ path('app_logout') }}"><i class="fas fa-arrow-right-from-bracket"></i>Se déconnecter</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
